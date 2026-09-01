@@ -77,6 +77,9 @@
     .cell.down { background: var(--hold); color: #1a1408; border-color: #d4b56a; font-weight: 700; }
     .cell.stuck { background: #3a1e1a; color: #e09a90; border-color: #5a2e28; }
     .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .span {
+      grid-column: 1 / -1;
+    }
     .log {
       grid-column: 1 / -1; min-height: 180px; max-height: 280px; overflow: auto;
       font: 12px var(--mono); background: #0e0d0b; border-radius: 8px; padding: 10px 12px;
@@ -87,7 +90,7 @@
     .hint { color: var(--dim); font-size: 12px; margin-top: 8px; }
     @media (max-width: 900px) {
       main { grid-template-columns: 1fr; }
-      .log { grid-column: 1; }
+      .span, .log { grid-column: 1; }
     }
   </style>
 </head>
@@ -108,10 +111,9 @@
       <div class="pills">
         <span class="pill" id="pMcp">MCP —</span>
         <span class="pill" id="pOled">OLED —</span>
-        <span class="pill" id="pBt">BT —</span>
         <span class="pill" id="pCli">CLI —</span>
       </div>
-      <p class="hint">Grave a sonda uma vez. Depois teste tudo daqui: teclas, encoders, stick, tela e Bluetooth.</p>
+      <p class="hint">Grave a sonda uma vez. Depois teste tudo daqui: teclas, encoders, stick e tela.</p>
     </section>
     <section class="card">
       <h2>EC11</h2>
@@ -131,7 +133,7 @@
         <div class="joy-meta" id="joyMeta">X —<br>Y —<br>SW solto</div>
       </div>
     </section>
-    <section class="card">
+    <section class="card span">
       <h2>Comandos</h2>
       <div class="btns">
         <button data-c="p">Periféricos</button>
@@ -146,15 +148,6 @@
         <button data-c="g">GPA cru</button>
       </div>
       <p class="hint" id="learnHint"></p>
-    </section>
-    <section class="card">
-      <h2>Bluetooth HC-05</h2>
-      <div class="btns">
-        <button class="ok" data-c="a">AT</button>
-        <button class="primary" data-c="w">PROBE</button>
-      </div>
-      <p class="hint">Pareie PIN 1234. AT responde se o módulo estiver em modo comando. PROBE deve aparecer no terminal SPP.</p>
-      <div class="joy-meta" id="btMeta">rx 0 · tx 0</div>
     </section>
     <pre class="log card" id="log"></pre>
   </main>
@@ -251,8 +244,6 @@
       $("e2").textContent = fmt(s.e2);
       $("pMcp").textContent = s.mcp ? "MCP ok" : "MCP falhou";
       $("pOled").textContent = s.oled ? ("OLED 0x" + Number(s.oa).toString(16)) : "OLED ausente";
-      $("pBt").textContent = s.bat ? "BT AT ok" : (s.brx > 0 ? "BT RX " + s.brx : "BT UART");
-      $("btMeta").textContent = "rx " + s.brx + " · tx " + s.btx + (s.n && s.n !== "-" ? " · tecla " + s.n : "");
       drawJoy(s);
       if (s.ko >= 0 && s.ki >= 0 && s.dn) {
         held[s.ko][s.ki] = true;
@@ -294,8 +285,6 @@
       if (/MCP NAO/.test(text)) $("pMcp").textContent = "MCP falhou";
       if (/OLED OK/.test(text)) $("pOled").textContent = "OLED ok";
       if (/OLED ausente/.test(text)) $("pOled").textContent = "OLED ausente";
-      m = text.match(/^BT RX.*n=(\d+)/);
-      if (m) $("btMeta").textContent = "rx " + m[1];
     }
 
     async function api(path, opts) {

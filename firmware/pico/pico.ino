@@ -9,7 +9,6 @@
 Adafruit_MCP23X17 mcp;
 Adafruit_USBD_MIDI usbMidi;
 MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usbMidi, MIDI);
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, SerialMIDI);
 
 static bool held[KO_COUNT][KI_COUNT];
 static int8_t octave = 0;
@@ -54,37 +53,22 @@ static uint8_t applyOctave(uint8_t note) {
 
 static void emitNoteOn(uint8_t note, uint8_t velocity) {
   MIDI.sendNoteOn(note, velocity, MIDI_CHANNEL);
-  if (MIRROR_SERIAL_MIDI) {
-    SerialMIDI.sendNoteOn(note, velocity, MIDI_CHANNEL);
-  }
 }
 
 static void emitNoteOff(uint8_t note) {
   MIDI.sendNoteOff(note, 0, MIDI_CHANNEL);
-  if (MIRROR_SERIAL_MIDI) {
-    SerialMIDI.sendNoteOff(note, 0, MIDI_CHANNEL);
-  }
 }
 
 static void emitCc(uint8_t cc, uint8_t value) {
   MIDI.sendControlChange(cc, value, MIDI_CHANNEL);
-  if (MIRROR_SERIAL_MIDI) {
-    SerialMIDI.sendControlChange(cc, value, MIDI_CHANNEL);
-  }
 }
 
 static void emitProgram(uint8_t value) {
   MIDI.sendProgramChange(value, MIDI_CHANNEL);
-  if (MIRROR_SERIAL_MIDI) {
-    SerialMIDI.sendProgramChange(value, MIDI_CHANNEL);
-  }
 }
 
 static void emitPitchBend(int16_t value) {
   MIDI.sendPitchBend(value, MIDI_CHANNEL);
-  if (MIRROR_SERIAL_MIDI) {
-    SerialMIDI.sendPitchBend(value, MIDI_CHANNEL);
-  }
 }
 
 static OledStatus currentOledStatus(bool mcpOk) {
@@ -371,14 +355,6 @@ void setup() {
   MIDI.begin();
   MIDI.turnThruOff();
 
-  if (MIRROR_SERIAL_MIDI) {
-    Serial1.setTX(BT_TX_PIN);
-    Serial1.setRX(BT_RX_PIN);
-    SerialMIDI.begin(MIDI_CHANNEL_OMNI);
-    Serial1.begin(BT_BAUD);
-    SerialMIDI.turnThruOff();
-  }
-
   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
     delay(10);
@@ -435,9 +411,6 @@ void loop() {
 
   digitalWrite(LED_PIN, HIGH);
   MIDI.read();
-  if (MIRROR_SERIAL_MIDI) {
-    SerialMIDI.read();
-  }
   scanMatrix();
   scanEncoders();
   scanJoystick();

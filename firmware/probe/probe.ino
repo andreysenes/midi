@@ -3,8 +3,8 @@
 #include <Adafruit_MCP23X17.h>
 #include "periph.h"
 
-// Sonda: matriz KO/KI + EC11 + joystick + OLED + Bluetooth.
-// Serial 115200. Comandos: h l r c m n p a w
+// Sonda: matriz KO/KI + EC11 + joystick + OLED.
+// Serial 115200. Comandos: h l r c m n p
 
 static const uint8_t LED_PIN = 25;
 static const uint8_t KO_COUNT = 7;
@@ -247,9 +247,8 @@ static void printJumperHelp() {
 static void printHelp() {
   Serial.println(F("h ajuda | l aprender | f finalizar | z reiniciar | b voltar | n saltar | r sair"));
   Serial.println(F("g GPA | t jumper | m resumo | M mapa | c limpar visto"));
-  Serial.println(F("p perifericos | a AT bluetooth | w PROBE bluetooth | u UI json | U para"));
+  Serial.println(F("p perifericos | u UI json | U para"));
   Serial.println(F("DOWN = KO/KI cru. Gire EC11-1/2, mexa o stick, clique SW."));
-  Serial.println(F("BT: pareie PIN 1234, envie um char (RX na Serial) ou w=PROBE no SPP."));
 }
 
 static bool anyHeldLive() {
@@ -628,13 +627,6 @@ static void handleSerial() {
     case 'P':
       printPeriphStatus();
       break;
-    case 'a':
-      btAtPing();
-      break;
-    case 'w':
-    case 'W':
-      btSendProbe();
-      break;
     case 'u':
       periphSetUi(true);
       break;
@@ -652,7 +644,7 @@ void setup() {
   delay(800);
   pinMode(LED_PIN, OUTPUT);
 
-  Serial.println(F("=== sonda hardware (matriz + EC11 + joy + OLED + BT) ==="));
+  Serial.println(F("=== sonda hardware (matriz + EC11 + joy + OLED) ==="));
   mcpOk = findMcp();
   if (!mcpOk) {
     Serial.println(F("MCP NAO ENCONTRADO em GP0/1, GP4/5, GP2/3"));

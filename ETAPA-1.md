@@ -1,6 +1,6 @@
 # Etapa 1 — Jump da matriz SA-1 → CJMCU-2317
 
-Nesta etapa **não** ligue encoders, joystick nem Bluetooth. Só: isolar o `M6387`, pular os 15 fios da matriz no MCP, e confirmar com a sonda.
+Nesta etapa **não** ligue encoders nem joystick. Só: isolar o `M6387`, pular os 15 fios da matriz no MCP, e confirmar com a sonda.
 
 Peças agora: placa `M3210-MAIM(F)`, CJMCU-2317, Pico 2020, fios, multímetro.
 

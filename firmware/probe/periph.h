@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -13,9 +12,8 @@ static const uint8_t ENC2_B = 22;
 static const uint8_t JOY_X_PIN = 26;
 static const uint8_t JOY_Y_PIN = 27;
 static const uint8_t JOY_SW_PIN = 20;
-static const uint8_t BT_TX_PIN = 8;
-static const uint8_t BT_RX_PIN = 9;
-static const long BT_BAUD = 9600;
+static const uint8_t WS_PIN = 16; // WS2812 DIN — pinagem só; ainda sem uso
+static const uint8_t WS_COUNT = 8;
 
 static Adafruit_SSD1306 oled(128, 32, &Wire, -1, 400000UL, 400000UL);
 static bool oledOk = false;
@@ -41,12 +39,6 @@ static int joyX = 2048;
 static int joyY = 2048;
 static bool joySw = false;
 static uint32_t lastJoyPrintMs = 0;
-
-static uint16_t btRx = 0;
-static uint16_t btTx = 0;
-static bool btAtOk = false;
-static uint32_t btLastRxMs = 0;
-static char btLast[9];
 
 static uint8_t lastKo = 255;
 static uint8_t lastKi = 255;
@@ -101,12 +93,6 @@ static void emitJsonState() {
   Serial.print(joyCenterX);
   Serial.print(F(",\"cy\":"));
   Serial.print(joyCenterY);
-  Serial.print(F(",\"brx\":"));
-  Serial.print(btRx);
-  Serial.print(F(",\"btx\":"));
-  Serial.print(btTx);
-  Serial.print(F(",\"bat\":"));
-  Serial.print(btAtOk ? 1 : 0);
   Serial.print(F(",\"ko\":"));
   Serial.print(lastKo == 255 ? -1 : lastKo);
   Serial.print(F(",\"ki\":"));
@@ -250,76 +236,6 @@ static void scanJoyProbe() {
   Serial.println(sw ? 1 : 0);
 }
 
-static void btSendRaw(const char *s) {
-  Serial1.print(s);
-  Serial1.flush();
-  for (const char *p = s; *p; p++) {
-    btTx++;
-  }
-}
-
-static bool btAtPing() {
-  while (Serial1.available()) {
-    Serial1.read();
-  }
-  btSendRaw("AT\r\n");
-  const uint32_t t0 = millis();
-  char buf[24];
-  uint8_t n = 0;
-  memset(buf, 0, sizeof(buf));
-  while (millis() - t0 < 400) {
-    if (!Serial1.available()) {
-      continue;
-    }
-    const char c = static_cast<char>(Serial1.read());
-    btRx++;
-    btLastRxMs = millis();
-    if (n < sizeof(buf) - 1) {
-      buf[n++] = c;
-      buf[n] = 0;
-    }
-    if (n >= 2 && buf[n - 2] == 'O' && buf[n - 1] == 'K') {
-      btAtOk = true;
-      Serial.println(F("BT  AT -> OK  (modulo em modo comando)"));
-      periphMark();
-      return true;
-    }
-  }
-  btAtOk = false;
-  Serial.println(F("BT  AT sem resposta (normal em modo dados). Pareie PIN 1234 e envie um char, ou w=PROBE"));
-  periphMark();
-  return false;
-}
-
-static void btSendProbe() {
-  btSendRaw("SA1-PROBE\r\n");
-  Serial.println(F("BT  TX SA1-PROBE  (deve aparecer no terminal SPP pareado)"));
-  periphMark();
-}
-
-static void pollBt() {
-  while (Serial1.available()) {
-    const char c = static_cast<char>(Serial1.read());
-    btRx++;
-    btLastRxMs = millis();
-    memmove(btLast, btLast + 1, sizeof(btLast) - 2);
-    btLast[sizeof(btLast) - 2] = (c >= 32 && c < 127) ? c : '.';
-    btLast[sizeof(btLast) - 1] = 0;
-    Serial.print(F("BT RX  "));
-    if (c >= 32 && c < 127) {
-      Serial.print('\'');
-      Serial.print(c);
-      Serial.print('\'');
-    } else {
-      Serial.print(F("0x"));
-      Serial.print(static_cast<uint8_t>(c), HEX);
-    }
-    Serial.print(F("  n="));
-    Serial.println(btRx);
-    periphMark();
-  }
-}
-
 static void oledDrawProbe() {
   if (!oledOk) {
     return;
@@ -356,18 +272,11 @@ static void oledDrawProbe() {
   }
 
   oled.setCursor(0, 16);
-  oled.print(F("BT"));
-  if (btAtOk) {
-    oled.print(F(" AT"));
-  } else if (btRx > 0 && millis() - btLastRxMs < 2000) {
-    oled.print(F(" RX"));
+  if (mcpAlive) {
+    oled.print(F("MCP ok"));
   } else {
-    oled.print(F(" --"));
+    oled.print(F("MCP --"));
   }
-  oled.print(F(" r"));
-  oled.print(btRx);
-  oled.print(F(" t"));
-  oled.print(btTx);
 
   oled.setCursor(0, 24);
   if (mcpAlive && lastKo != 255) {
@@ -379,9 +288,7 @@ static void oledDrawProbe() {
     oled.print(' ');
     oled.print(lastKeyName);
   } else if (mcpAlive) {
-    oled.print(F("MCP ok  aperte tecla"));
-  } else {
-    oled.print(F("MCP --"));
+    oled.print(F("aperte tecla"));
   }
 
   oled.display();
@@ -489,12 +396,12 @@ static void printSelfTest() {
   printEncLine("EC11-1 oitava GP18/19", enc1);
   printEncLine("EC11-2 volume GP21/22", enc2);
   printJoyBoot();
-  Serial.print(F("BT    Serial1 "));
-  Serial.print(BT_BAUD);
-  Serial.println(F("  Pico TX=GP8->RXD  Pico RX=GP9<-TXD  VCC=VBUS 5V"));
-  Serial.print(F("BT    AT="));
-  Serial.println(btAtOk ? F("OK") : F("ainda nao (comando a)"));
-  Serial.println(F("teste: gire E1/E2 | mexa stick | clique SW | a=AT | w=PROBE no BT"));
+  Serial.print(F("WS    DIN=GP"));
+  Serial.print(WS_PIN);
+  Serial.print(F("  n="));
+  Serial.print(WS_COUNT);
+  Serial.println(F("  VCC=VBUS 5V  (ligacao so, firmware ainda nao acende)"));
+  Serial.println(F("teste: gire E1/E2 | mexa stick | clique SW"));
   Serial.println(F("--- fim self-test ---"));
 }
 
@@ -512,14 +419,6 @@ static void printPeriphStatus() {
   Serial.print(joyCenterX);
   Serial.print('/');
   Serial.println(joyCenterY);
-  Serial.print(F("BT   rx="));
-  Serial.print(btRx);
-  Serial.print(F(" tx="));
-  Serial.print(btTx);
-  Serial.print(F(" AT="));
-  Serial.print(btAtOk ? F("ok") : F("nao"));
-  Serial.print(F(" last="));
-  Serial.println(btLast);
   Serial.print(F("OLED "));
   Serial.println(oledOk ? F("ok") : F("falhou"));
   Serial.println(F("---"));
@@ -528,17 +427,10 @@ static void printPeriphStatus() {
 
 static void setupPeripherals(bool mcpOk) {
   mcpAlive = mcpOk;
-  memset(btLast, 0, sizeof(btLast));
-  btLast[0] = '-';
 
   initEnc(enc1);
   initEnc(enc2);
   calibrateJoyProbe();
-
-  Serial1.setTX(BT_TX_PIN);
-  Serial1.setRX(BT_RX_PIN);
-  Serial1.begin(BT_BAUD);
-  delay(50);
 
   setupOledProbe();
   printSelfTest();
@@ -548,7 +440,6 @@ static void setupPeripherals(bool mcpOk) {
 static void pollPeripherals() {
   scanEncodersProbe();
   scanJoyProbe();
-  pollBt();
   oledTickProbe();
   if (uiStream && millis() - lastJsonMs >= 50) {
     lastJsonMs = millis();
