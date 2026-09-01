@@ -80,6 +80,28 @@
     .span {
       grid-column: 1 / -1;
     }
+    .casio-svg { width: 100%; height: auto; display: block; }
+    .casio-svg .pad, .casio-svg .key-w, .casio-svg .key-b {
+      fill: none;
+      stroke: var(--dim);
+      stroke-width: 1.4;
+    }
+    .casio-svg .key-b { fill: var(--bg); }
+    .casio-svg g.down .pad, .casio-svg g.down .key-w {
+      fill: var(--hold);
+      stroke: var(--hold);
+    }
+    .casio-svg g.down .key-b { fill: var(--amber); stroke: var(--amber); }
+    .casio-svg g.down .lbl { fill: #1a1408; }
+    .casio-svg .lbl {
+      fill: var(--dim);
+      font: 8px var(--sans);
+      text-anchor: middle;
+      pointer-events: none;
+    }
+    .casio-svg .grille { stroke: var(--line); stroke-width: 1.2; fill: none; }
+    .casio-svg .roll-frame { fill: #0e0d0b; stroke: var(--line); stroke-width: 1; }
+    .casio-svg .roll-note { fill: var(--hold); opacity: .85; }
     .log {
       grid-column: 1 / -1; min-height: 180px; max-height: 280px; overflow: auto;
       font: 12px var(--mono); background: #0e0d0b; border-radius: 8px; padding: 10px 12px;
@@ -122,6 +144,11 @@
         <div class="enc"><div class="n" id="e2">0</div><div class="lbl">EC11-2 volume · GP21/22</div></div>
       </div>
     </section>
+    <section class="card span">
+      <h2>SA-1</h2>
+      <svg class="casio-svg" id="casio" viewBox="0 0 900 292" role="img" aria-label="Casio SA-1"></svg>
+      <p class="hint">Contorno do painel. Tecla ou botão acende quando o hardware desce.</p>
+    </section>
     <section class="card">
       <h2>Matriz KO × KI</h2>
       <div class="matrix" id="matrix"></div>
@@ -161,6 +188,22 @@
       ["5","6","7","8","9","stop","-","-"],
       ["-","-","-","-","-","demo","demo","demo"],
     ];
+    // Mesmo mapa que firmware/pico/matrix.h — KO/KI → tecla ou botão do SA-1.
+    const MATRIX = [
+      [53, 54, 55, 56, 57, 58, 59, 60],
+      [81, 80, 79, 78, 77, 82, 83, 84],
+      [73, 72, 71, 70, 69, 74, 75, 76],
+      [65, 64, 63, 62, 61, 66, 67, 68],
+      [200, 201, 202, 203, 204, 255, 255, 255],
+      [205, 206, 207, 208, 209, 215, 255, 255],
+      [255, 255, 255, 255, 255, 216, 255, 255],
+    ];
+    const NS = "http://www.w3.org/2000/svg";
+    const ROLL_MS = 4000;
+    const keyGeom = [];
+    const rollHits = [];
+    let rollGroup = null;
+    let rollClip = { x: 88, y: 50, w: 798, h: 70 };
     const held = Array.from({ length: 7 }, () => Array(8).fill(false));
     const seen = Array.from({ length: 7 }, () => Array(8).fill(false));
     const $ = (id) => document.getElementById(id);
@@ -181,6 +224,165 @@
 
     function fmt(n) {
       return (n >= 0 ? "+" : "") + n;
+    }
+
+    function svgEl(name, attrs) {
+      const el = document.createElementNS(NS, name);
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      return el;
+    }
+
+    function cellToUi(ko, ki) {
+      const code = MATRIX[ko]?.[ki];
+      if (code == null || code === 255) return null;
+      if (code >= 53 && code <= 84) return "k" + (code - 53);
+      if (code >= 200 && code <= 209) return "t" + (code - 200);
+      if (code === 215) return "stop";
+      if (code === 216) return "demo";
+      return null;
+    }
+
+    function addPad(parent, id, x, y, w, h, label) {
+      const g = svgEl("g", { "data-ui": id });
+      g.appendChild(svgEl("rect", {
+        class: "pad", x, y, width: w, height: h, rx: 3,
+      }));
+      const t = svgEl("text", { class: "lbl", x: x + w / 2, y: y + h / 2 + 3 });
+      t.textContent = label;
+      g.appendChild(t);
+      parent.appendChild(g);
+    }
+
+    function buildCasio() {
+      const svg = $("casio");
+      svg.innerHTML = "";
+      const clip = svgEl("clipPath", { id: "rollClip" });
+      clip.appendChild(svgEl("rect", {
+        x: rollClip.x, y: rollClip.y, width: rollClip.w, height: rollClip.h,
+      }));
+      const defs = svgEl("defs", {});
+      defs.appendChild(clip);
+      svg.appendChild(defs);
+
+      const grille = svgEl("g", { class: "grille" });
+      for (let i = 0; i < 10; i++) {
+        grille.appendChild(svgEl("line", {
+          x1: 14, y1: 142 + i * 13, x2: 74, y2: 142 + i * 13,
+        }));
+      }
+      svg.appendChild(grille);
+
+      addPad(svg, "power", 20, 14, 40, 22, "PWR");
+      addPad(svg, "vol-dn", 72, 14, 24, 22, "▼");
+      addPad(svg, "vol-up", 100, 14, 24, 22, "▲");
+      addPad(svg, "demo", 140, 14, 40, 22, "DEMO");
+      addPad(svg, "tempo-dn", 196, 14, 24, 22, "▼");
+      addPad(svg, "tempo-up", 224, 14, 24, 22, "▲");
+      addPad(svg, "select", 256, 14, 34, 22, "SEL");
+      addPad(svg, "stop", 296, 14, 40, 22, "STOP");
+      for (let i = 0; i < 10; i++) {
+        addPad(svg, "t" + i, 356 + i * 30, 14, 26, 22, String(i));
+      }
+
+      svg.appendChild(svgEl("rect", {
+        class: "roll-frame",
+        x: rollClip.x, y: rollClip.y, width: rollClip.w, height: rollClip.h,
+      }));
+      rollGroup = svgEl("g", { "clip-path": "url(#rollClip)" });
+      svg.appendChild(rollGroup);
+
+      const keyY = 136;
+      const whiteH = 148;
+      const blackH = 86;
+      const originX = 88;
+      const whiteW = 42;
+      const blackW = 24;
+      const whites = [];
+      const blackAfter = [0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14, 15, 16];
+      for (let midi = 53; midi <= 84; midi++) {
+        const name = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"][midi % 12];
+        const black = name.includes("#");
+        if (!black) whites.push(midi);
+      }
+      whites.forEach((midi, i) => {
+        const idx = midi - 53;
+        const x = originX + i * whiteW;
+        keyGeom[idx] = { x, w: whiteW, black: false };
+        const g = svgEl("g", { "data-ui": "k" + idx });
+        g.appendChild(svgEl("rect", {
+          class: "key-w", x, y: keyY, width: whiteW - 1, height: whiteH, rx: 2,
+        }));
+        svg.appendChild(g);
+      });
+      blackAfter.forEach((whiteI) => {
+        const midi = whites[whiteI] + 1;
+        const idx = midi - 53;
+        const x = originX + (whiteI + 1) * whiteW - blackW / 2;
+        keyGeom[idx] = { x, w: blackW, black: true };
+        const g = svgEl("g", { "data-ui": "k" + idx });
+        g.appendChild(svgEl("rect", {
+          class: "key-b", x, y: keyY, width: blackW, height: blackH, rx: 1,
+        }));
+        svg.appendChild(g);
+      });
+    }
+
+    function heldUi() {
+      const on = new Set();
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (!held[r][c]) continue;
+          const id = cellToUi(r, c);
+          if (id) on.add(id);
+        }
+      }
+      return on;
+    }
+
+    function paintCasio() {
+      const on = heldUi();
+      document.querySelectorAll("#casio [data-ui]").forEach((el) => {
+        el.classList.toggle("down", on.has(el.getAttribute("data-ui")));
+      });
+      const now = performance.now();
+      const live = new Set(rollHits.filter((h) => h.end == null).map((h) => h.id));
+      for (const id of on) {
+        if (!id.startsWith("k") || live.has(id)) continue;
+        const idx = +id.slice(1);
+        const g = keyGeom[idx];
+        if (!g) continue;
+        rollHits.push({ id, idx, x: g.x, w: g.w, start: now, end: null });
+      }
+      for (const h of rollHits) {
+        if (h.end == null && !on.has(h.id)) h.end = now;
+      }
+    }
+
+    function tickRoll() {
+      if (!rollGroup) return;
+      const now = performance.now();
+      while (rollHits.length && now - (rollHits[0].end ?? now) > ROLL_MS) {
+        rollHits.shift();
+      }
+      rollGroup.replaceChildren();
+      const { x, y, w, h } = rollClip;
+      const bottom = y + h;
+      for (const n of rollHits) {
+        const t1 = n.end ?? now;
+        const yTop = bottom - ((now - n.start) / ROLL_MS) * h;
+        const yBot = bottom - ((now - t1) / ROLL_MS) * h;
+        const yy = Math.max(y, yTop);
+        const hh = Math.max(0, Math.min(bottom, yBot) - yy);
+        if (hh < 0.5) continue;
+        rollGroup.appendChild(svgEl("rect", {
+          class: "roll-note",
+          x: n.x + 1,
+          y: yy,
+          width: Math.max(2, n.w - 3),
+          height: hh,
+        }));
+      }
+      requestAnimationFrame(tickRoll);
     }
 
     function buildMatrix() {
@@ -215,6 +417,7 @@
           el.className = "cell" + (held[r][c] ? " down" : seen[r][c] ? " seen" : "");
         }
       }
+      paintCasio();
     }
 
     function drawJoy(s) {
@@ -401,8 +604,10 @@
     $("btnFlashProbe").onclick = () => flash("probe").catch((e) => log(e.message, "err"));
     $("btnFlashMidi").onclick = () => flash("pico").catch((e) => log(e.message, "err"));
 
+    buildCasio();
     buildMatrix();
     drawJoy(null);
+    requestAnimationFrame(tickRoll);
     listen();
     status().then(refreshPorts).catch((e) => log(e.message, "err"));
     setInterval(refreshPorts, 4000);
