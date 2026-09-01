@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Casio SA-1 Lab</title>
+  <style>
+    :root {
+      --bg: #12110f;
+      --panel: #1c1a17;
+      --line: #2e2b26;
+      --ink: #e8e0d3;
+      --dim: #9a917f;
+      --amber: #e2a54a;
+      --ok: #8bc46a;
+      --bad: #d36a5a;
+      --hold: #f3d27a;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, menlo, monospace;
+      --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); }
+    body { min-height: 100vh; }
+    header {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+      padding: 14px 18px; border-bottom: 1px solid var(--line); background: #161410;
+    }
+    header h1 { margin: 0 12px 0 0; font-size: 16px; font-weight: 600; letter-spacing: .04em; }
+    header h1 span { color: var(--amber); }
+    .grow { flex: 1; }
+    select, button, input {
+      font: 13px var(--sans); background: #2a261f; color: var(--ink);
+      border: 1px solid #3d382f; border-radius: 6px; padding: 7px 10px;
+    }
+    select { min-width: 220px; }
+    button { cursor: pointer; }
+    button:hover { border-color: var(--amber); }
+    button.primary { background: #3a2e18; border-color: #6a5224; color: var(--amber); }
+    button.ok { background: #1e2a1a; border-color: #3d5a32; color: var(--ok); }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #555; margin-right: 6px; }
+    .dot.on { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+    .dot.warn { background: var(--amber); }
+    .dot.off { background: var(--bad); }
+    main {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px; padding: 12px; max-width: 1280px; margin: 0 auto;
+    }
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    }
+    .card h2 {
+      margin: 0 0 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim);
+    }
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      font: 12px var(--mono); padding: 6px 10px; border-radius: 999px; background: #141210; border: 1px solid var(--line);
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .enc { font-family: var(--mono); }
+    .enc .n { font-size: 36px; font-weight: 600; color: var(--amber); line-height: 1; }
+    .enc .lbl { color: var(--dim); font-size: 12px; margin-top: 4px; }
+    .joy-wrap { display: flex; gap: 14px; align-items: center; }
+    canvas { background: #0e0d0b; border-radius: 8px; border: 1px solid var(--line); }
+    .joy-meta { font: 12px var(--mono); color: var(--dim); line-height: 1.6; }
+    .matrix {
+      display: grid; grid-template-columns: 36px repeat(8, 1fr); gap: 4px; font: 10px var(--mono);
+    }
+    .matrix .h, .matrix .r { color: var(--dim); text-align: center; padding-top: 6px; }
+    .cell {
+      height: 28px; border-radius: 4px; background: #141210; border: 1px solid #2a2722;
+      display: flex; align-items: center; justify-content: center; color: #5c564a;
+    }
+    .cell.seen { background: #1c2618; color: #8aa67a; border-color: #2c3a26; }
+    .cell.down { background: var(--hold); color: #1a1408; border-color: #d4b56a; font-weight: 700; }
+    .cell.stuck { background: #3a1e1a; color: #e09a90; border-color: #5a2e28; }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .log {
+      grid-column: 1 / -1; min-height: 180px; max-height: 280px; overflow: auto;
+      font: 12px var(--mono); background: #0e0d0b; border-radius: 8px; padding: 10px 12px;
+      white-space: pre-wrap; line-height: 1.45; color: #cfc6b6;
+    }
+    .log .err { color: var(--bad); }
+    .log .ok { color: var(--ok); }
+    .hint { color: var(--dim); font-size: 12px; margin-top: 8px; }
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+      .log { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Casio SA-1 <span>Lab</span></h1>
+    <span id="link"><span class="dot" id="linkDot"></span><span id="linkTxt">desconectado</span></span>
+    <div class="grow"></div>
+    <select id="port"></select>
+    <button id="btnPorts">Atualizar</button>
+    <button class="primary" id="btnConnect">Conectar</button>
+    <button id="btnFlashProbe">Gravar sonda</button>
+    <button id="btnFlashMidi">Gravar MIDI</button>
+  </header>
+  <main>
+    <section class="card">
+      <h2>Estado</h2>
+      <div class="pills">
+        <span class="pill" id="pMcp">MCP —</span>
+        <span class="pill" id="pOled">OLED —</span>
+        <span class="pill" id="pBt">BT —</span>
+        <span class="pill" id="pCli">CLI —</span>
+      </div>
+      <p class="hint">Grave a sonda uma vez. Depois teste tudo daqui: teclas, encoders, stick, tela e Bluetooth.</p>
+    </section>
+    <section class="card">
+      <h2>EC11</h2>
+      <div class="row">
+        <div class="enc"><div class="n" id="e1">0</div><div class="lbl">EC11-1 oitava · GP18/19</div></div>
+        <div class="enc"><div class="n" id="e2">0</div><div class="lbl">EC11-2 volume · GP21/22</div></div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Matriz KO × KI</h2>
+      <div class="matrix" id="matrix"></div>
+    </section>
+    <section class="card">
+      <h2>Joystick KY-023</h2>
+      <div class="joy-wrap">
+        <canvas id="joy" width="160" height="160"></canvas>
+        <div class="joy-meta" id="joyMeta">X —<br>Y —<br>SW solto</div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Comandos</h2>
+      <div class="btns">
+        <button data-c="p">Periféricos</button>
+        <button data-c="h">Ajuda</button>
+        <button data-c="l">Aprender</button>
+        <button data-c="n">Saltar</button>
+        <button data-c="b">Voltar</button>
+        <button data-c="f">Finalizar</button>
+        <button data-c="z">Reiniciar</button>
+        <button data-c="c">Limpar visto</button>
+        <button data-c="m">Resumo</button>
+        <button data-c="g">GPA cru</button>
+      </div>
+      <p class="hint" id="learnHint"></p>
+    </section>
+    <section class="card">
+      <h2>Bluetooth HC-05</h2>
+      <div class="btns">
+        <button class="ok" data-c="a">AT</button>
+        <button class="primary" data-c="w">PROBE</button>
+      </div>
+      <p class="hint">Pareie PIN 1234. AT responde se o módulo estiver em modo comando. PROBE deve aparecer no terminal SPP.</p>
+      <div class="joy-meta" id="btMeta">rx 0 · tx 0</div>
+    </section>
+    <pre class="log card" id="log"></pre>
+  </main>
+  <script>
+    const names = [
+      ["F3","F#3","G3","G#3","A3","A#3","B3","C4"],
+      ["C#4","D4","D#4","E4","F4","F#4","G4","G#4"],
+      ["A4","A#4","B4","C5","C#5","D5","D#5","E5"],
+      ["F5","F#5","G5","G#5","A5","A#5","B5","C6"],
+      ["0","1","2","3","4","-","-","-"],
+      ["5","6","7","8","9","stop","-","-"],
+      ["-","-","-","-","-","demo","demo","demo"],
+    ];
+    const held = Array.from({ length: 7 }, () => Array(8).fill(false));
+    const seen = Array.from({ length: 7 }, () => Array(8).fill(false));
+    const $ = (id) => document.getElementById(id);
+    const logEl = $("log");
+    const portEl = $("port");
+    let connected = false;
+    let lastState = null;
+    let busy = false;
+
+    function log(text, cls) {
+      const line = document.createElement("div");
+      if (cls) line.className = cls;
+      line.textContent = text;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+      while (logEl.childNodes.length > 2000) logEl.removeChild(logEl.firstChild);
+    }
+
+    function fmt(n) {
+      return (n >= 0 ? "+" : "") + n;
+    }
+
+    function buildMatrix() {
+      const root = $("matrix");
+      root.innerHTML = "";
+      root.appendChild(document.createElement("div"));
+      for (let c = 0; c < 8; c++) {
+        const h = document.createElement("div");
+        h.className = "h";
+        h.textContent = "KI" + c;
+        root.appendChild(h);
+      }
+      for (let r = 0; r < 7; r++) {
+        const lab = document.createElement("div");
+        lab.className = "r";
+        lab.textContent = "KO" + r;
+        root.appendChild(lab);
+        for (let c = 0; c < 8; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.id = "c" + r + c;
+          cell.textContent = names[r][c];
+          root.appendChild(cell);
+        }
+      }
+    }
+
+    function paintMatrix() {
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 8; c++) {
+          const el = $("c" + r + c);
+          el.className = "cell" + (held[r][c] ? " down" : seen[r][c] ? " seen" : "");
+        }
+      }
+    }
+
+    function drawJoy(s) {
+      const cv = $("joy");
+      const ctx = cv.getContext("2d");
+      const w = cv.width, h = cv.height, cx = w / 2, cy = h / 2;
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = "#3a362e";
+      ctx.beginPath(); ctx.moveTo(cx, 12); ctx.lineTo(cx, h - 12); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(12, cy); ctx.lineTo(w - 12, cy); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, 58, 0, Math.PI * 2); ctx.stroke();
+      if (!s) return;
+      const nx = Math.max(-1, Math.min(1, (s.x - s.cx) / 1800));
+      const ny = Math.max(-1, Math.min(1, (s.y - s.cy) / 1800));
+      const x = cx + nx * 52;
+      const y = cy + ny * 52;
+      ctx.fillStyle = s.sw ? "#e2a54a" : "#8bc46a";
+      ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fill();
+      $("joyMeta").innerHTML =
+        "X " + s.x + "  centro " + s.cx + "<br>Y " + s.y + "  centro " + s.cy +
+        "<br>SW " + (s.sw ? "clique / sustain" : "solto");
+    }
+
+    function applyState(s) {
+      lastState = s;
+      $("e1").textContent = fmt(s.e1);
+      $("e2").textContent = fmt(s.e2);
+      $("pMcp").textContent = s.mcp ? "MCP ok" : "MCP falhou";
+      $("pOled").textContent = s.oled ? ("OLED 0x" + Number(s.oa).toString(16)) : "OLED ausente";
+      $("pBt").textContent = s.bat ? "BT AT ok" : (s.brx > 0 ? "BT RX " + s.brx : "BT UART");
+      $("btMeta").textContent = "rx " + s.brx + " · tx " + s.btx + (s.n && s.n !== "-" ? " · tecla " + s.n : "");
+      drawJoy(s);
+      if (s.ko >= 0 && s.ki >= 0 && s.dn) {
+        held[s.ko][s.ki] = true;
+        seen[s.ko][s.ki] = true;
+        paintMatrix();
+      }
+    }
+
+    function applyKey(k) {
+      if (k.ko >= 0 && k.ki >= 0) {
+        held[k.ko][k.ki] = !!k.dn;
+        if (k.dn) seen[k.ko][k.ki] = true;
+        paintMatrix();
+      }
+    }
+
+    function parseLine(text) {
+      let m = text.match(/^(DOWN|UP)\s+KO(\d+)\s+KI(\d+)/);
+      if (m) {
+        applyKey({ ko: +m[2], ki: +m[3], dn: m[1] === "DOWN" ? 1 : 0 });
+        return;
+      }
+      m = text.match(/^EC11-([12]).*count=(-?\d+)/);
+      if (m) {
+        $(m[1] === "1" ? "e1" : "e2").textContent = fmt(+m[2]);
+        return;
+      }
+      m = text.match(/^JOY\s+X=(\d+)\s+Y=(\d+)\s+SW=(\d+)/);
+      if (m) {
+        drawJoy({
+          x: +m[1], y: +m[2], sw: +m[3],
+          cx: lastState?.cx ?? 2048, cy: lastState?.cy ?? 2048,
+        });
+        $("joyMeta").innerHTML =
+          "X " + m[1] + "<br>Y " + m[2] + "<br>SW " + (m[3] === "1" ? "clique / sustain" : "solto");
+        return;
+      }
+      if (/MCP OK/.test(text)) $("pMcp").textContent = "MCP ok";
+      if (/MCP NAO/.test(text)) $("pMcp").textContent = "MCP falhou";
+      if (/OLED OK/.test(text)) $("pOled").textContent = "OLED ok";
+      if (/OLED ausente/.test(text)) $("pOled").textContent = "OLED ausente";
+      m = text.match(/^BT RX.*n=(\d+)/);
+      if (m) $("btMeta").textContent = "rx " + m[1];
+    }
+
+    async function api(path, opts) {
+      const res = await fetch(path, opts);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      return data;
+    }
+
+    async function refreshPorts() {
+      const data = await api("/api/ports");
+      const cur = portEl.value;
+      portEl.innerHTML = "";
+      if (!data.ports.length) {
+        const o = document.createElement("option");
+        o.textContent = "nenhuma porta";
+        o.value = "";
+        portEl.appendChild(o);
+      } else {
+        for (const p of data.ports) {
+          const o = document.createElement("option");
+          o.value = p.device;
+          o.textContent = p.device + (p.desc ? " · " + p.desc : "");
+          portEl.appendChild(o);
+        }
+        const prefer = data.port || data.ports.find((p) => p.usb)?.device || data.ports[0].device;
+        portEl.value = data.ports.some((p) => p.device === cur) ? cur : prefer;
+      }
+      if (!busy) {
+        setLink(data.connected, data.port);
+      }
+    }
+
+    function setLink(on, port) {
+      connected = on;
+      $("linkDot").className = "dot " + (on ? "on" : "off");
+      $("linkTxt").textContent = on ? ("ligado " + port) : "desconectado";
+      $("btnConnect").textContent = on ? "Desconectar" : "Conectar";
+    }
+
+    async function toggleConnect() {
+      if (busy) return;
+      busy = true;
+      $("btnConnect").disabled = true;
+      try {
+        if (connected) {
+          log("fechando Serial…");
+          await api("/api/disconnect", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+          setLink(false, "");
+          return;
+        }
+        const port = portEl.value;
+        if (!port) throw new Error("escolha uma porta");
+        log("conectando " + port + "…");
+        const data = await api("/api/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ port }),
+        });
+        setLink(true, data.port || port);
+        log("conectado " + (data.port || port), "ok");
+      } finally {
+        busy = false;
+        $("btnConnect").disabled = false;
+        if (connected) $("btnConnect").textContent = "Desconectar";
+      }
+    }
+
+    async function cmd(c) {
+      await api("/api/cmd", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ c }),
+      });
+    }
+
+    async function flash(fw) {
+      log("gravando " + fw + "…", "ok");
+      await api("/api/flash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fw }),
+      });
+    }
+
+    function listen() {
+      const es = new EventSource("/api/events");
+      es.onmessage = (ev) => {
+        const msg = JSON.parse(ev.data);
+        if (msg.type === "line") {
+          if (/Bad file descriptor|device not configured/i.test(msg.text)) return;
+          parseLine(msg.text);
+          log(msg.text);
+        }
+        else if (msg.type === "log") log(msg.text, msg.text.startsWith("falhou") ? "err" : "ok");
+        else if (msg.type === "state") applyState(msg);
+        else if (msg.type === "key") applyKey(msg);
+        else if (msg.type === "status") setLink(msg.connected, msg.port);
+      };
+      es.onerror = () => {};
+    }
+
+    async function status() {
+      const s = await api("/api/status");
+      $("pCli").textContent = s.cli ? "arduino-cli ok" : "sem arduino-cli";
+      setLink(s.connected, s.port);
+    }
+
+    document.querySelectorAll("button[data-c]").forEach((b) => {
+      b.addEventListener("click", () => cmd(b.dataset.c).catch((e) => log(e.message, "err")));
+    });
+    $("btnPorts").onclick = () => refreshPorts().catch((e) => log(e.message, "err"));
+    $("btnConnect").onclick = () => toggleConnect().catch((e) => log(e.message, "err"));
+    $("btnFlashProbe").onclick = () => flash("probe").catch((e) => log(e.message, "err"));
+    $("btnFlashMidi").onclick = () => flash("pico").catch((e) => log(e.message, "err"));
+
+    buildMatrix();
+    drawJoy(null);
+    listen();
+    status().then(refreshPorts).catch((e) => log(e.message, "err"));
+    setInterval(refreshPorts, 4000);
+  </script>
+</body>
+</html>
