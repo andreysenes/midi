@@ -76,6 +76,28 @@
     .cell.seen { background: #1c2618; color: #8aa67a; border-color: #2c3a26; }
     .cell.down { background: var(--hold); color: #1a1408; border-color: #d4b56a; font-weight: 700; }
     .cell.stuck { background: #3a1e1a; color: #e09a90; border-color: #5a2e28; }
+    .oled-wrap {
+      display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap;
+    }
+    .oled-canvas {
+      background: #000; border: 1px solid var(--line); border-radius: 6px;
+      image-rendering: pixelated; width: 256px; height: 64px;
+    }
+    .oled-meta { font: 12px var(--mono); color: var(--dim); line-height: 1.6; }
+    .ws-bar {
+      display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    }
+    .ws-led {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid #3d382f; background: #141210;
+      box-shadow: inset 0 0 8px rgba(0,0,0,.6);
+    }
+    .ws-led.on { border-color: #6a5224; }
+    .onboard-led {
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+      background: #333; margin-right: 6px; vertical-align: middle;
+    }
+    .onboard-led.on { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
     .btns { display: flex; flex-wrap: wrap; gap: 6px; }
     .span {
       grid-column: 1 / -1;
@@ -133,6 +155,8 @@
       <div class="pills">
         <span class="pill" id="pMcp">MCP —</span>
         <span class="pill" id="pOled">OLED —</span>
+        <span class="pill" id="pLed"><span class="onboard-led" id="ledDot"></span><span id="ledTxt">GP25 —</span></span>
+        <span class="pill" id="pWs">WS2812 —</span>
         <span class="pill" id="pCli">CLI —</span>
       </div>
       <p class="hint">Grave a sonda uma vez. Depois teste tudo daqui: teclas, encoders, stick e tela.</p>
@@ -152,6 +176,19 @@
     <section class="card">
       <h2>Matriz KO × KI</h2>
       <div class="matrix" id="matrix"></div>
+      <p class="hint" id="matrixHint">Leitura ao vivo via MCP. Células amarelas = pressionadas agora.</p>
+    </section>
+    <section class="card">
+      <h2>OLED 0.91" (espelho)</h2>
+      <div class="oled-wrap">
+        <canvas id="oled" class="oled-canvas" width="128" height="32"></canvas>
+        <div class="oled-meta" id="oledMeta">Aguardando estado…</div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Barra WS2812 ×8</h2>
+      <div class="ws-bar" id="wsBar"></div>
+      <p class="hint">GP16 · VBUS 5 V. Comando <code>w</code> cicla teste no hardware.</p>
     </section>
     <section class="card">
       <h2>Joystick KY-023</h2>
@@ -172,6 +209,8 @@
         <button data-c="z">Reiniciar</button>
         <button data-c="c">Limpar visto</button>
         <button data-c="m">Resumo</button>
+        <button data-c="w">LED teste</button>
+        <button data-c="0">LED off</button>
         <button data-c="g">GPA cru</button>
       </div>
       <p class="hint" id="learnHint"></p>
@@ -206,6 +245,7 @@
     let rollClip = { x: 88, y: 50, w: 798, h: 70 };
     const held = Array.from({ length: 7 }, () => Array(8).fill(false));
     const seen = Array.from({ length: 7 }, () => Array(8).fill(false));
+    const stuck = Array.from({ length: 7 }, () => Array(8).fill(false));
     const $ = (id) => document.getElementById(id);
     const logEl = $("log");
     const portEl = $("port");
@@ -385,6 +425,99 @@
       requestAnimationFrame(tickRoll);
     }
 
+    function buildWsBar() {
+      const root = $("wsBar");
+      root.innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        const el = document.createElement("div");
+        el.className = "ws-led";
+        el.id = "ws" + i;
+        el.title = "LED " + (i + 1);
+        root.appendChild(el);
+      }
+    }
+
+    function paintWs(ws) {
+      if (!Array.isArray(ws)) return;
+      for (let i = 0; i < 8; i++) {
+        const el = $("ws" + i);
+        if (!el) continue;
+        const rgb = ws[i] || [0, 0, 0];
+        const [r, g, b] = rgb;
+        const on = r > 0 || g > 0 || b > 0;
+        el.className = "ws-led" + (on ? " on" : "");
+        el.style.background = on ? `rgb(${r},${g},${b})` : "#141210";
+      }
+    }
+
+    function applyMatrixMasks(hb, sb) {
+      if (Array.isArray(hb)) {
+        for (let r = 0; r < 7; r++) {
+          const mask = hb[r] || 0;
+          for (let c = 0; c < 8; c++) {
+            held[r][c] = !!(mask & (1 << c));
+            if (held[r][c]) seen[r][c] = true;
+          }
+        }
+      }
+      if (Array.isArray(sb)) {
+        for (let r = 0; r < 7; r++) {
+          const mask = sb[r] || 0;
+          for (let c = 0; c < 8; c++) {
+            stuck[r][c] = !!(mask & (1 << c));
+            if (stuck[r][c]) seen[r][c] = true;
+          }
+        }
+      }
+      paintMatrix();
+    }
+
+    function drawOledMirror(s) {
+      const cv = $("oled");
+      const ctx = cv.getContext("2d");
+      const w = cv.width;
+      const h = cv.height;
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "#e8e0d3";
+      ctx.font = "8px monospace";
+
+      const e1 = fmt(s?.e1 ?? 0);
+      const e2 = fmt(s?.e2 ?? 0);
+      ctx.fillText("E1" + e1, 0, 8);
+      ctx.fillText("E2" + e2, 64, 8);
+
+      const x = s?.x ?? 0;
+      const y = s?.y ?? 0;
+      ctx.fillText("X" + x, 0, 16);
+      ctx.fillText("Y" + y, 52, 16);
+      if (s?.sw) {
+        ctx.fillStyle = "#e8e0d3";
+        ctx.fillRect(110, 8, 18, 8);
+        ctx.fillStyle = "#000";
+        ctx.fillText("S", 114, 16);
+        ctx.fillStyle = "#e8e0d3";
+      }
+
+      ctx.fillText(s?.mcp ? "MCP ok" : "MCP --", 0, 24);
+
+      const ko = s?.ko ?? -1;
+      const ki = s?.ki ?? -1;
+      const name = s?.n || "-";
+      if (s?.mcp && ko >= 0 && ki >= 0) {
+        const line = (s.dn ? "DN " : "UP ") + "KO" + ko + " KI" + ki + " " + name;
+        ctx.fillText(line.slice(0, 21), 0, 32);
+      } else if (s?.mcp) {
+        ctx.fillText("aperte tecla", 0, 32);
+      }
+
+      const meta = [];
+      if (s?.oled) meta.push("OLED 0x" + Number(s.oa || 0).toString(16));
+      else meta.push("OLED ausente");
+      if (s?.wsm != null) meta.push("WS modo " + s.wsm);
+      $("oledMeta").textContent = meta.join(" · ");
+    }
+
     function buildMatrix() {
       const root = $("matrix");
       root.innerHTML = "";
@@ -414,7 +547,11 @@
       for (let r = 0; r < 7; r++) {
         for (let c = 0; c < 8; c++) {
           const el = $("c" + r + c);
-          el.className = "cell" + (held[r][c] ? " down" : seen[r][c] ? " seen" : "");
+          let cls = "cell";
+          if (held[r][c]) cls += " down";
+          else if (stuck[r][c]) cls += " stuck";
+          else if (seen[r][c]) cls += " seen";
+          el.className = cls;
         }
       }
       paintCasio();
@@ -447,10 +584,17 @@
       $("e2").textContent = fmt(s.e2);
       $("pMcp").textContent = s.mcp ? "MCP ok" : "MCP falhou";
       $("pOled").textContent = s.oled ? ("OLED 0x" + Number(s.oa).toString(16)) : "OLED ausente";
+      $("pWs").textContent = "WS2812 modo " + (s.wsm ?? 0);
+      $("ledDot").className = "onboard-led" + (s.led ? " on" : "");
+      $("ledTxt").textContent = s.led ? "GP25 aceso" : "GP25 apagado";
       drawJoy(s);
-      if (s.ko >= 0 && s.ki >= 0 && s.dn) {
-        held[s.ko][s.ki] = true;
-        seen[s.ko][s.ki] = true;
+      drawOledMirror(s);
+      paintWs(s.ws);
+      if (Array.isArray(s.hb)) {
+        applyMatrixMasks(s.hb, s.sb);
+      } else if (s.ko >= 0 && s.ki >= 0) {
+        held[s.ko][s.ki] = !!s.dn;
+        if (s.dn) seen[s.ko][s.ki] = true;
         paintMatrix();
       }
     }
@@ -606,7 +750,9 @@
 
     buildCasio();
     buildMatrix();
+    buildWsBar();
     drawJoy(null);
+    drawOledMirror(null);
     requestAnimationFrame(tickRoll);
     listen();
     status().then(refreshPorts).catch((e) => log(e.message, "err"));

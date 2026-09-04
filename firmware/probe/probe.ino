@@ -248,6 +248,7 @@ static void printHelp() {
   Serial.println(F("h ajuda | l aprender | f finalizar | z reiniciar | b voltar | n saltar | r sair"));
   Serial.println(F("g GPA | t jumper | m resumo | M mapa | c limpar visto"));
   Serial.println(F("p perifericos | u UI json | U para"));
+  Serial.println(F("w ciclar WS2812 | 0 apagar WS2812"));
   Serial.println(F("DOWN = KO/KI cru. Gire EC11-1/2, mexa o stick, clique SW."));
 }
 
@@ -532,6 +533,9 @@ static void handleSerial() {
     if (c == '\r' || c == '\n' || c == ' ') {
       continue;
     }
+    if (periphHandleChar(c)) {
+      break;
+    }
     switch (c) {
     case 'h':
     case 'H':
@@ -672,6 +676,7 @@ void setup() {
 
   digitalWrite(LED_PIN, HIGH);
   setupPeripherals(mcpOk);
+  periphBindMatrix(held, stuck);
   if (mcpOk) {
     markStuck();
   }

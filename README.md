@@ -117,6 +117,8 @@ Arduino IDE não é necessário no dia a dia. O **Lab** no browser conecta no Se
 
 Abre `http://127.0.0.1:8741`. Escolha a porta `usbmodem` do Pico → **Conectar**.
 
+O Lab mostra ao vivo: matriz KO×KI, espelho do OLED, barra WS2812, encoders, joystick e LED onboard (GP25).
+
 | Botão | O que faz |
 | --- | --- |
 | **Gravar sonda** | Compila e envia `firmware/probe` (banco de testes) |

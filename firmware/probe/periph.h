@@ -12,8 +12,17 @@ static const uint8_t ENC2_B = 22;
 static const uint8_t JOY_X_PIN = 26;
 static const uint8_t JOY_Y_PIN = 27;
 static const uint8_t JOY_SW_PIN = 20;
-static const uint8_t WS_PIN = 16; // WS2812 DIN — pinagem só; ainda sem uso
+static const uint8_t WS_PIN = 16;
 static const uint8_t WS_COUNT = 8;
+
+static uint8_t wsRgb[WS_COUNT][3];
+static uint8_t wsMode = 0;
+static uint8_t wsChase = 0;
+static uint32_t lastWsMs = 0;
+static bool wsReady = false;
+
+static bool (*gHeld)[8] = nullptr;
+static bool (*gStuck)[8] = nullptr;
 
 static Adafruit_SSD1306 oled(128, 32, &Wire, -1, 400000UL, 400000UL);
 static bool oledOk = false;
@@ -51,6 +60,138 @@ static uint32_t lastJsonMs = 0;
 
 static void periphMark() {
   oledDirty = true;
+}
+
+static void periphBindMatrix(bool held[7][8], bool stuck[7][8]) {
+  gHeld = held;
+  gStuck = stuck;
+}
+
+static void ws2812Bit(uint8_t bit) {
+  if (bit) {
+    digitalWrite(WS_PIN, HIGH);
+    delayMicroseconds(1);
+    digitalWrite(WS_PIN, LOW);
+    delayMicroseconds(0);
+  } else {
+    digitalWrite(WS_PIN, HIGH);
+    delayMicroseconds(0);
+    digitalWrite(WS_PIN, LOW);
+    delayMicroseconds(1);
+  }
+}
+
+static void ws2812Byte(uint8_t value) {
+  for (int8_t i = 7; i >= 0; i--) {
+    ws2812Bit((value >> i) & 1);
+  }
+}
+
+static void wsShow() {
+  if (!wsReady) {
+    return;
+  }
+  noInterrupts();
+  for (uint8_t i = 0; i < WS_COUNT; i++) {
+    ws2812Byte(wsRgb[i][1]);
+    ws2812Byte(wsRgb[i][0]);
+    ws2812Byte(wsRgb[i][2]);
+  }
+  interrupts();
+  delayMicroseconds(60);
+}
+
+static void wsFill(uint8_t r, uint8_t g, uint8_t b) {
+  for (uint8_t i = 0; i < WS_COUNT; i++) {
+    wsRgb[i][0] = r;
+    wsRgb[i][1] = g;
+    wsRgb[i][2] = b;
+  }
+  wsShow();
+}
+
+static void wsOff() {
+  wsFill(0, 0, 0);
+}
+
+static void wsApplyMode() {
+  switch (wsMode) {
+  case 0:
+    wsOff();
+    break;
+  case 1:
+    wsFill(24, 24, 24);
+    break;
+  case 2:
+    wsFill(48, 0, 0);
+    break;
+  case 3:
+    wsFill(0, 48, 0);
+    break;
+  case 4:
+    wsFill(0, 0, 48);
+    break;
+  case 5:
+    for (uint8_t i = 0; i < WS_COUNT; i++) {
+      wsRgb[i][0] = 0;
+      wsRgb[i][1] = 0;
+      wsRgb[i][2] = 0;
+    }
+    wsRgb[wsChase % WS_COUNT][2] = 64;
+    wsShow();
+    break;
+  default:
+    wsMode = 0;
+    wsOff();
+    break;
+  }
+}
+
+static void wsCycleMode() {
+  wsMode = static_cast<uint8_t>((wsMode + 1) % 6);
+  wsChase = 0;
+  wsApplyMode();
+  Serial.print(F("WS2812 modo "));
+  Serial.print(wsMode);
+  Serial.println(F("  (w=proximo  w0=apagar)"));
+}
+
+static void wsTick() {
+  if (!wsReady || wsMode != 5) {
+    return;
+  }
+  const uint32_t now = millis();
+  if (now - lastWsMs < 120) {
+    return;
+  }
+  lastWsMs = now;
+  wsChase = static_cast<uint8_t>((wsChase + 1) % WS_COUNT);
+  wsApplyMode();
+}
+
+static bool setupWsProbe() {
+  pinMode(WS_PIN, OUTPUT);
+  digitalWrite(WS_PIN, LOW);
+  wsReady = true;
+  wsMode = 0;
+  wsOff();
+  return true;
+}
+
+static bool periphHandleChar(char c) {
+  if (c == 'w') {
+    wsCycleMode();
+    periphMark();
+    return true;
+  }
+  if (c == '0') {
+    wsMode = 0;
+    wsOff();
+    Serial.println(F("WS2812 apagado"));
+    periphMark();
+    return true;
+  }
+  return false;
 }
 
 static void periphNoteMatrix(uint8_t ko, uint8_t ki, bool down, const char *name) {
@@ -101,7 +242,54 @@ static void emitJsonState() {
   Serial.print(lastKeyDown ? 1 : 0);
   Serial.print(F(",\"n\":\""));
   Serial.print(lastKeyName);
-  Serial.println(F("\"}"));
+  Serial.print(F("\",\"hb\":["));
+  for (uint8_t row = 0; row < 7; row++) {
+    uint8_t mask = 0;
+    if (gHeld != nullptr) {
+      for (uint8_t col = 0; col < 8; col++) {
+        if ((*gHeld)[row][col]) {
+          mask |= static_cast<uint8_t>(1 << col);
+        }
+      }
+    }
+    Serial.print(mask);
+    if (row + 1 < 7) {
+      Serial.print(',');
+    }
+  }
+  Serial.print(F("],\"sb\":["));
+  for (uint8_t row = 0; row < 7; row++) {
+    uint8_t mask = 0;
+    if (gStuck != nullptr) {
+      for (uint8_t col = 0; col < 8; col++) {
+        if ((*gStuck)[row][col]) {
+          mask |= static_cast<uint8_t>(1 << col);
+        }
+      }
+    }
+    Serial.print(mask);
+    if (row + 1 < 7) {
+      Serial.print(',');
+    }
+  }
+  Serial.print(F("],\"wsm\":"));
+  Serial.print(wsMode);
+  Serial.print(F(",\"ws\":["));
+  for (uint8_t i = 0; i < WS_COUNT; i++) {
+    Serial.print('[');
+    Serial.print(wsRgb[i][0]);
+    Serial.print(',');
+    Serial.print(wsRgb[i][1]);
+    Serial.print(',');
+    Serial.print(wsRgb[i][2]);
+    Serial.print(']');
+    if (i + 1 < WS_COUNT) {
+      Serial.print(',');
+    }
+  }
+  Serial.print(F("],\"led\":"));
+  Serial.print(digitalRead(25) == HIGH ? 1 : 0);
+  Serial.println(F("}"));
 }
 
 static void periphSetUi(bool on) {
@@ -400,8 +588,8 @@ static void printSelfTest() {
   Serial.print(WS_PIN);
   Serial.print(F("  n="));
   Serial.print(WS_COUNT);
-  Serial.println(F("  VCC=VBUS 5V  (ligacao so, firmware ainda nao acende)"));
-  Serial.println(F("teste: gire E1/E2 | mexa stick | clique SW"));
+  Serial.println(F("  VCC=VBUS 5V  (w=ciclar teste  w0=apagar)"));
+  Serial.println(F("teste: gire E1/E2 | mexa stick | clique SW | w=LED"));
   Serial.println(F("--- fim self-test ---"));
 }
 
@@ -421,6 +609,10 @@ static void printPeriphStatus() {
   Serial.println(joyCenterY);
   Serial.print(F("OLED "));
   Serial.println(oledOk ? F("ok") : F("falhou"));
+  Serial.print(F("WS2812 "));
+  Serial.print(wsReady ? F("ok") : F("falhou"));
+  Serial.print(F("  modo "));
+  Serial.println(wsMode);
   Serial.println(F("---"));
   periphMark();
 }
@@ -433,6 +625,7 @@ static void setupPeripherals(bool mcpOk) {
   calibrateJoyProbe();
 
   setupOledProbe();
+  setupWsProbe();
   printSelfTest();
   periphMark();
 }
@@ -440,6 +633,7 @@ static void setupPeripherals(bool mcpOk) {
 static void pollPeripherals() {
   scanEncodersProbe();
   scanJoyProbe();
+  wsTick();
   oledTickProbe();
   if (uiStream && millis() - lastJsonMs >= 50) {
     lastJsonMs = millis();
