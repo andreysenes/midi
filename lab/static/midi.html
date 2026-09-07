@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Casio SA-1 MIDI</title>
+  <style>
+    :root {
+      --bg: #12110f; --panel: #1c1a17; --line: #2e2b26; --ink: #e8e0d3;
+      --dim: #9a917f; --amber: #e2a54a; --ok: #8bc46a; --bad: #d36a5a;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, menlo, monospace;
+      --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); }
+    header {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      padding: 12px 16px; border-bottom: 1px solid var(--line); background: #161410;
+    }
+    header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+    header h1 span { color: var(--amber); }
+    header nav a { color: var(--dim); text-decoration: none; font-size: 13px; margin-right: 12px; }
+    header nav a.on { color: var(--amber); }
+    .grow { flex: 1; }
+    select, button, input, label { font: 13px var(--sans); }
+    select, button, input[type="number"] {
+      background: #2a261f; color: var(--ink); border: 1px solid #3d382f;
+      border-radius: 6px; padding: 7px 10px;
+    }
+    button { cursor: pointer; }
+    button:hover { border-color: var(--amber); }
+    button.primary { background: #3a2e18; border-color: #6a5224; color: var(--amber); }
+    button.on { border-color: var(--amber); color: var(--amber); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #555; margin-right: 6px; }
+    .dot.on { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+    main { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; gap: 12px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      font: 12px var(--mono); padding: 6px 10px; border-radius: 999px;
+      background: #141210; border: 1px solid var(--line);
+    }
+    .enc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .enc .n { font: 600 36px var(--mono); color: var(--amber); line-height: 1; }
+    .enc .lbl { color: var(--dim); font-size: 12px; margin-top: 4px; }
+    .live-split { display: grid; grid-template-columns: 1fr 220px; gap: 16px; align-items: start; }
+    .joy-pad { position: relative; width: 160px; height: 160px; margin: 16px 32px 16px 36px; }
+    .joy-dir { position: absolute; font: 10px var(--mono); color: var(--dim); }
+    .joy-dir.n { top: -14px; left: 0; right: 0; text-align: center; }
+    .joy-dir.s { bottom: -14px; left: 0; right: 0; text-align: center; }
+    .joy-dir.w { left: -28px; top: 74px; }
+    .joy-dir.e { right: -24px; top: 74px; }
+    .joy-meta { font: 12px var(--mono); color: var(--dim); line-height: 1.6; }
+    canvas { background: #0e0d0b; border-radius: 8px; border: 1px solid var(--line); }
+    .casio-svg { width: 100%; height: auto; display: block; }
+    .casio-svg .pad, .casio-svg .key-w, .casio-svg .key-b {
+      fill: none; stroke: var(--dim); stroke-width: 1.4;
+    }
+    .casio-svg .key-b { fill: var(--bg); }
+    .casio-svg g.down .pad, .casio-svg g.down .key-w { fill: #f3d27a; stroke: #f3d27a; }
+    .casio-svg g.down .key-b { fill: var(--amber); stroke: var(--amber); }
+    .casio-svg g.down .lbl { fill: #1a1408; }
+    .casio-svg .lbl { fill: var(--dim); font: 8px var(--sans); text-anchor: middle; pointer-events: none; }
+    .casio-svg .midi-n {
+      fill: var(--dim); font: 6.5px var(--mono); text-anchor: middle; pointer-events: none;
+    }
+    .casio-svg .midi-n.blk { fill: #b7ae9e; font-size: 6px; }
+    .casio-svg g.down .midi-n { fill: #1a1408; }
+    .casio-svg .grille { stroke: var(--line); stroke-width: 1.2; fill: none; }
+    .casio-svg .roll-frame { fill: #0e0d0b; stroke: var(--line); stroke-width: 1; }
+    .casio-svg .roll-note { fill: #f3d27a; opacity: .85; }
+    .casio-svg .roll-note.pad { fill: #7ec8e3; opacity: .9; }
+    .ws-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 12px; }
+    .ws-led {
+      width: 36px; height: 36px; border-radius: 8px; border: 2px solid #3d382f;
+      cursor: pointer; background: #1a1814; box-shadow: inset 0 0 8px #000;
+    }
+    .ws-led.active { border-color: var(--amber); }
+    .ws-controls {
+      display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; align-items: center;
+      font: 12px var(--mono); color: var(--dim); max-width: 420px;
+    }
+    .ws-controls input[type="color"] { width: 48px; height: 32px; padding: 2px; cursor: pointer; }
+    .ws-controls input[type="range"] { width: 100%; }
+    .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    button.on { border-color: var(--amber); color: var(--amber); }
+    .key.live { border-color: #f3d27a; color: #1a1408; background: #f3d27a; }
+    .card h2 {
+      margin: 0 0 10px; font-size: 11px; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--dim);
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .hint { color: var(--dim); font-size: 12px; margin: 8px 0 0; line-height: 1.45; }
+    .banks { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip {
+      min-width: 36px; text-align: center; padding: 6px 8px; border-radius: 6px;
+      border: 1px solid #3d382f; background: #141210; font: 12px var(--mono); cursor: pointer;
+    }
+    .chip.on { border-color: var(--amber); color: var(--amber); }
+    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .key {
+      min-height: 48px; border-radius: 8px; border: 1px solid #3d382f; background: #141210;
+      font: 12px var(--mono); color: var(--dim); cursor: pointer; padding: 8px;
+    }
+    .key:hover, .ctl:hover { border-color: var(--amber); }
+    .key.on, .ctl.on { border-color: var(--amber); color: var(--amber); background: #3a2e18; }
+    .key b { display: block; color: var(--ink); font-size: 16px; }
+    .ctls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .ctl {
+      border: 1px solid #3d382f; border-radius: 8px; background: #141210;
+      padding: 10px; cursor: pointer; font: 12px var(--mono); color: var(--dim);
+    }
+    .ctl strong { display: block; color: var(--ink); margin-bottom: 4px; }
+    .insp { display: grid; grid-template-columns: repeat(4, minmax(90px, 1fr)); gap: 8px; }
+    .insp label { color: var(--dim); font-size: 11px; display: flex; flex-direction: column; gap: 4px; }
+    .log {
+      min-height: 140px; max-height: 220px; overflow: auto; font: 12px var(--mono);
+      background: #0e0d0b; border-radius: 8px; padding: 10px; color: #cfc6b6; white-space: pre-wrap;
+    }
+    @media (max-width: 800px) {
+      .ctls, .insp, .grid, .live-split, .enc-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Casio SA-1 <span>MIDI</span></h1>
+    <nav>
+      <a href="/">Sonda</a>
+      <a class="on" href="/midi">MIDI</a>
+    </nav>
+    <span id="link"><span class="dot" id="linkDot"></span><span id="linkTxt">desconectado</span></span>
+    <div class="grow"></div>
+    <select id="port"></select>
+    <button id="btnPorts">Atualizar</button>
+    <button class="primary" id="btnConnect">Conectar</button>
+    <button id="btnFlash">Gravar MIDI</button>
+  </header>
+  <main>
+    <section class="card">
+      <h2>DAW</h2>
+      <p class="hint">Grave o firmware MIDI no Pico. O Mac / a DAW vê <strong>Casio SA-1 MIDI</strong>. Canais de fábrica: piano <strong>ch1</strong>, pads 0–9 <strong>ch2</strong> (nota+CC), joystick <strong>ch3</strong> (cima/baixo pitch, esq/dir mod), EC11 <strong>ch4</strong> (track / volume). Tempo ± = CC 40/41 no ch2. Stop = Play/Stop.</p>
+    </section>
+    <section class="card">
+      <h2>Teste ao vivo</h2>
+      <div class="pills">
+        <span class="pill" id="pOct">oitava —</span>
+        <span class="pill" id="pVol">vol —</span>
+        <span class="pill" id="pBank">P1 · B1</span>
+        <span class="pill" id="pSel">SEL solto</span>
+        <span class="pill" id="pBeat">tempo —</span>
+        <span class="pill" id="pNote">nota —</span>
+        <span class="pill" id="pWs">WS —</span>
+        <span class="pill" id="pLive">stream off</span>
+      </div>
+      <p class="hint" id="learnHintMidi">Conecta o firmware MIDI (não a sonda). O piano usa o mapa do Aprender. Ao ligar, o Lab envia as 56 células e o Pico grava na EEPROM — a DAW passa a ver essa ordem mesmo sem o Lab.</p>
+    </section>
+    <section class="card">
+      <h2>SA-1 · teclado e botões</h2>
+      <svg class="casio-svg" id="casio" viewBox="0 0 900 292" role="img" aria-label="Casio SA-1"></svg>
+      <p class="hint">Cada tecla mostra a nota MIDI (ch1). Botões 0–9 mostram Dual (N+CC) no ch2. Tempo ± mostra o CC (clica para editar). Pads e Tempo ± no piano roll.</p>
+    </section>
+    <section class="card">
+      <h2>EC11 + joystick</h2>
+      <div class="live-split">
+        <div>
+          <div class="enc-row">
+            <div class="enc" style="order:2">
+              <div class="n" id="e1">0</div>
+              <div class="lbl">EC11-1 track · GP18/19</div>
+            </div>
+            <div class="enc" style="order:1">
+              <div class="n" id="e2">0</div>
+              <div class="lbl">EC11-2 volume · GP21/22</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="joy-pad">
+            <span class="joy-dir n">cima · pitch</span>
+            <span class="joy-dir s">baixo · pitch</span>
+            <span class="joy-dir w">esq · mod</span>
+            <span class="joy-dir e">dir · mod</span>
+            <canvas id="joy" width="160" height="160"></canvas>
+          </div>
+          <div class="joy-meta" id="joyMeta">X —<br>Y —<br>SW solto</div>
+        </div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>WS2812 8×1 · GP16</h2>
+      <div class="ws-strip" id="wsStrip"></div>
+      <div class="ws-controls">
+        <span>LED</span><span id="wsSelLbl">0</span>
+        <span>Cor</span><input type="color" id="wsColor" value="#ff0000" />
+        <span>Opacidade</span><input type="range" id="wsAlpha" min="0" max="100" value="40" />
+        <span>Master</span><input type="range" id="wsMaster" min="0" max="100" value="100" />
+      </div>
+      <div class="btns" style="margin-top:10px">
+        <button type="button" id="wsApply">Aplicar</button>
+        <button type="button" id="wsOff">Apagar</button>
+        <button type="button" id="wsWhite">Branco</button>
+        <button type="button" id="wsRainbow">Rainbow</button>
+        <button type="button" id="wsId">Identificar</button>
+      </div>
+      <p class="hint">VCC da barra no VBUS 5 V. Rainbow corre no Pico. Mesmo botão para parar.</p>
+    </section>
+    <section class="card">
+      <h2>Banco performance · Tempo ± · EC11 + joystick</h2>
+      <div class="banks" id="perfBanks"></div>
+      <div class="ctls" style="margin-top:12px">
+        <div class="ctl" data-sel="e0" id="cE0"><strong>EC11-1 track</strong><span id="lE0">—</span></div>
+        <div class="ctl" data-sel="e1" id="cE1"><strong>EC11-2 volume</strong><span id="lE1">—</span></div>
+        <div class="ctl" data-sel="joy" id="cJoy"><strong>Joystick</strong><span id="lJoy">—</span></div>
+        <div class="ctl" data-sel="tup" id="cTup"><strong>Tempo +</strong><span id="lTup">—</span></div>
+        <div class="ctl" data-sel="tdn" id="cTdn"><strong>Tempo −</strong><span id="lTdn">—</span></div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Banco pads · SEL + Tempo ± · botões 0–9</h2>
+      <div class="banks" id="padBanks"></div>
+      <div class="grid" style="margin-top:12px" id="pads"></div>
+    </section>
+    <section class="card">
+      <h2>Controlo</h2>
+      <div class="insp" id="insp"></div>
+      <div class="row" style="margin-top:12px">
+        <label>Canal piano <input type="number" id="gCh" min="1" max="16" value="1" /></label>
+        <label>Velocity <input type="number" id="gVel" min="1" max="127" value="100" /></label>
+        <button class="primary" id="btnSave">Guardar no Pico</button>
+        <button id="btnLoad">Ler</button>
+        <button id="btnReset">Factory</button>
+      </div>
+      <p class="hint" id="inspHint">Piano = canal 1. Pads Dual = nota+CC no canal 2. Tempo ± = CC 40/41 no canal 2 (editável). Joystick = canal 3. EC11 = canal 4.</p>
+    </section>
+    <section class="card">
+      <h2>Log</h2>
+      <pre class="log" id="log"></pre>
+    </section>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const ENC_MODES = ["CC", "Oitava", "Off", "CC relativo"];
+    const JOY_X = ["Pitch", "CC", "Off", "Oitava"];
+    const JOY_Y = ["Pitch", "CC", "Off", "Oitava"];
+    const SW = ["CC", "Nota", "Off"];
+    const PAD = ["Dual (nota+CC)", "CC", "Nota", "Programa", "Off"];
+    const emptyEnc = () => ({ mode: 0, ch: 4, cc: 1, step: 2, val: 64 });
+    const emptyJoy = () => ({ xm: 0, xch: 3, xcc: 0, ym: 1, ych: 3, ycc: 1, sm: 0, sch: 3, scc: 64 });
+    const emptyPad = (d) => ({ mode: 0, ch: 2, cc: 30 + d, note: 36 + d });
+    const map = {
+      ch: 1, vel: 100, pb: 0, bb: 0,
+      tempo: { ch: 2, up: 40, dn: 41 },
+      enc: Array.from({ length: 8 }, () => [emptyEnc(), emptyEnc()]),
+      joy: Array.from({ length: 8 }, emptyJoy),
+      pad: Array.from({ length: 8 }, () => Array.from({ length: 10 }, (_, d) => emptyPad(d))),
+    };
+    let sel = "e0";
+    let connected = false;
+    const NS = "http://www.w3.org/2000/svg";
+    const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+    const LEARN_STORE_KEY = "casio-sa1-learn-v2";
+    const MATRIX_DEFAULT = [
+      [53, 54, 55, 56, 57, 58, 59, 60],
+      [81, 80, 79, 78, 77, 82, 83, 84],
+      [73, 72, 71, 70, 69, 74, 75, 76],
+      [65, 64, 63, 62, 61, 66, 67, 68],
+      [200, 201, 202, 203, 204, 210, 255, 212],
+      [205, 206, 207, 208, 209, 215, 211, 255],
+      [255, 255, 255, 255, 255, 216, 255, 255],
+    ];
+    const MATRIX = MATRIX_DEFAULT.map((row) => row.slice());
+    function applyMatrixData(src) {
+      if (!src || !Array.isArray(src.matrix) || src.matrix.length !== 7) return 0;
+      let n = 0;
+      for (let r = 0; r < 7; r++) {
+        if (!Array.isArray(src.matrix[r]) || src.matrix[r].length !== 8) return 0;
+        for (let c = 0; c < 8; c++) {
+          MATRIX[r][c] = +src.matrix[r][c];
+          if (MATRIX[r][c] !== 255) n++;
+        }
+      }
+      return n;
+    }
+    function loadLearnStore() {
+      try {
+        const raw = localStorage.getItem(LEARN_STORE_KEY);
+        if (!raw) return { n: 0, at: 0 };
+        const data = JSON.parse(raw);
+        const n = applyMatrixData(data);
+        return { n, at: +data.savedAt || 0 };
+      } catch (e) {
+        return { n: 0, at: 0 };
+      }
+    }
+    let learnedMeta = loadLearnStore();
+    let learnedCells = learnedMeta.n;
+    async function loadLearnFromServer() {
+      try {
+        const data = await api("/api/learn-matrix");
+        if (!data || !data.ok) return learnedCells;
+        const at = +data.savedAt || 0;
+        if (learnedMeta.n && learnedMeta.at && at && at < learnedMeta.at) {
+          return learnedCells;
+        }
+        const n = applyMatrixData(data);
+        if (n) {
+          learnedCells = n;
+          learnedMeta = { n, at };
+        }
+        return learnedCells;
+      } catch (e) {
+        return learnedCells;
+      }
+    }
+    async function pushLearnMatrix() {
+      const line = "MK " + MATRIX.flat().join(" ");
+      await cmd(line);
+    }
+    async function syncLearnToPico() {
+      await cmd("U");
+      await pushLearnMatrix();
+      await cmd("u");
+    }
+    const held = Array.from({ length: 7 }, () => Array(8).fill(false));
+    const keyGeom = [];
+    const rollHits = [];
+    const rollClip = { x: 88, y: 50, w: 798, h: 70 };
+    let rollGroup = null;
+    let padMask = 0;
+    let live = { oct: 0, vol: 100, pb: 0, bb: 0, sel: 0, note: -1, ws: 0, wr: 0, beat: 0, clk: 0, play: 0 };
+    let padGeom = [];
+    const tempoGeom = {};
+    let wsSel = 0;
+    const wsState = Array.from({ length: 8 }, () => ({ color: "#ff0000", alpha: 40 }));
+    let wsMasterPct = 100;
+    let wsRainbowOn = false;
+    let wsRainbowHue = 0;
+    let wsRainbowTimer = 0;
+
+    function midiLabel(code) {
+      if (code == null || code === 255) return "-";
+      if (code >= 200 && code <= 209) return String(code - 200);
+      if (code === 210) return "tempo+";
+      if (code === 211) return "tempo-";
+      if (code === 212) return "sel";
+      if (code === 215) return "stop";
+      if (code === 216) return "demo";
+      if (code >= 53 && code <= 84) return NOTE_NAMES[code % 12] + (Math.floor(code / 12) - 1);
+      return String(code);
+    }
+    function fmt(n) { return (n >= 0 ? "+" : "") + n; }
+    function svgEl(name, attrs) {
+      const el = document.createElementNS(NS, name);
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      return el;
+    }
+    function cellToUi(ko, ki) {
+      const code = MATRIX[ko]?.[ki];
+      if (code == null || code === 255) return null;
+      if (code >= 53 && code <= 84) return "k" + (code - 53);
+      if (code >= 200 && code <= 209) return "t" + (code - 200);
+      if (code === 210) return "tempo-up";
+      if (code === 211) return "tempo-dn";
+      if (code === 212) return "select";
+      if (code === 215) return "stop";
+      if (code === 216) return "demo";
+      return null;
+    }
+    function soundingNote(base) {
+      const n = (base | 0) + (live.oct || 0) * 12;
+      return Math.max(0, Math.min(127, n));
+    }
+    function noteOutLabel(n) {
+      if (n == null || n < 0) return "—";
+      return midiLabel(n) + " " + n;
+    }
+    function padOutLabel(d) {
+      const p = map.pad[map.bb]?.[d];
+      if (!p) return "—";
+      if (p.mode === 0) return "N" + p.note + "+CC" + p.cc;
+      if (p.mode === 1) return "CC" + p.cc;
+      if (p.mode === 2) return noteOutLabel(p.note);
+      if (p.mode === 3) return "PGM " + p.note;
+      if (p.mode === 4) return "off";
+      return "CC" + p.cc;
+    }
+    function addPad(parent, id, x, y, w, h, label) {
+      const g = svgEl("g", { "data-ui": id });
+      g.appendChild(svgEl("rect", { class: "pad", x, y, width: w, height: h, rx: 3 }));
+      const t = svgEl("text", { class: "lbl", x: x + w / 2, y: y + 9 });
+      t.textContent = label;
+      g.appendChild(t);
+      const m = svgEl("text", { class: "midi-n", "data-midi": id, x: x + w / 2, y: y + h - 4 });
+      m.textContent = "";
+      g.appendChild(m);
+      parent.appendChild(g);
+      if (id.startsWith("t") && id.charAt(1) >= "0" && id.charAt(1) <= "9") {
+        padGeom[+id.slice(1)] = { x, w };
+      }
+      if (id === "tempo-up" || id === "tempo-dn") {
+        tempoGeom[id] = { x, w };
+        g.style.cursor = "pointer";
+        g.addEventListener("click", () => {
+          sel = id === "tempo-up" ? "tup" : "tdn";
+          paint();
+        });
+      }
+    }
+    function buildCasio() {
+      const svg = $("casio");
+      svg.innerHTML = "";
+      padGeom = [];
+      const clip = svgEl("clipPath", { id: "rollClipMidi" });
+      clip.appendChild(svgEl("rect", { x: rollClip.x, y: rollClip.y, width: rollClip.w, height: rollClip.h }));
+      const defs = svgEl("defs", {});
+      defs.appendChild(clip);
+      svg.appendChild(defs);
+      const grille = svgEl("g", { class: "grille" });
+      for (let i = 0; i < 10; i++) {
+        grille.appendChild(svgEl("line", { x1: 14, y1: 142 + i * 13, x2: 74, y2: 142 + i * 13 }));
+      }
+      svg.appendChild(grille);
+      addPad(svg, "tempo-dn", 20, 14, 32, 26, "T−");
+      addPad(svg, "tempo-up", 56, 14, 32, 26, "T+");
+      addPad(svg, "select", 92, 14, 36, 26, "SEL");
+      addPad(svg, "stop", 132, 14, 40, 26, "STOP");
+      for (let i = 0; i < 10; i++) addPad(svg, "t" + i, 180 + i * 30, 14, 28, 26, String(i));
+      svg.appendChild(svgEl("rect", {
+        class: "roll-frame", x: rollClip.x, y: rollClip.y, width: rollClip.w, height: rollClip.h,
+      }));
+      rollGroup = svgEl("g", { "clip-path": "url(#rollClipMidi)" });
+      svg.appendChild(rollGroup);
+      const keyY = 136, whiteH = 148, blackH = 86, originX = 88, whiteW = 42, blackW = 24;
+      const whites = [];
+      const blackAfter = [0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14, 15, 16];
+      for (let midi = 53; midi <= 84; midi++) {
+        if (!NOTE_NAMES[midi % 12].includes("#")) whites.push(midi);
+      }
+      whites.forEach((midi, i) => {
+        const idx = midi - 53;
+        const x = originX + i * whiteW;
+        keyGeom[idx] = { x, w: whiteW, black: false };
+        const g = svgEl("g", { "data-ui": "k" + idx });
+        g.appendChild(svgEl("rect", { class: "key-w", x, y: keyY, width: whiteW - 1, height: whiteH, rx: 2 }));
+        const lab = svgEl("text", {
+          class: "midi-n", "data-midi": "k" + idx,
+          x: x + (whiteW - 1) / 2, y: keyY + whiteH - 8,
+        });
+        g.appendChild(lab);
+        svg.appendChild(g);
+      });
+      blackAfter.forEach((whiteI) => {
+        const midi = whites[whiteI] + 1;
+        const idx = midi - 53;
+        const x = originX + (whiteI + 1) * whiteW - blackW / 2;
+        keyGeom[idx] = { x, w: blackW, black: true };
+        const g = svgEl("g", { "data-ui": "k" + idx });
+        g.appendChild(svgEl("rect", { class: "key-b", x, y: keyY, width: blackW, height: blackH, rx: 1 }));
+        const lab = svgEl("text", {
+          class: "midi-n blk", "data-midi": "k" + idx,
+          x: x + blackW / 2, y: keyY + 48,
+        });
+        g.appendChild(lab);
+        svg.appendChild(g);
+      });
+      paintMidiOut();
+    }
+    function paintMidiOut() {
+      for (let idx = 0; idx < 32; idx++) {
+        const el = document.querySelector('#casio [data-midi="k' + idx + '"]');
+        if (!el) continue;
+        const n = soundingNote(53 + idx);
+        el.textContent = midiLabel(n);
+        el.setAttribute("title", noteOutLabel(n));
+      }
+      for (let d = 0; d < 10; d++) {
+        const el = document.querySelector('#casio [data-midi="t' + d + '"]');
+        if (el) el.textContent = padOutLabel(d);
+      }
+      const tdn = document.querySelector('#casio [data-midi="tempo-dn"]');
+      const tup = document.querySelector('#casio [data-midi="tempo-up"]');
+      const sel = document.querySelector('#casio [data-midi="select"]');
+      const stop = document.querySelector('#casio [data-midi="stop"]');
+      if (tdn) tdn.textContent = "CC" + map.tempo.dn;
+      if (tup) tup.textContent = "CC" + map.tempo.up;
+      if (sel) sel.textContent = "shift";
+      if (stop) stop.textContent = live.clk || live.play ? "■ Stop" : "▶ Play";
+    }
+    function heldUi() {
+      const on = new Set();
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (!held[r][c]) continue;
+          const id = cellToUi(r, c);
+          if (id) on.add(id);
+        }
+      }
+      for (let d = 0; d < 10; d++) {
+        if (padMask & (1 << d)) on.add("t" + d);
+      }
+      return on;
+    }
+    function paintCasio() {
+      paintMidiOut();
+      const on = heldUi();
+      document.querySelectorAll("#casio [data-ui]").forEach((el) => {
+        el.classList.toggle("down", on.has(el.getAttribute("data-ui")));
+      });
+      const now = performance.now();
+      const liveIds = new Set(rollHits.filter((h) => h.end == null).map((h) => h.id));
+      for (const id of on) {
+        if (liveIds.has(id)) continue;
+        let g = null;
+        let kind = "key";
+        if (id.startsWith("k")) {
+          g = keyGeom[+id.slice(1)];
+        } else if (id.startsWith("t") && id.charAt(1) >= "0" && id.charAt(1) <= "9") {
+          g = padGeom[+id.slice(1)];
+          kind = "pad";
+        } else if (id === "tempo-up" || id === "tempo-dn") {
+          g = tempoGeom[id];
+          kind = "pad";
+        }
+        if (!g) continue;
+        rollHits.push({ id, x: g.x, w: g.w, start: now, end: null, kind });
+      }
+      for (const h of rollHits) {
+        if (h.end == null && !on.has(h.id)) h.end = now;
+      }
+    }
+    function tickRoll() {
+      if (!rollGroup) return;
+      const now = performance.now();
+      while (rollHits.length && now - (rollHits[0].end ?? now) > 4000) rollHits.shift();
+      rollGroup.replaceChildren();
+      const { x, y, w, h } = rollClip;
+      const bottom = y + h;
+      for (const n of rollHits) {
+        const t1 = n.end ?? now;
+        const yTop = bottom - ((now - n.start) / 4000) * h;
+        const yBot = bottom - ((now - t1) / 4000) * h;
+        const yy = Math.max(y, yTop);
+        const hh = Math.max(0, Math.min(bottom, yBot) - yy);
+        if (hh < 0.5) continue;
+        rollGroup.appendChild(svgEl("rect", {
+          class: "roll-note" + (n.kind === "pad" ? " pad" : ""),
+          x: n.x + 1, y: yy, width: Math.max(2, n.w - 3), height: hh,
+        }));
+      }
+      requestAnimationFrame(tickRoll);
+    }
+    function drawJoy(s) {
+      const cv = $("joy");
+      if (!cv) return;
+      const ctx = cv.getContext("2d");
+      const w = cv.width, h = cv.height, cx = w / 2, cy = h / 2, R = 58;
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = "#3a362e";
+      ctx.beginPath(); ctx.moveTo(cx, 12); ctx.lineTo(cx, h - 12); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(12, cy); ctx.lineTo(w - 12, cy); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+      if (!s) return;
+      const cxs = s.cx ?? 2048, cys = s.cy ?? 2048;
+      const span = 1800;
+      const nx = Math.max(-1, Math.min(1, (s.x - cxs) / span));
+      const ny = Math.max(-1, Math.min(1, (s.y - cys) / span));
+      ctx.fillStyle = s.sw ? "#e2a54a" : "#8bc46a";
+      ctx.beginPath();
+      ctx.arc(cx + nx * (R - 6), cy - ny * (R - 6), 10, 0, Math.PI * 2);
+      ctx.fill();
+      const dx = s.x - cxs, dy = s.y - cys;
+      $("joyMeta").innerHTML =
+        "X " + s.x + "  Δ" + (dx >= 0 ? "+" : "") + dx + "<br>" +
+        "Y " + s.y + "  Δ" + (dy >= 0 ? "+" : "") + dy + "<br>" +
+        "SW " + (s.sw ? "clique" : "solto") + "<br>centro " + cxs + " / " + cys;
+    }
+    function paintLive() {
+      $("pOct").textContent = "oitava " + fmt(live.oct);
+      $("pVol").textContent = "vol " + live.vol;
+      $("pBank").textContent = "P" + (live.pb + 1) + " · B" + (live.bb + 1);
+      $("pSel").textContent = live.sel ? "SEL · BANK " + (live.bb + 1) : "SEL solto";
+      if (live.play || live.clk) {
+        $("pBeat").textContent = live.clk
+          ? ("▶ tempo " + (live.beat + 1) + "/4")
+          : "▶ play";
+      } else {
+        $("pBeat").textContent = "■ stop";
+      }
+      $("pNote").textContent = live.note >= 0 ? ("nota " + midiLabel(live.note) + " " + live.note) : "nota —";
+      $("pWs").textContent = live.ws ? (live.wr ? "WS rainbow" : "WS ok") : "WS —";
+      $("pLive").textContent = "stream on";
+    }
+    function applyLive(s) {
+      if (!s || (s.t != null && s.t !== "s")) return;
+      if (s.e1 == null && !Array.isArray(s.h)) return;
+      if (Array.isArray(s.h) && s.h.length === 7) {
+        for (let r = 0; r < 7; r++) {
+          const hm = Number(s.h[r]) || 0;
+          for (let c = 0; c < 8; c++) held[r][c] = !!(hm & (1 << c));
+        }
+      }
+      padMask = Number(s.pads) || 0;
+      live.oct = s.oct ?? live.oct;
+      live.vol = s.vol ?? live.vol;
+      live.pb = s.pb ?? live.pb;
+      live.bb = s.bb ?? live.bb;
+      live.sel = s.sel ?? live.sel;
+      live.note = s.note ?? live.note;
+      live.ws = s.ws ?? live.ws;
+      live.wr = s.wr ?? live.wr;
+      live.beat = s.beat ?? live.beat;
+      live.clk = s.clk ?? live.clk;
+      live.play = s.play ?? live.play;
+      const bankChanged = (s.pb != null && s.pb !== map.pb) || (s.bb != null && s.bb !== map.bb);
+      if (s.pb != null) map.pb = s.pb;
+      if (s.bb != null) map.bb = s.bb;
+      $("e1").textContent = fmt(s.e1 ?? 0);
+      $("e2").textContent = fmt(s.e2 ?? 0);
+      drawJoy(s);
+      paintLive();
+      paintCasio();
+      if (bankChanged) paint();
+      else paintPadLive();
+    }
+    function paintPadLive() {
+      const pads = $("pads");
+      if (!pads) return;
+      [...pads.children].forEach((el, d) => {
+        el.classList.toggle("live", !!(padMask & (1 << d)));
+      });
+    }
+    function hexNoHash(color) { return String(color || "#000000").replace("#", "").toLowerCase(); }
+    function alpha255(pct) { return Math.round(Math.max(0, Math.min(100, pct)) * 2.55); }
+    function paintWsStrip() {
+      for (let i = 0; i < 8; i++) {
+        const el = $("wsLed" + i);
+        if (!el) continue;
+        const st = wsState[i];
+        const a = (st.alpha / 100) * (wsMasterPct / 100);
+        el.style.background = st.color;
+        el.style.opacity = String(0.15 + a * 0.85);
+        el.classList.toggle("active", i === wsSel);
+      }
+      $("wsSelLbl").textContent = String(wsSel);
+      $("wsColor").value = wsState[wsSel].color;
+      $("wsAlpha").value = String(wsState[wsSel].alpha);
+      $("wsMaster").value = String(wsMasterPct);
+    }
+    function buildWsStrip() {
+      const root = $("wsStrip");
+      root.innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = "ws-led";
+        el.id = "wsLed" + i;
+        el.title = "LED " + i;
+        el.addEventListener("click", () => { wsSel = i; paintWsStrip(); });
+        root.appendChild(el);
+      }
+      paintWsStrip();
+    }
+    async function sendWsLed(i, color, alphaPct) {
+      await cmd("L " + i + " " + hexNoHash(color) + " " + alpha255(alphaPct));
+    }
+    function hsvToHex(h) {
+      const s = 1, v = 1, c = v * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = v - c;
+      let r = 0, g = 0, b = 0;
+      if (h < 60) { r = c; g = x; }
+      else if (h < 120) { r = x; g = c; }
+      else if (h < 180) { g = c; b = x; }
+      else if (h < 240) { g = x; b = c; }
+      else if (h < 300) { r = x; b = c; }
+      else { r = c; b = x; }
+      const to = (n) => Math.round((n + m) * 255).toString(16).padStart(2, "0");
+      return "#" + to(r) + to(g) + to(b);
+    }
+    function wsRainbowFrame() {
+      wsRainbowHue = (wsRainbowHue + 8) % 360;
+      for (let i = 0; i < 8; i++) wsState[i] = { color: hsvToHex((wsRainbowHue + i * 45) % 360), alpha: 55 };
+      paintWsStrip();
+    }
+    function setWsRainbowUi(on) {
+      wsRainbowOn = !!on;
+      const btn = $("wsRainbow");
+      if (btn) {
+        btn.textContent = wsRainbowOn ? "Parar" : "Rainbow";
+        btn.classList.toggle("on", wsRainbowOn);
+      }
+      if (wsRainbowOn && !wsRainbowTimer) {
+        wsRainbowFrame();
+        wsRainbowTimer = setInterval(wsRainbowFrame, 40);
+      }
+      if (!wsRainbowOn && wsRainbowTimer) {
+        clearInterval(wsRainbowTimer);
+        wsRainbowTimer = 0;
+      }
+    }
+
+    const log = (t, cls) => {
+      const el = $("log");
+      const n = document.createElement("div");
+      if (cls) n.style.color = cls === "err" ? "var(--bad)" : "var(--ok)";
+      n.textContent = t;
+      el.appendChild(n);
+      el.scrollTop = el.scrollHeight;
+    };
+
+    async function api(path, opt) {
+      const r = await fetch(path, opt);
+      const t = await r.text();
+      let j = {};
+      try { j = JSON.parse(t); } catch (e) { throw new Error(t || r.statusText); }
+      if (!r.ok) throw new Error(j.error || t);
+      return j;
+    }
+    async function cmd(c) {
+      log("> " + c);
+      await api("/api/cmd", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ c }),
+      });
+    }
+
+    function labelEnc(e) {
+      if (e.mode === 1) return "oitava";
+      if (e.mode === 2) return "off";
+      if (e.mode === 3) return "CCrel " + e.cc + " ch" + e.ch;
+      return "CC" + e.cc + " ch" + e.ch;
+    }
+    function labelJoy(j) {
+      const axis = (m, cc) => m === 0 ? "pitch" : m === 1 ? "CC" + cc : m === 3 ? "oitava" : "off";
+      const x = axis(j.xm, j.xcc);
+      const y = axis(j.ym, j.ycc);
+      return x + " / " + y;
+    }
+    function labelPad(p) {
+      if (p.mode === 0) return "N" + p.note + "+CC" + p.cc;
+      if (p.mode === 1) return "CC" + p.cc;
+      if (p.mode === 2) return "N" + p.note;
+      if (p.mode === 3) return "PGM " + p.note;
+      if (p.mode === 4) return "off";
+      return "CC" + p.cc;
+    }
+
+    function paint() {
+      $("perfBanks").innerHTML = "";
+      $("padBanks").innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        const a = document.createElement("button");
+        a.className = "chip" + (map.pb === i ? " on" : "");
+        a.textContent = String(i + 1);
+        a.onclick = () => { map.pb = i; cmd("MB p " + i).catch((e) => log(e.message, "err")); paint(); };
+        $("perfBanks").appendChild(a);
+        const b = document.createElement("button");
+        b.className = "chip" + (map.bb === i ? " on" : "");
+        b.textContent = String(i + 1);
+        b.onclick = () => { map.bb = i; cmd("MB b " + i).catch((e) => log(e.message, "err")); paint(); };
+        $("padBanks").appendChild(b);
+      }
+      $("lE0").textContent = labelEnc(map.enc[map.pb][0]);
+      $("lE1").textContent = labelEnc(map.enc[map.pb][1]);
+      $("lJoy").textContent = labelJoy(map.joy[map.pb]);
+      $("lTup").textContent = "CC" + map.tempo.up + " ch" + map.tempo.ch;
+      $("lTdn").textContent = "CC" + map.tempo.dn + " ch" + map.tempo.ch;
+      $("cE0").classList.toggle("on", sel === "e0");
+      $("cE1").classList.toggle("on", sel === "e1");
+      $("cJoy").classList.toggle("on", sel === "joy");
+      $("cTup").classList.toggle("on", sel === "tup");
+      $("cTdn").classList.toggle("on", sel === "tdn");
+      const pads = $("pads");
+      pads.innerHTML = "";
+      for (let d = 0; d < 10; d++) {
+        const p = map.pad[map.bb][d];
+        const el = document.createElement("button");
+        el.className = "key" + (sel === "p" + d ? " on" : "") + ((padMask & (1 << d)) ? " live" : "");
+        el.innerHTML = "<b>" + d + "</b>" + labelPad(p);
+        el.onclick = () => { sel = "p" + d; paint(); };
+        pads.appendChild(el);
+      }
+      $("gCh").value = map.ch;
+      $("gVel").value = map.vel;
+      paintInsp();
+      paintMidiOut();
+    }
+
+    function field(label, el) {
+      const w = document.createElement("label");
+      w.textContent = label;
+      w.appendChild(el);
+      return w;
+    }
+    function num(v, min, max, fn) {
+      const i = document.createElement("input");
+      i.type = "number"; i.min = min; i.max = max; i.value = v;
+      i.onchange = () => fn(+i.value);
+      return i;
+    }
+    function selBox(opts, v, fn) {
+      const s = document.createElement("select");
+      s.style.minWidth = "0";
+      opts.forEach((n, i) => {
+        const o = document.createElement("option");
+        o.value = i; o.textContent = n; s.appendChild(o);
+      });
+      s.value = String(v);
+      s.onchange = () => fn(+s.value);
+      return s;
+    }
+
+    async function pushEnc(i) {
+      const e = map.enc[map.pb][i];
+      await cmd("ME " + map.pb + " " + i + " " + e.mode + " " + e.ch + " " + e.cc + " " + e.step);
+    }
+    async function pushJoy() {
+      const j = map.joy[map.pb];
+      await cmd("MJ " + map.pb + " " + j.xm + " " + j.xch + " " + j.xcc + " " + j.ym + " " + j.ych + " " + j.ycc + " " + j.sm + " " + j.sch + " " + j.scc);
+    }
+    async function pushPad(d) {
+      const p = map.pad[map.bb][d];
+      await cmd("MP " + map.bb + " " + d + " " + p.mode + " " + p.ch + " " + p.cc + " " + p.note);
+    }
+    async function pushTempo() {
+      await cmd("MT " + map.tempo.ch + " " + map.tempo.up + " " + map.tempo.dn);
+    }
+
+    function paintInsp() {
+      const box = $("insp");
+      box.innerHTML = "";
+      const apply = (fn) => fn().catch((e) => log(e.message, "err"));
+      if (sel === "e0" || sel === "e1") {
+        const i = sel === "e0" ? 0 : 1;
+        const e = map.enc[map.pb][i];
+        box.appendChild(field("Papel", selBox(ENC_MODES, e.mode, (v) => { e.mode = v; apply(() => pushEnc(i)); paint(); })));
+        box.appendChild(field("Canal", num(e.ch, 1, 16, (v) => { e.ch = v; apply(() => pushEnc(i)); })));
+        box.appendChild(field("CC", num(e.cc, 0, 127, (v) => { e.cc = v; apply(() => pushEnc(i)); paint(); })));
+        box.appendChild(field("Passo", num(e.step, 1, 16, (v) => { e.step = v; apply(() => pushEnc(i)); })));
+        $("inspHint").textContent = "Fábrica: EC11-1 = CC relativo 14 (track na DAW, 65/63). EC11-2 = CC 7 volume. Canal e CC editáveis. Oitava continua disponível como papel.";
+        return;
+      }
+      if (sel === "joy") {
+        const j = map.joy[map.pb];
+        box.appendChild(field("X", selBox(JOY_X, j.xm, (v) => { j.xm = v; apply(pushJoy); paint(); })));
+        box.appendChild(field("X canal", num(j.xch, 1, 16, (v) => { j.xch = v; apply(pushJoy); })));
+        box.appendChild(field("X CC", num(j.xcc, 0, 127, (v) => { j.xcc = v; apply(pushJoy); paint(); })));
+        box.appendChild(field("Y", selBox(JOY_Y, j.ym, (v) => { j.ym = v; apply(pushJoy); paint(); })));
+        box.appendChild(field("Y canal", num(j.ych, 1, 16, (v) => { j.ych = v; apply(pushJoy); })));
+        box.appendChild(field("Y CC", num(j.ycc, 0, 127, (v) => { j.ycc = v; apply(pushJoy); paint(); })));
+        box.appendChild(field("Clique", selBox(SW, j.sm, (v) => { j.sm = v; apply(pushJoy); paint(); })));
+        box.appendChild(field("SW canal", num(j.sch, 1, 16, (v) => { j.sch = v; apply(pushJoy); })));
+        box.appendChild(field("SW CC/nota", num(j.scc, 0, 127, (v) => { j.scc = v; apply(pushJoy); paint(); })));
+        $("inspHint").textContent = "Orientação: inverter X e trocar X↔Y. Fábrica: cima/baixo = pitch bend; esquerda/direita = CC 1 mod. Oitava no stick é opcional.";
+        return;
+      }
+      if (sel.startsWith("p")) {
+        const d = +sel.slice(1);
+        const p = map.pad[map.bb][d];
+        box.appendChild(field("Papel", selBox(PAD, p.mode, (v) => { p.mode = v; apply(() => pushPad(d)); paint(); })));
+        box.appendChild(field("Canal", num(p.ch, 1, 16, (v) => { p.ch = v; apply(() => pushPad(d)); })));
+        box.appendChild(field("CC", num(p.cc, 0, 127, (v) => { p.cc = v; apply(() => pushPad(d)); paint(); })));
+        box.appendChild(field("Nota / PGM", num(p.note, 0, 127, (v) => { p.note = v; apply(() => pushPad(d)); paint(); })));
+        $("inspHint").textContent = "Dual (fábrica): Note On/Off + CC 127/0 no canal 2 — piano roll e MIDI Learn. CC/Nota/Programa/Off para casos especiais.";
+        return;
+      }
+      if (sel === "tup" || sel === "tdn") {
+        const which = sel === "tup" ? "up" : "dn";
+        box.appendChild(field("Canal", num(map.tempo.ch, 1, 16, (v) => { map.tempo.ch = v; apply(pushTempo); paint(); })));
+        box.appendChild(field(sel === "tup" ? "CC Tempo +" : "CC Tempo −", num(map.tempo[which], 0, 127, (v) => { map.tempo[which] = v; apply(pushTempo); paint(); })));
+        $("inspHint").textContent = "Tempo ± sai só como CC (127 ao premir, 0 ao soltar). Na DAW: MIDI Learn no tempo ou noutro parâmetro. Continua a mudar o banco local (SEL = pads).";
+      }
+    }
+
+    function parseLine(text) {
+      if (text.charAt(0) === "J" && text.charAt(1) === "{") {
+        try { applyLive(JSON.parse(text.slice(1))); } catch (e) {}
+        return true;
+      }
+      if (text === "MAT ok") {
+        log("mapa das teclas gravado no Pico (EEPROM)", "ok");
+        return true;
+      }
+      if (text === "MAT err") {
+        log("mapa das teclas incompleto — tenta Guardar de novo", "err");
+        return true;
+      }
+      let m = text.match(/^MAT((?:\s+\d+){56})\s*$/);
+      if (m) {
+        const vals = m[1].trim().split(/\s+/).map(Number);
+        let same = true;
+        for (let i = 0; i < 56; i++) {
+          if (vals[i] !== MATRIX[(i / 8) | 0][i % 8]) same = false;
+        }
+        log(same ? "matriz no Pico = aprender" : "matriz no Pico ainda nao e o aprender", same ? "ok" : "err");
+        return true;
+      }
+      m = text.match(/^MAP ch=(\d+) vel=(\d+) pb=(\d+) bb=(\d+)/);
+      if (m) {
+        map.ch = +m[1]; map.vel = +m[2]; map.pb = +m[3]; map.bb = +m[4];
+        paint();
+        return;
+      }
+      m = text.match(/^BANK pb=(\d+) bb=(\d+)/);
+      if (m) { map.pb = +m[1]; map.bb = +m[2]; paint(); return; }
+      m = text.match(/^ENC b=(\d+) i=(\d+) mode=(\d+) ch=(\d+) cc=(\d+) step=(\d+)/);
+      if (m) {
+        map.enc[+m[1]][+m[2]] = { mode: +m[3], ch: +m[4], cc: +m[5], step: +m[6], val: 64 };
+        paint();
+        return;
+      }
+      m = text.match(/^JOY b=(\d+) xm=(\d+) xch=(\d+) xcc=(\d+) ym=(\d+) ych=(\d+) ycc=(\d+) sm=(\d+) sch=(\d+) scc=(\d+)/);
+      if (m) {
+        map.joy[+m[1]] = { xm:+m[2], xch:+m[3], xcc:+m[4], ym:+m[5], ych:+m[6], ycc:+m[7], sm:+m[8], sch:+m[9], scc:+m[10] };
+        paint();
+        return;
+      }
+      m = text.match(/^TMP ch=(\d+) up=(\d+) dn=(\d+)/);
+      if (m) {
+        map.tempo = { ch: +m[1], up: +m[2], dn: +m[3] };
+        paint();
+        return;
+      }
+      m = text.match(/^PAD b=(\d+) d=(\d+) mode=(\d+) ch=(\d+) cc=(\d+) note=(\d+)/);
+      if (m) {
+        map.pad[+m[1]][+m[2]] = { mode:+m[3], ch:+m[4], cc:+m[5], note:+m[6] };
+        paint();
+      }
+    }
+
+    function setLink(on, port) {
+      connected = !!on;
+      $("linkDot").className = "dot" + (on ? " on" : "");
+      $("linkTxt").textContent = on ? ("ligado " + (port || "")) : "desconectado";
+      $("btnConnect").textContent = on ? "Desconectar" : "Conectar";
+    }
+
+    async function refreshPorts() {
+      const s = await api("/api/ports");
+      const sel = $("port");
+      const cur = sel.value;
+      sel.innerHTML = "";
+      (s.ports || []).forEach((p) => {
+        const o = document.createElement("option");
+        o.value = p.device; o.textContent = p.device + (p.desc ? " · " + p.desc : "");
+        sel.appendChild(o);
+      });
+      if (cur) sel.value = cur;
+      setLink(s.connected, s.port);
+    }
+    async function toggleConnect() {
+      if (connected) {
+        try { await cmd("U"); } catch (e) {}
+        $("pLive").textContent = "stream off";
+        await api("/api/disconnect", { method: "POST" });
+        setLink(false, "");
+        return;
+      }
+      await api("/api/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ port: $("port").value }),
+      });
+      setTimeout(() => {
+        syncLearnToPico()
+          .then(() => { $("pLive").textContent = "stream on"; })
+          .catch((e) => log(e.message, "err"));
+      }, 400);
+    }
+
+    $("cE0").onclick = () => { sel = "e0"; paint(); };
+    $("cE1").onclick = () => { sel = "e1"; paint(); };
+    $("cJoy").onclick = () => { sel = "joy"; paint(); };
+    $("cTup").onclick = () => { sel = "tup"; paint(); };
+    $("cTdn").onclick = () => { sel = "tdn"; paint(); };
+    $("gCh").onchange = () => cmd("MG " + $("gCh").value + " " + $("gVel").value).catch((e) => log(e.message, "err"));
+    $("gVel").onchange = () => cmd("MG " + $("gCh").value + " " + $("gVel").value).catch((e) => log(e.message, "err"));
+    $("btnSave").onclick = () => {
+      syncLearnToPico()
+        .then(() => cmd("MS"))
+        .catch((e) => log(e.message, "err"));
+    };
+    $("btnLoad").onclick = () => cmd("M").catch((e) => log(e.message, "err"));
+    $("btnReset").onclick = () => cmd("MZ").catch((e) => log(e.message, "err"));
+    $("btnPorts").onclick = () => refreshPorts().catch((e) => log(e.message, "err"));
+    $("btnConnect").onclick = () => toggleConnect().catch((e) => log(e.message, "err"));
+    $("wsApply").onclick = async () => {
+      setWsRainbowUi(false);
+      wsState[wsSel].color = $("wsColor").value;
+      wsState[wsSel].alpha = +$("wsAlpha").value;
+      paintWsStrip();
+      await sendWsLed(wsSel, wsState[wsSel].color, wsState[wsSel].alpha);
+    };
+    $("wsOff").onclick = async () => {
+      setWsRainbowUi(false);
+      for (let i = 0; i < 8; i++) wsState[i] = { color: "#000000", alpha: 0 };
+      paintWsStrip();
+      await cmd("L a 000000 0");
+    };
+    $("wsWhite").onclick = async () => {
+      setWsRainbowUi(false);
+      for (let i = 0; i < 8; i++) wsState[i] = { color: "#ffffff", alpha: 35 };
+      paintWsStrip();
+      await cmd("L a ffffff " + alpha255(35));
+    };
+    $("wsRainbow").onclick = async () => {
+      if (wsRainbowOn) {
+        setWsRainbowUi(false);
+        for (let i = 0; i < 8; i++) wsState[i] = { color: "#000000", alpha: 0 };
+        paintWsStrip();
+        await cmd("L r 0");
+        return;
+      }
+      wsMasterPct = 100;
+      $("wsMaster").value = "100";
+      await cmd("L m 255");
+      await cmd("L r 1");
+      setWsRainbowUi(true);
+    };
+    $("wsId").onclick = async () => {
+      setWsRainbowUi(false);
+      const colors = ["#ff0000","#00ff00","#0000ff","#ffff00","#ff00ff","#00ffff","#ffffff","#ff8800"];
+      for (let i = 0; i < 8; i++) {
+        wsState[i] = { color: colors[i], alpha: 55 };
+        await sendWsLed(i, colors[i], 55);
+      }
+      paintWsStrip();
+    };
+    $("wsMaster").onchange = () => {
+      wsMasterPct = +$("wsMaster").value;
+      paintWsStrip();
+      cmd("L m " + alpha255(wsMasterPct)).catch((e) => log(e.message, "err"));
+    };
+    $("btnFlash").onclick = () => {
+      log("gravando MIDI…");
+      api("/api/flash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fw: "pico" }),
+      }).catch((e) => log(e.message, "err"));
+    };
+
+    const es = new EventSource("/api/events");
+    es.onmessage = (ev) => {
+      let msg;
+      try { msg = JSON.parse(ev.data); } catch (e) { return; }
+      if (msg.type === "line") {
+        if (parseLine(msg.text)) return;
+        log(msg.text);
+      }
+      else if (msg.type === "state") applyLive(msg);
+      else if (msg.type === "log") log(msg.text, msg.text.startsWith("falhou") ? "err" : "ok");
+      else if (msg.type === "status") {
+        setLink(msg.connected, msg.port);
+        if (msg.connected) {
+          $("pLive").textContent = "stream…";
+          syncLearnToPico().catch(() => {});
+        }
+      }
+    };
+    buildCasio();
+    buildWsStrip();
+    paint();
+    paintLive();
+    loadLearnFromServer().then((n) => {
+      paintMidiOut();
+      if (n) {
+        $("learnHintMidi").textContent =
+          "Mapa do Aprender: " + n + " células. Ligar o Pico envia este mapa e grava na EEPROM para a DAW.";
+        log("mapa do aprender · " + n + " células", "ok");
+      }
+    });
+    requestAnimationFrame(tickRoll);
+    refreshPorts().catch((e) => log(e.message, "err"));
+  </script>
+</body>
+</html>

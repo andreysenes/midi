@@ -12,6 +12,7 @@ import sys
 import threading
 import time
 import webbrowser
+from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
@@ -24,6 +25,75 @@ BAUD = 115200
 
 FQBN_PROBE = "rp2040:rp2040:rpipico:usbstack=picosdk"
 FQBN_PICO = "rp2040:rp2040:rpipico:usbstack=tinyusb"
+LEARN_JSON = ROOT / "learned_matrix.json"
+MATRIX_H = PROJECT / "firmware" / "pico" / "matrix.h"
+
+
+def _valid_matrix(matrix) -> bool:
+    if not isinstance(matrix, list) or len(matrix) != 7:
+        return False
+    for row in matrix:
+        if not isinstance(row, list) or len(row) != 8:
+            return False
+        for cell in row:
+            if not isinstance(cell, (int, float)) or int(cell) < 0 or int(cell) > 255:
+                return False
+    return True
+
+
+def load_learn_matrix() -> dict | None:
+    if not LEARN_JSON.exists():
+        return None
+    try:
+        data = json.loads(LEARN_JSON.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    matrix = data.get("matrix") if isinstance(data, dict) else None
+    if not _valid_matrix(matrix):
+        return None
+    data["matrix"] = [[int(c) for c in row] for row in matrix]
+    return data
+
+
+def patch_matrix_h(matrix: list[list[int]]) -> None:
+    src = MATRIX_H.read_text(encoding="utf-8")
+    start = src.find("static const uint8_t MATRIX[7][8] = {")
+    end = src.find("};", start)
+    if start < 0 or end < 0:
+        raise RuntimeError("MATRIX[7][8] nao encontrada em matrix.h")
+    comments = [
+        "KO0 piano F3..C4",
+        "KO1 F5..A5, A#5..C6",
+        "KO2 C#5..A4, D5..E5",
+        "KO3 F4..C#4, F#4..G#4",
+        "KO4 0-4, tempo+, sel",
+        "KO5 5-9, stop, tempo-",
+        "KO6 demo",
+    ]
+    lines = ["static const uint8_t MATRIX[7][8] = {"]
+    for i, row in enumerate(matrix):
+        cells = ", ".join(str(int(c)) for c in row)
+        comma = "," if i + 1 < 7 else ""
+        lines.append(f"    {{{cells}}}{comma} // {comments[i]}")
+    lines.append("}")
+    MATRIX_H.write_text(src[:start] + "\n".join(lines) + src[end + 1 :], encoding="utf-8")
+
+
+def save_learn_matrix(payload: dict) -> dict:
+    matrix = payload.get("matrix")
+    if not _valid_matrix(matrix):
+        raise RuntimeError("matriz 7x8 invalida")
+    clean = [[int(c) for c in row] for row in matrix]
+    data = {
+        "v": 1,
+        "matrix": clean,
+        "done": payload.get("done") or [],
+        "savedAt": int(time.time() * 1000),
+    }
+    LEARN_JSON.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    patch_matrix_h(clean)
+    filled = sum(1 for row in clean for c in row if c != 255)
+    return {"ok": True, "cells": filled, "matrix": clean}
 
 try:
     import serial
@@ -37,6 +107,7 @@ class Hub:
     def __init__(self) -> None:
         self.lock = threading.Lock()
         self.listeners: list[queue.Queue] = []
+        self.history: deque[dict] = deque(maxlen=500)
         self.ser = None
         self.port = ""
         self.last_port = ""
@@ -45,11 +116,26 @@ class Hub:
         self.reader_stop = threading.Event()
         self.reader_thread: threading.Thread | None = None
         self.io_lock = threading.Lock()
+        self.rx_bytes = 0
+        self.tx_bytes = 0
+        self.last_rx = 0.0
+        self.last_tx = 0.0
+        self._await_rx = False
+        self._last_json = ""
+        self._last_json_log = 0.0
+        self._last_sig = None
+        self._open_gen = 0
 
     def subscribe(self) -> queue.Queue:
-        q: queue.Queue = queue.Queue(maxsize=2000)
+        q: queue.Queue = queue.Queue(maxsize=4000)
         with self.lock:
             self.listeners.append(q)
+            replay = list(self.history)
+        for msg in replay:
+            try:
+                q.put_nowait(msg)
+            except queue.Full:
+                break
         return q
 
     def unsubscribe(self, q: queue.Queue) -> None:
@@ -58,15 +144,26 @@ class Hub:
                 self.listeners.remove(q)
 
     def emit(self, msg: dict) -> None:
+        kind = msg.get("type")
+        if kind in ("log", "line"):
+            text = str(msg.get("text") or "")
+            sys.stderr.write(text + "\n")
+            sys.stderr.flush()
         with self.lock:
-            dead = []
+            if kind in ("log", "line", "status"):
+                self.history.append(dict(msg))
             for q in self.listeners:
                 try:
                     q.put_nowait(msg)
                 except queue.Full:
-                    dead.append(q)
-            for q in dead:
-                self.listeners.remove(q)
+                    try:
+                        q.get_nowait()
+                    except queue.Empty:
+                        pass
+                    try:
+                        q.put_nowait(msg)
+                    except queue.Full:
+                        pass
 
     def ports(self) -> list[dict]:
         out = []
@@ -90,23 +187,54 @@ class Hub:
         out.sort(key=lambda x: (not x["usb"], x["device"]))
         return out
 
+    def _port_holders(self, port: str) -> list[str]:
+        try:
+            out = subprocess.check_output(
+                ["lsof", "-nP", port],
+                text=True,
+                timeout=2,
+                stderr=subprocess.DEVNULL,
+            )
+        except Exception:
+            return []
+        rows = []
+        for ln in out.splitlines()[1:]:
+            parts = ln.split()
+            if len(parts) >= 2:
+                rows.append(f"{parts[0]} pid={parts[1]}")
+        return rows[:8]
+
     def _open_serial(self, port: str):
-        self._open_gen = getattr(self, "_open_gen", 0) + 1
+        self._open_gen += 1
         gen = self._open_gen
         result: dict = {}
+        holders = self._port_holders(port)
+        if holders:
+            self._log("porta ja em uso: " + "; ".join(holders))
+            self._log("feche o Serial Monitor do Arduino IDE se estiver aberto")
 
         def worker() -> None:
-            try:
-                ser = serial.Serial(
-                    port,
-                    BAUD,
-                    timeout=0.25,
-                    write_timeout=1,
-                    exclusive=False,
-                )
-            except Exception as exc:
+            err = None
+            ser = None
+            for exclusive in (True, False):
+                try:
+                    ser = serial.Serial(
+                        port,
+                        BAUD,
+                        timeout=0.2,
+                        write_timeout=1,
+                        exclusive=exclusive,
+                        dsrdtr=False,
+                        rtscts=False,
+                    )
+                    result["exclusive"] = exclusive
+                    break
+                except Exception as exc:
+                    err = exc
+                    ser = None
+            if ser is None:
                 if gen == self._open_gen:
-                    result["err"] = exc
+                    result["err"] = err
                 return
             if gen != self._open_gen:
                 try:
@@ -115,10 +243,10 @@ class Hub:
                     pass
                 return
             try:
-                ser.dtr = False
+                ser.dtr = True
                 ser.rts = False
-            except Exception:
-                pass
+            except Exception as exc:
+                result["dtr"] = str(exc)
             result["ser"] = ser
 
         t = threading.Thread(target=worker, daemon=True)
@@ -129,7 +257,14 @@ class Hub:
             self._log(f"abrindo Serial… CDC lento apos BOOTSEL ({left}s)")
             t.join(timeout=3)
         if "ser" in result:
-            return result["ser"]
+            ser = result["ser"]
+            excl = result.get("exclusive")
+            self._log(f"CDC aberto exclusive={excl}  dtr={getattr(ser, 'dtr', '?')}")
+            if excl is False:
+                self._log("exclusive=False — outro app pode comer as respostas")
+            if result.get("dtr"):
+                self._log(f"dtr: {result['dtr']}")
+            return ser
         if "err" in result:
             raise result["err"]
         self._open_gen += 1
@@ -141,6 +276,10 @@ class Hub:
         if not port:
             raise RuntimeError("porta vazia")
         self._log(f"abrindo {port}…")
+        if self.ser is not None:
+            self._log("ja havia Serial — fechando antes de reabrir")
+            self.disconnect(quiet=True)
+            time.sleep(0.2)
         ser = self._open_serial(port)
         with self.io_lock:
             old = self.ser
@@ -156,10 +295,16 @@ class Hub:
             if t is not None and t is not threading.current_thread():
                 t.join(timeout=0.8)
             try:
-                ser.reset_input_buffer()
-                ser.reset_output_buffer()
+                n = ser.in_waiting
+                self._log(f"bytes ja no CDC: {n}")
             except Exception as exc:
-                self._log(f"buffer: {exc}")
+                self._log(f"in_waiting: {exc}")
+            self.rx_bytes = 0
+            self.tx_bytes = 0
+            self.last_rx = 0.0
+            self._last_json = ""
+            self._last_json_log = 0.0
+            self._last_sig = None
             self.reader_stop.clear()
             self.ser = ser
             self.port = port
@@ -167,7 +312,7 @@ class Hub:
             self.connected = True
             self.reader_thread = threading.Thread(target=self._read_loop, args=(ser,), daemon=True)
             self.reader_thread.start()
-        threading.Timer(0.3, self._kick_ui).start()
+        threading.Timer(0.4, self._kick_ui).start()
         self.emit({"type": "status", "connected": True, "port": port})
         self._log(f"Serial aberto {port}")
         return port
@@ -208,11 +353,102 @@ class Hub:
         ser = self.ser
         if ser is None:
             raise RuntimeError("Pico nao conectado")
-        ser.write(text.encode("ascii", errors="ignore"))
-        ser.flush()
+        payload = text if text.endswith("\n") else text + "\n"
+        data = payload.encode("ascii", errors="ignore")
+        with self.io_lock:
+            ser.write(data)
+            ser.flush()
+        self.tx_bytes += len(data)
+        self.last_tx = time.time()
+        self._await_rx = True
+        shown = text.replace("\n", "\\n").replace("\r", "\\r")
+        self._log(f"tx {shown!r}  ({len(data)} bytes)")
+
+    def _handle_serial_line(self, line: str) -> None:
+        self.last_rx = time.time()
+        self._await_rx = False
+        if line.startswith("J{"):
+            try:
+                payload = json.loads(line[1:])
+            except json.JSONDecodeError:
+                self.emit({"type": "line", "text": line})
+                return
+            kind = payload.get("t")
+            if kind == "k":
+                self.emit({"type": "key", **payload})
+                name = payload.get("n") or ""
+                dn = "DOWN" if payload.get("dn") else "UP"
+                self.emit(
+                    {
+                        "type": "line",
+                        "text": f"KEY  KO{payload.get('ko')} KI{payload.get('ki')} {dn}  {name}",
+                    }
+                )
+                return
+            if kind == "l":
+                self.emit({"type": "learn", **payload})
+                st = payload.get("st") or ""
+                name = payload.get("n") or ""
+                i = payload.get("i")
+                tot = payload.get("tot") or 46
+                extra = ""
+                if payload.get("ko") is not None:
+                    extra = f"  KO{payload.get('ko')} KI{payload.get('ki')}"
+                step = ""
+                if i is not None and st in ("wait", "ok", "skip", "back"):
+                    step = f"  [{int(i) + 1}/{tot}]"
+                self.emit(
+                    {
+                        "type": "line",
+                        "text": f"LEARN  {st}{step}  {name}{extra}".rstrip(),
+                    }
+                )
+                return
+            if kind == "w":
+                ki = payload.get("ki")
+                text = (
+                    f"WARN  KO0+KO4 no KI{ki} — conferir GPB0/GPB4, tocos 30 e 26"
+                )
+                self.emit({"type": "warn", "ki": ki, "text": text})
+                self.emit({"type": "line", "text": text})
+                return
+            self.emit({"type": "state", **payload})
+            now = time.time()
+            sig = (
+                payload.get("mcp"),
+                payload.get("oled"),
+                payload.get("ws"),
+                payload.get("e1"),
+                payload.get("e2"),
+                payload.get("sw"),
+                payload.get("ko"),
+                payload.get("ki"),
+                payload.get("dn"),
+                tuple(payload.get("h") or []),
+                tuple(payload.get("s") or []),
+            )
+            if sig != self._last_sig or now - self._last_json_log >= 0.8:
+                self._last_sig = sig
+                self._last_json_log = now
+                self.emit(
+                    {
+                        "type": "line",
+                        "text": (
+                            f"UI  MCP={'ok' if payload.get('mcp') else 'nao'}"
+                            f"  OLED={'ok' if payload.get('oled') else 'nao'}"
+                            f"  WS={'ok' if payload.get('ws') else 'nao'}"
+                            f"  E1={payload.get('e1')} E2={payload.get('e2')}"
+                            f"  X={payload.get('x')} Y={payload.get('y')} SW={payload.get('sw')}"
+                        ),
+                    }
+                )
+            return
+        self.emit({"type": "line", "text": line})
 
     def _read_loop(self, ser) -> None:
         buf = b""
+        last_partial = 0.0
+        self._log("reader Serial iniciado")
         while not self.reader_stop.is_set():
             try:
                 chunk = ser.read(256)
@@ -221,32 +457,42 @@ class Hub:
                     break
                 msg = str(exc).lower()
                 if "bad file descriptor" in msg or "device not configured" in msg:
+                    self._log(f"serial fechou: {exc}")
                     break
                 self.emit({"type": "line", "text": f"serial: {exc}"})
                 self.connected = False
                 self.emit({"type": "status", "connected": False, "port": ""})
                 break
-            if not chunk:
+            if chunk:
+                self.rx_bytes += len(chunk)
+                if self.rx_bytes == len(chunk):
+                    self._log(f"rx primeiro pacote ({len(chunk)} bytes)")
+                buf += chunk.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+                last_partial = time.time()
+                while b"\n" in buf:
+                    raw, buf = buf.split(b"\n", 1)
+                    line = raw.decode("utf-8", errors="replace")
+                    if line:
+                        self._handle_serial_line(line)
                 continue
-            buf += chunk
-            while b"\n" in buf:
-                raw, buf = buf.split(b"\n", 1)
-                line = raw.decode("utf-8", errors="replace").strip("\r")
-                if not line:
-                    continue
-                if line.startswith("J{"):
-                    try:
-                        payload = json.loads(line[1:])
-                    except json.JSONDecodeError:
-                        self.emit({"type": "line", "text": line})
-                        continue
-                    kind = payload.get("t")
-                    if kind == "k":
-                        self.emit({"type": "key", **payload})
-                    else:
-                        self.emit({"type": "state", **payload})
-                    continue
-                self.emit({"type": "line", "text": line})
+            if buf and time.time() - last_partial >= 0.4:
+                line = buf.decode("utf-8", errors="replace")
+                buf = b""
+                if line.strip():
+                    self._log(f"linha sem \\n: {line}")
+                    self._handle_serial_line(line)
+            if self._await_rx and self.last_tx and time.time() - self.last_tx >= 1.6:
+                waiting = 0
+                try:
+                    waiting = ser.in_waiting
+                except Exception:
+                    pass
+                silent = (time.time() - self.last_rx) if self.last_rx else -1
+                self._log(
+                    f"sem resposta do Pico  in_waiting={waiting}  "
+                    f"rx_total={self.rx_bytes}  last_rx={silent:.1f}s"
+                )
+                self._await_rx = False
 
     def _log(self, text: str) -> None:
         self.emit({"type": "log", "text": text})
@@ -550,8 +796,17 @@ class Handler(BaseHTTPRequestHandler):
         if path in ("/", "/index.html"):
             self._file(ROOT / "static" / "index.html", "text/html; charset=utf-8")
             return
+        if path in ("/midi", "/midi.html"):
+            self._file(ROOT / "static" / "midi.html", "text/html; charset=utf-8")
+            return
         if path == "/api/ports":
-            self._json(200, {"ports": hub.ports(), "connected": hub.connected, "port": hub.port})
+            self._json(200, {
+                "ports": hub.ports(),
+                "connected": hub.connected,
+                "port": hub.port,
+                "rx": hub.rx_bytes,
+                "tx": hub.tx_bytes,
+            })
             return
         if path == "/api/status":
             self._json(
@@ -561,11 +816,35 @@ class Handler(BaseHTTPRequestHandler):
                     "port": hub.port,
                     "flashing": hub.flashing,
                     "cli": shutil.which("arduino-cli") is not None,
+                    "rx": hub.rx_bytes,
+                    "tx": hub.tx_bytes,
                 },
             )
             return
+        if path == "/api/learn-matrix":
+            data = load_learn_matrix()
+            if data is None:
+                self._json(200, {"ok": False, "cells": 0, "matrix": None})
+                return
+            cells = sum(1 for row in data["matrix"] for c in row if c != 255)
+            self._json(200, {"ok": True, "cells": cells, **data})
+            return
         if path == "/api/events":
             self._sse()
+            return
+        if path == "/api/logs":
+            with hub.lock:
+                items = list(hub.history)
+            self._json(
+                200,
+                {
+                    "logs": items,
+                    "connected": hub.connected,
+                    "port": hub.port,
+                    "rx": hub.rx_bytes,
+                    "tx": hub.tx_bytes,
+                },
+            )
             return
         self._json(404, {"error": "not found"})
 
@@ -591,6 +870,9 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/flash":
                 hub.flash(str(body.get("fw") or "probe"))
                 self._json(200, {"ok": True})
+                return
+            if path == "/api/learn-matrix":
+                self._json(200, save_learn_matrix(body))
                 return
             self._json(404, {"error": "not found"})
         except (BrokenPipeError, ConnectionResetError):
@@ -619,6 +901,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
         self.send_header("Connection", "keep-alive")
+        self.send_header("X-Accel-Buffering", "no")
         self.end_headers()
         self.wfile.write(b": ping\n\n")
         self.wfile.flush()

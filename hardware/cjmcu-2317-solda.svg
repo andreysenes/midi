@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 188" width="210mm" height="188mm">
+<title>CJMCU-2317 verso — solda da matriz SA-1</title>
+<style>
+  text { font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif; fill: #1a1814; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+  .w { fill: #f4efe4; }
+  .dim { fill: #5c564c; }
+</style>
+<rect width="210" height="188" fill="#e8e2d6"/>
+<text x="8.0" y="11.0" font-size="4.6" font-weight="700">CJMCU-2317 verso · texto CJMCU legível</text>
+<text x="8.0" y="17.0" class="dim" font-size="2.7">Número no furo = toco do M6387. GPA = A (KI). GPB = B (KO). A0 da esquerda ≠ GPA0.</text>
+<rect x="52.0" y="22.0" width="106.0" height="148.0" fill="#2a6b4a" stroke="#0e2018" stroke-width="0.55" rx="1.8"/>
+<text x="105.0" y="30.0" class="w" font-size="4.2" font-weight="700" text-anchor="middle">CJMCU-2317</text>
+<rect x="81.0" y="34.0" width="48.0" height="12.0" fill="#1a1814" rx="0.6"/>
+<text x="105.0" y="42.2" class="w" font-size="2.6" text-anchor="middle">MCP23017</text>
+<circle cx="61.0" cy="56.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="65.2" y="57.1" class="mono w" font-size="2.8">A2</text>
+<text x="57.4" y="57.1" class="mono" fill="#8a3030" font-size="2.7" text-anchor="end">→ GND</text>
+<circle cx="61.0" cy="67.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="65.2" y="68.2" class="mono w" font-size="2.8">A1</text>
+<text x="57.4" y="68.2" class="mono" fill="#8a3030" font-size="2.7" text-anchor="end">→ GND</text>
+<circle cx="61.0" cy="78.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="65.2" y="79.2" class="mono w" font-size="2.8">A0</text>
+<text x="57.4" y="79.2" class="mono" fill="#8a3030" font-size="2.7" text-anchor="end">→ GND</text>
+<circle cx="61.0" cy="89.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="65.2" y="90.2" class="mono w" font-size="2.8">GND</text>
+<text x="57.4" y="90.2" class="mono" fill="#222" font-size="2.7" text-anchor="end">← 7 + Pico</text>
+<circle cx="61.0" cy="100.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="65.2" y="101.2" class="mono w" font-size="2.8">VCC</text>
+<text x="57.4" y="101.2" class="mono" fill="#a33" font-size="2.7" text-anchor="end">← Pico 3V3</text>
+<circle cx="61.0" cy="111.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="65.2" y="112.2" class="mono w" font-size="2.8">RESET</text>
+<text x="57.4" y="112.2" class="mono" fill="#a33" font-size="2.7" text-anchor="end">← Pico 3V3</text>
+<circle cx="61.0" cy="122.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="65.2" y="123.2" class="mono w" font-size="2.8">SDA/SI</text>
+<text x="57.4" y="123.2" class="mono" fill="#222" font-size="2.7" text-anchor="end">← GP0</text>
+<circle cx="61.0" cy="133.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="65.2" y="134.2" class="mono w" font-size="2.8">SCL/SCK</text>
+<text x="57.4" y="134.2" class="mono" fill="#222" font-size="2.7" text-anchor="end">← GP1</text>
+<circle cx="61.0" cy="144.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="65.2" y="145.2" class="mono w" font-size="2.8">NC/SO</text>
+<text x="57.4" y="145.2" class="mono" fill="#666" font-size="2.7" text-anchor="end">solto</text>
+<circle cx="61.0" cy="155.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="65.2" y="156.2" class="mono w" font-size="2.8">NC/CS</text>
+<text x="57.4" y="156.2" class="mono" fill="#666" font-size="2.7" text-anchor="end">solto</text>
+<text x="120.0" y="48.8" class="w mono" font-size="2.4" text-anchor="middle">B  KO</text>
+<text x="134.0" y="48.8" class="w mono" font-size="2.4" text-anchor="middle">A  KI</text>
+<circle cx="120.0" cy="56.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<circle cx="134.0" cy="56.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="138.0" y="57.1" class="mono w" font-size="2.6">VCC/GND</text>
+<text x="162.0" y="57.1" class="w" font-size="2.4">GND ok</text>
+<circle cx="120.0" cy="67.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<circle cx="134.0" cy="67.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="138.0" y="68.2" class="mono w" font-size="2.6">ITB/ITA</text>
+<text x="162.0" y="68.2" class="w" font-size="2.4">solto</text>
+<circle cx="120.0" cy="78.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<circle cx="134.0" cy="78.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="138.0" y="79.2" class="mono w" font-size="2.6">B0/A0</text>
+<circle cx="120.0" cy="78.0" r="1.4" fill="#e07a3d" stroke="#1a1814" stroke-width="0.2"/>
+<text x="120.0" y="79.0" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">30</text>
+<circle cx="134.0" cy="78.0" r="1.4" fill="#2e7a88" stroke="#1a1814" stroke-width="0.2"/>
+<text x="134.0" y="79.0" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">11</text>
+<circle cx="120.0" cy="89.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<circle cx="134.0" cy="89.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="138.0" y="90.2" class="mono w" font-size="2.6">B1/A1</text>
+<circle cx="120.0" cy="89.0" r="1.4" fill="#d4a017" stroke="#1a1814" stroke-width="0.2"/>
+<text x="120.0" y="90.0" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">29</text>
+<circle cx="134.0" cy="89.0" r="1.4" fill="#2e7a88" stroke="#1a1814" stroke-width="0.2"/>
+<text x="134.0" y="90.0" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">12</text>
+<circle cx="120.0" cy="100.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<circle cx="134.0" cy="100.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="138.0" y="101.2" class="mono w" font-size="2.6">B2/A2</text>
+<circle cx="120.0" cy="100.0" r="1.4" fill="#3d9a62" stroke="#1a1814" stroke-width="0.2"/>
+<text x="120.0" y="101.0" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">28</text>
+<circle cx="134.0" cy="100.0" r="1.4" fill="#2e7a88" stroke="#1a1814" stroke-width="0.2"/>
+<text x="134.0" y="101.0" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">13</text>
+<circle cx="120.0" cy="111.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<circle cx="134.0" cy="111.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="138.0" y="112.2" class="mono w" font-size="2.6">B3/A3</text>
+<circle cx="120.0" cy="111.0" r="1.4" fill="#3d7ec4" stroke="#1a1814" stroke-width="0.2"/>
+<text x="120.0" y="112.0" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">27</text>
+<circle cx="134.0" cy="111.0" r="1.4" fill="#2e7a88" stroke="#1a1814" stroke-width="0.2"/>
+<text x="134.0" y="112.0" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">14</text>
+<circle cx="120.0" cy="122.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<circle cx="134.0" cy="122.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="138.0" y="123.2" class="mono w" font-size="2.6">B4/A4</text>
+<circle cx="120.0" cy="122.0" r="1.4" fill="#9b6bb3" stroke="#1a1814" stroke-width="0.2"/>
+<text x="120.0" y="123.0" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">26</text>
+<circle cx="134.0" cy="122.0" r="1.4" fill="#2e7a88" stroke="#1a1814" stroke-width="0.2"/>
+<text x="134.0" y="123.0" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">15</text>
+<circle cx="120.0" cy="133.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<circle cx="134.0" cy="133.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="138.0" y="134.2" class="mono w" font-size="2.6">B5/A5</text>
+<circle cx="120.0" cy="133.0" r="1.4" fill="#c45c6a" stroke="#1a1814" stroke-width="0.2"/>
+<text x="120.0" y="134.1" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">25</text>
+<circle cx="134.0" cy="133.0" r="1.4" fill="#2e7a88" stroke="#1a1814" stroke-width="0.2"/>
+<text x="134.0" y="134.1" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">16</text>
+<circle cx="120.0" cy="144.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<circle cx="134.0" cy="144.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="138.0" y="145.2" class="mono w" font-size="2.6">B6/A6</text>
+<circle cx="120.0" cy="144.0" r="1.4" fill="#6a8a9b" stroke="#1a1814" stroke-width="0.2"/>
+<text x="120.0" y="145.1" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">24</text>
+<circle cx="134.0" cy="144.0" r="1.4" fill="#2e7a88" stroke="#1a1814" stroke-width="0.2"/>
+<text x="134.0" y="145.1" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">17</text>
+<circle cx="120.0" cy="155.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<circle cx="134.0" cy="155.0" r="2.0" fill="#e4dccf" stroke="#1a1814" stroke-width="0.4"/>
+<text x="138.0" y="156.2" class="mono w" font-size="2.6">B7/A7</text>
+<circle cx="134.0" cy="155.0" r="1.4" fill="#2e7a88" stroke="#1a1814" stroke-width="0.2"/>
+<text x="134.0" y="156.1" class="mono" fill="#fff" font-size="2.3" font-weight="700" text-anchor="middle">18</text>
+<text x="120.0" y="156.1" class="mono" fill="#f4efe4" font-size="2.6" text-anchor="middle">—</text>
+<text x="8.0" y="178.0" font-size="2.8">Furo B (esquerda do par) = KO, toco 30…24.   Furo A (perto do texto) = KI, toco 11–18.</text>
+<text x="8.0" y="184.0" class="dim" font-size="2.5">A0 A1 A2 e RESET: cambos curtos no módulo. Só 3,3 V. Toco 23 solto.  ·  SOLDA-MCP.md</text>
+</svg>

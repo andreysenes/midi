@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Casio SA-1 → MIDI</title>
+  <style>
+    :root {
+      --bg: #12110f;
+      --panel: #1c1a17;
+      --line: #2e2b26;
+      --ink: #e8e0d3;
+      --dim: #9a917f;
+      --amber: #e2a54a;
+      --ok: #8bc46a;
+      --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); }
+    body { min-height: 100vh; }
+    header {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+      padding: 16px 22px; border-bottom: 1px solid var(--line); background: #161410;
+    }
+    header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: .04em; }
+    header h1 span { color: var(--amber); }
+    header a { color: var(--dim); text-decoration: none; font-size: 13px; }
+    header a:hover { color: var(--amber); }
+    .grow { flex: 1; }
+    main { max-width: 980px; margin: 0 auto; padding: 28px 18px 64px; display: grid; gap: 16px; }
+    .hero { padding: 8px 0 4px; }
+    .hero p { margin: 10px 0 0; color: var(--dim); line-height: 1.55; max-width: 62ch; }
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+    }
+    .card h2 {
+      margin: 0 0 12px; font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--dim); font-weight: 500; font-size: 12px; }
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      font: 12px var(--mono); padding: 6px 10px; border-radius: 999px;
+      background: #141210; border: 1px solid var(--line); color: var(--ink);
+    }
+    .fig {
+      background: #e8e2d6; border-radius: 8px; overflow: auto; max-height: 520px;
+      border: 1px solid var(--line);
+    }
+    .fig object, .fig img { display: block; width: 100%; height: auto; }
+    .links { display: flex; flex-wrap: wrap; gap: 10px; }
+    .links a {
+      color: var(--amber); text-decoration: none; font-size: 14px;
+      border: 1px solid #6a5224; background: #3a2e18; border-radius: 6px; padding: 8px 12px;
+    }
+    .links a:hover { border-color: var(--amber); }
+    .note { font-size: 13px; color: var(--dim); line-height: 1.5; }
+    code { font-family: var(--mono); font-size: 12px; color: var(--ok); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Casio SA-1 <span>MIDI</span></h1>
+    <div class="grow"></div>
+    <a href="https://github.com/andreysenes/midi">GitHub</a>
+  </header>
+  <main>
+    <section class="hero">
+      <p>
+        A placa <strong>M3210-MAIM(F)</strong> fica no teclado. O MCP23017 lê a matriz;
+        o Raspberry Pi Pico manda USB-MIDI, lê dois EC11 e o joystick KY-023, e mostra estado no OLED.
+        O PCM5102A fica no I2S para o synth no próprio Pico.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Peças</h2>
+      <table>
+        <thead><tr><th>Peça</th><th>Papel</th></tr></thead>
+        <tbody>
+          <tr><td>CJMCU-2317 (MCP23017)</td><td>15 fios da matriz (7 KO + 8 KI)</td></tr>
+          <tr><td>Pico 2020</td><td>USB-MIDI + OLED + encoders + joystick + I2S</td></tr>
+          <tr><td>2× EC11</td><td>Oitava e volume (CC 7)</td></tr>
+          <tr><td>Joystick KY-023</td><td>Pitch bend, mod, sustain</td></tr>
+          <tr><td>OLED 0.91" SSD1306</td><td>Oitava, volume, programa, nota</td></tr>
+          <tr><td>WS2812 8×1</td><td>Barra RGB (MIDI Clock / banco)</td></tr>
+          <tr><td>PCM5102A</td><td>DAC I2S, jack 3,5 mm</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Lab local</h2>
+      <p class="note">
+        O banco de testes fala com o Pico por Serial e precisa do servidor Python na tua máquina.
+        GitHub Pages só serve esta página estática.
+      </p>
+      <p class="note" style="margin-top:10px"><code>./lab/run.sh</code> → <code>http://127.0.0.1:8741</code></p>
+    </section>
+
+    <section class="card">
+      <h2>Matriz M3210-MAIM(F)</h2>
+      <div class="fig">
+        <object data="m3210-maim.svg" type="image/svg+xml" title="PCB M3210-MAIM(F)"></object>
+      </div>
+      <p class="note" style="margin-top:10px"><a href="m3210-maim.svg" style="color:var(--amber)">Abrir SVG</a> · 1 unidade = 1 mm · face de solda</p>
+    </section>
+
+    <section class="card">
+      <h2>Solda CJMCU-2317</h2>
+      <div class="fig" style="max-height:420px">
+        <object data="cjmcu-2317-solda.svg" type="image/svg+xml" title="CJMCU-2317 verso"></object>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Repositório</h2>
+      <div class="pills">
+        <span class="pill">firmware/pico</span>
+        <span class="pill">firmware/probe</span>
+        <span class="pill">lab/</span>
+        <span class="pill">hardware/</span>
+      </div>
+      <div class="links" style="margin-top:14px">
+        <a href="https://github.com/andreysenes/midi">Código no GitHub</a>
+        <a href="https://github.com/andreysenes/midi/blob/main/README.md">README</a>
+        <a href="https://github.com/andreysenes/midi/blob/main/ETAPA-1.md">Etapa 1</a>
+        <a href="https://github.com/andreysenes/midi/blob/main/ETAPA-2.md">Etapa 2</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -26,6 +26,12 @@ struct OledStatus {
   bool sustain;
   bool usbMounted;
   bool mcpOk;
+  uint8_t perfBank;  // 0..7
+  uint8_t padBank;   // 0..7
+  bool selHeld;
+  bool clockRunning;
+  bool transportPlaying;
+  uint8_t beat;  // 0..3 = tempos 1..4
 };
 
 static void oledMark() {
@@ -65,25 +71,53 @@ static void oledDraw(const OledStatus &st) {
     return;
   }
 
+  // Bancos na UI: 1..8 (internos 0..7)
   oled.setCursor(0, 0);
-  oled.print(F("OCT "));
+  if (st.selHeld) {
+    oled.print(F("BANK "));
+    oled.print(st.padBank + 1);
+  } else {
+    oled.print(F("P"));
+    oled.print(st.perfBank + 1);
+    oled.print(F(" B"));
+    oled.print(st.padBank + 1);
+  }
+  if (st.transportPlaying || st.clockRunning) {
+    oled.print(F(" >"));
+  }
+  oled.setCursor(74, 0);
+  oled.print(F("O"));
   if (st.octave >= 0) {
     oled.print('+');
   }
   oled.print(st.octave);
 
-  oled.setCursor(74, 0);
-  oled.print(F("VOL "));
-  oled.print(st.volume);
-
-  oled.drawRect(0, 10, 128, 8, SSD1306_WHITE);
-  const int barW = map(st.volume, 0, 127, 0, 126);
-  if (barW > 0) {
-    oled.fillRect(1, 11, barW, 6, SSD1306_WHITE);
+  // Duas barras verticais de volume no canto direito (128×32).
+  {
+    const int x0 = 118;
+    const int y0 = 2;
+    const int bw = 4;
+    const int bh = 28;
+    const int gap = 2;
+    const int fill = map(st.volume, 0, 127, 0, bh - 2);
+    for (uint8_t k = 0; k < 2; k++) {
+      const int x = x0 + k * (bw + gap);
+      oled.drawRect(x, y0, bw, bh, SSD1306_WHITE);
+      if (fill > 0) {
+        oled.fillRect(x + 1, y0 + bh - 1 - fill, bw - 2, fill, SSD1306_WHITE);
+      }
+    }
   }
 
   oled.setCursor(0, 22);
-  if (st.typedDigits == 1) {
+  if (st.clockRunning) {
+    for (uint8_t i = 0; i < 4; i++) {
+      if (i) {
+        oled.print('.');
+      }
+      oled.print(i == st.beat ? static_cast<char>('1' + i) : '-');
+    }
+  } else if (st.typedDigits == 1) {
     oled.print(F("PGM "));
     oled.print(st.typedProgram / 10);
     oled.print('_');
@@ -107,9 +141,9 @@ static void oledDraw(const OledStatus &st) {
   }
 
   if (st.sustain) {
-    oled.fillRect(110, 22, 18, 8, SSD1306_WHITE);
+    oled.fillRect(100, 22, 16, 8, SSD1306_WHITE);
     oled.setTextColor(SSD1306_BLACK);
-    oled.setCursor(114, 22);
+    oled.setCursor(104, 22);
     oled.print(F("S"));
     oled.setTextColor(SSD1306_WHITE);
   }

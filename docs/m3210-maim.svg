@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640" width="400mm" height="640mm">
+<title>Casio SA-1 · M3210-MAIM(F) · matriz verso 1:1 mm</title>
+<desc>Vista da face de solda. Grave à esquerda, agudo à direita, teclas em baixo — igual às fotos. 1 unidade = 1 mm. Contorno da placa 352 × 74 mm.</desc>
+<style>
+  text { font-family: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif; fill: #1a1814; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+  .dim { fill: #6a6358; }
+  .w { fill: #f4efe4; }
+</style>
+<rect width="400" height="640" fill="#e8e2d6"/>
+<text x="24.00" y="16.00" font-size="7" font-weight="700">CASIO SA-1  ·  PCB M3210-MAIM(F)</text>
+<text x="24.00" y="24.00" class="dim" font-size="3.2">Face de solda  ·  1 mm = 1 unidade  ·  imprimir a 100% para sobrepor na placa</text>
+<text x="376.00" y="16.00" class="dim" font-size="3" text-anchor="end">hardware/m3210-maim.svg</text>
+<g id="placa" >
+<rect x="24.00" y="36.00" width="352.00" height="74.00" fill="#1c3d2e" stroke="#0e2018" stroke-width="0.6" rx="1.2"/>
+<circle cx="32.00" cy="44.00" r="1.60" fill="none" stroke="#7aa090" stroke-width="0.3"/>
+<circle cx="32.00" cy="102.00" r="1.60" fill="none" stroke="#7aa090" stroke-width="0.3"/>
+<circle cx="368.00" cy="44.00" r="1.60" fill="none" stroke="#7aa090" stroke-width="0.3"/>
+<circle cx="368.00" cy="102.00" r="1.60" fill="none" stroke="#7aa090" stroke-width="0.3"/>
+<circle cx="144.00" cy="44.00" r="1.60" fill="none" stroke="#7aa090" stroke-width="0.3"/>
+<circle cx="254.00" cy="44.00" r="1.60" fill="none" stroke="#7aa090" stroke-width="0.3"/>
+<rect x="28.00" y="50.00" width="28.00" height="22.00" fill="#2a5644" opacity="0.5" rx="0.4"/>
+<text x="42.00" y="58.00" class="w" font-size="2.2" text-anchor="middle">W / R</text>
+<text x="42.00" y="62.50" class="w" font-size="1.8" text-anchor="middle">speaker</text>
+<text x="42.00" y="68.00" class="w" font-size="1.8" text-anchor="middle">DC / power</text>
+<text x="362.00" y="64.00" fill="#8fbfa8" font-size="3.4" font-weight="700" text-anchor="end">M3210-</text>
+<text x="362.00" y="69.00" fill="#8fbfa8" font-size="3.4" font-weight="700" text-anchor="end">MAIM(F)</text>
+<g id="ki-bus" >
+<line x1="34.00" y1="80.00" x2="358.00" y2="80.00" stroke="#7ec8c3" stroke-width="0.28" opacity="0.85"/>
+<text x="359.20" y="80.60" class="mono" fill="#b6ebe4" font-size="1.6">KI0</text>
+<line x1="34.00" y1="80.85" x2="358.00" y2="80.85" stroke="#7ec8c3" stroke-width="0.28" opacity="0.85"/>
+<text x="359.20" y="81.45" class="mono" fill="#b6ebe4" font-size="1.6">KI1</text>
+<line x1="34.00" y1="81.70" x2="358.00" y2="81.70" stroke="#7ec8c3" stroke-width="0.28" opacity="0.85"/>
+<text x="359.20" y="82.30" class="mono" fill="#b6ebe4" font-size="1.6">KI2</text>
+<line x1="34.00" y1="82.55" x2="358.00" y2="82.55" stroke="#7ec8c3" stroke-width="0.28" opacity="0.85"/>
+<text x="359.20" y="83.15" class="mono" fill="#b6ebe4" font-size="1.6">KI3</text>
+<line x1="34.00" y1="83.40" x2="358.00" y2="83.40" stroke="#7ec8c3" stroke-width="0.28" opacity="0.85"/>
+<text x="359.20" y="84.00" class="mono" fill="#b6ebe4" font-size="1.6">KI4</text>
+<line x1="34.00" y1="84.25" x2="358.00" y2="84.25" stroke="#7ec8c3" stroke-width="0.28" opacity="0.85"/>
+<text x="359.20" y="84.85" class="mono" fill="#b6ebe4" font-size="1.6">KI5</text>
+<line x1="34.00" y1="85.10" x2="358.00" y2="85.10" stroke="#7ec8c3" stroke-width="0.28" opacity="0.85"/>
+<text x="359.20" y="85.70" class="mono" fill="#b6ebe4" font-size="1.6">KI6</text>
+<line x1="34.00" y1="85.95" x2="358.00" y2="85.95" stroke="#7ec8c3" stroke-width="0.28" opacity="0.85"/>
+<text x="359.20" y="86.55" class="mono" fill="#b6ebe4" font-size="1.6">KI7</text>
+</g>
+<g id="carbono" >
+<rect x="334.00" y="77.80" width="22.00" height="1.50" fill="#1a1410" rx="0.3"/>
+<text x="345.00" y="77.40" fill="#c4b8a8" font-size="1.5" text-anchor="middle">jumper KO3</text>
+<rect x="334.00" y="81.20" width="22.00" height="1.50" fill="#1a1410" rx="0.3"/>
+<text x="345.00" y="80.80" fill="#c4b8a8" font-size="1.5" text-anchor="middle">jumper KO2</text>
+<rect x="334.00" y="84.60" width="22.00" height="1.50" fill="#1a1410" rx="0.3"/>
+<text x="345.00" y="84.20" fill="#c4b8a8" font-size="1.5" text-anchor="middle">jumper KO1</text>
+</g>
+<g id="ko-rails" >
+<line x1="33.80" y1="102.60" x2="112.20" y2="102.60" stroke="#e07a3d" stroke-width="0.7" stroke-linecap="round"/>
+<line x1="73.00" y1="102.60" x2="73.00" y2="76.00" stroke="#e07a3d" stroke-width="0.35" opacity="0.7"/>
+<line x1="113.80" y1="102.60" x2="192.20" y2="102.60" stroke="#d4a017" stroke-width="0.7" stroke-linecap="round"/>
+<line x1="153.00" y1="102.60" x2="153.00" y2="76.00" stroke="#d4a017" stroke-width="0.35" opacity="0.7"/>
+<line x1="193.80" y1="102.60" x2="272.20" y2="102.60" stroke="#3d9a62" stroke-width="0.7" stroke-linecap="round"/>
+<line x1="233.00" y1="102.60" x2="233.00" y2="76.00" stroke="#3d9a62" stroke-width="0.35" opacity="0.7"/>
+<line x1="273.80" y1="102.60" x2="352.20" y2="102.60" stroke="#3d7ec4" stroke-width="0.7" stroke-linecap="round"/>
+<line x1="313.00" y1="102.60" x2="313.00" y2="76.00" stroke="#3d7ec4" stroke-width="0.35" opacity="0.7"/>
+</g>
+<g id="teclas" >
+<circle cx="38.00" cy="97.00" r="3.60" fill="#11100e" stroke="#e07a3d" stroke-width="0.45"/>
+<line x1="35.80" y1="97.00" x2="40.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="38.00" y1="94.80" x2="38.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="38.00" y1="93.40" x2="38.00" y2="80.00" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="38.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">F3</text>
+<text x="38.00" y="92.40" class="mono" fill="#e07a3d" font-size="1.45" text-anchor="middle">●0</text>
+<circle cx="48.00" cy="97.00" r="3.60" fill="#11100e" stroke="#e07a3d" stroke-width="0.45"/>
+<line x1="45.80" y1="97.00" x2="50.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="48.00" y1="94.80" x2="48.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="48.00" y1="93.40" x2="48.00" y2="80.85" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="48.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">F#3</text>
+<text x="48.00" y="92.40" class="mono" fill="#e07a3d" font-size="1.45" text-anchor="middle">●1</text>
+<circle cx="58.00" cy="97.00" r="3.60" fill="#11100e" stroke="#e07a3d" stroke-width="0.45"/>
+<line x1="55.80" y1="97.00" x2="60.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="58.00" y1="94.80" x2="58.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="58.00" y1="93.40" x2="58.00" y2="81.70" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="58.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">G3</text>
+<text x="58.00" y="92.40" class="mono" fill="#e07a3d" font-size="1.45" text-anchor="middle">●2</text>
+<circle cx="68.00" cy="97.00" r="3.60" fill="#11100e" stroke="#e07a3d" stroke-width="0.45"/>
+<line x1="65.80" y1="97.00" x2="70.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="68.00" y1="94.80" x2="68.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="68.00" y1="93.40" x2="68.00" y2="82.55" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="68.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">G#3</text>
+<text x="68.00" y="92.40" class="mono" fill="#e07a3d" font-size="1.45" text-anchor="middle">●3</text>
+<circle cx="78.00" cy="97.00" r="3.60" fill="#11100e" stroke="#e07a3d" stroke-width="0.45"/>
+<line x1="75.80" y1="97.00" x2="80.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="78.00" y1="94.80" x2="78.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="78.00" y1="93.40" x2="78.00" y2="83.40" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="78.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">A3</text>
+<text x="78.00" y="92.40" class="mono" fill="#e07a3d" font-size="1.45" text-anchor="middle">●4</text>
+<circle cx="88.00" cy="97.00" r="3.60" fill="#11100e" stroke="#e07a3d" stroke-width="0.45"/>
+<line x1="85.80" y1="97.00" x2="90.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="88.00" y1="94.80" x2="88.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="88.00" y1="93.40" x2="88.00" y2="84.25" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="88.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">A#3</text>
+<text x="88.00" y="92.40" class="mono" fill="#e07a3d" font-size="1.45" text-anchor="middle">○5</text>
+<circle cx="98.00" cy="97.00" r="3.60" fill="#11100e" stroke="#e07a3d" stroke-width="0.45"/>
+<line x1="95.80" y1="97.00" x2="100.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="98.00" y1="94.80" x2="98.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="98.00" y1="93.40" x2="98.00" y2="85.10" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="98.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">B3</text>
+<text x="98.00" y="92.40" class="mono" fill="#e07a3d" font-size="1.45" text-anchor="middle">○6</text>
+<circle cx="108.00" cy="97.00" r="3.60" fill="#11100e" stroke="#e07a3d" stroke-width="0.45"/>
+<line x1="105.80" y1="97.00" x2="110.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="108.00" y1="94.80" x2="108.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="108.00" y1="93.40" x2="108.00" y2="85.95" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="108.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">C4</text>
+<text x="108.00" y="92.40" class="mono" fill="#e07a3d" font-size="1.45" text-anchor="middle">○7</text>
+<circle cx="118.00" cy="97.00" r="3.60" fill="#11100e" stroke="#d4a017" stroke-width="0.45"/>
+<line x1="115.80" y1="97.00" x2="120.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="118.00" y1="94.80" x2="118.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="118.00" y1="93.40" x2="118.00" y2="80.00" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="118.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">C#4</text>
+<text x="118.00" y="92.40" class="mono" fill="#d4a017" font-size="1.45" text-anchor="middle">●0</text>
+<circle cx="128.00" cy="97.00" r="3.60" fill="#11100e" stroke="#d4a017" stroke-width="0.45"/>
+<line x1="125.80" y1="97.00" x2="130.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="128.00" y1="94.80" x2="128.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="128.00" y1="93.40" x2="128.00" y2="80.85" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="128.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">D4</text>
+<text x="128.00" y="92.40" class="mono" fill="#d4a017" font-size="1.45" text-anchor="middle">●1</text>
+<circle cx="138.00" cy="97.00" r="3.60" fill="#11100e" stroke="#d4a017" stroke-width="0.45"/>
+<line x1="135.80" y1="97.00" x2="140.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="138.00" y1="94.80" x2="138.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="138.00" y1="93.40" x2="138.00" y2="81.70" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="138.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">D#4</text>
+<text x="138.00" y="92.40" class="mono" fill="#d4a017" font-size="1.45" text-anchor="middle">●2</text>
+<circle cx="148.00" cy="97.00" r="3.60" fill="#11100e" stroke="#d4a017" stroke-width="0.45"/>
+<line x1="145.80" y1="97.00" x2="150.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="148.00" y1="94.80" x2="148.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="148.00" y1="93.40" x2="148.00" y2="82.55" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="148.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">E4</text>
+<text x="148.00" y="92.40" class="mono" fill="#d4a017" font-size="1.45" text-anchor="middle">●3</text>
+<circle cx="158.00" cy="97.00" r="3.60" fill="#11100e" stroke="#d4a017" stroke-width="0.45"/>
+<line x1="155.80" y1="97.00" x2="160.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="158.00" y1="94.80" x2="158.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="158.00" y1="93.40" x2="158.00" y2="83.40" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="158.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">F4</text>
+<text x="158.00" y="92.40" class="mono" fill="#d4a017" font-size="1.45" text-anchor="middle">●4</text>
+<circle cx="168.00" cy="97.00" r="3.60" fill="#11100e" stroke="#d4a017" stroke-width="0.45"/>
+<line x1="165.80" y1="97.00" x2="170.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="168.00" y1="94.80" x2="168.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="168.00" y1="93.40" x2="168.00" y2="84.25" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="168.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">F#4</text>
+<text x="168.00" y="92.40" class="mono" fill="#d4a017" font-size="1.45" text-anchor="middle">○5</text>
+<circle cx="178.00" cy="97.00" r="3.60" fill="#11100e" stroke="#d4a017" stroke-width="0.45"/>
+<line x1="175.80" y1="97.00" x2="180.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="178.00" y1="94.80" x2="178.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="178.00" y1="93.40" x2="178.00" y2="85.10" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="178.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">G4</text>
+<text x="178.00" y="92.40" class="mono" fill="#d4a017" font-size="1.45" text-anchor="middle">○6</text>
+<circle cx="188.00" cy="97.00" r="3.60" fill="#11100e" stroke="#d4a017" stroke-width="0.45"/>
+<line x1="185.80" y1="97.00" x2="190.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="188.00" y1="94.80" x2="188.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="188.00" y1="93.40" x2="188.00" y2="85.95" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="188.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">G#4</text>
+<text x="188.00" y="92.40" class="mono" fill="#d4a017" font-size="1.45" text-anchor="middle">○7</text>
+<circle cx="198.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d9a62" stroke-width="0.45"/>
+<line x1="195.80" y1="97.00" x2="200.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="198.00" y1="94.80" x2="198.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="198.00" y1="93.40" x2="198.00" y2="80.00" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="198.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">A4</text>
+<text x="198.00" y="92.40" class="mono" fill="#3d9a62" font-size="1.45" text-anchor="middle">●0</text>
+<circle cx="208.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d9a62" stroke-width="0.45"/>
+<line x1="205.80" y1="97.00" x2="210.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="208.00" y1="94.80" x2="208.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="208.00" y1="93.40" x2="208.00" y2="80.85" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="208.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">A#4</text>
+<text x="208.00" y="92.40" class="mono" fill="#3d9a62" font-size="1.45" text-anchor="middle">●1</text>
+<circle cx="218.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d9a62" stroke-width="0.45"/>
+<line x1="215.80" y1="97.00" x2="220.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="218.00" y1="94.80" x2="218.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="218.00" y1="93.40" x2="218.00" y2="81.70" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="218.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">B4</text>
+<text x="218.00" y="92.40" class="mono" fill="#3d9a62" font-size="1.45" text-anchor="middle">●2</text>
+<circle cx="228.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d9a62" stroke-width="0.45"/>
+<line x1="225.80" y1="97.00" x2="230.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="228.00" y1="94.80" x2="228.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="228.00" y1="93.40" x2="228.00" y2="82.55" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="228.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">C5</text>
+<text x="228.00" y="92.40" class="mono" fill="#3d9a62" font-size="1.45" text-anchor="middle">●3</text>
+<circle cx="238.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d9a62" stroke-width="0.45"/>
+<line x1="235.80" y1="97.00" x2="240.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="238.00" y1="94.80" x2="238.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="238.00" y1="93.40" x2="238.00" y2="83.40" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="238.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">C#5</text>
+<text x="238.00" y="92.40" class="mono" fill="#3d9a62" font-size="1.45" text-anchor="middle">●4</text>
+<circle cx="248.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d9a62" stroke-width="0.45"/>
+<line x1="245.80" y1="97.00" x2="250.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="248.00" y1="94.80" x2="248.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="248.00" y1="93.40" x2="248.00" y2="84.25" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="248.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">D5</text>
+<text x="248.00" y="92.40" class="mono" fill="#3d9a62" font-size="1.45" text-anchor="middle">○5</text>
+<circle cx="258.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d9a62" stroke-width="0.45"/>
+<line x1="255.80" y1="97.00" x2="260.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="258.00" y1="94.80" x2="258.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="258.00" y1="93.40" x2="258.00" y2="85.10" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="258.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">D#5</text>
+<text x="258.00" y="92.40" class="mono" fill="#3d9a62" font-size="1.45" text-anchor="middle">○6</text>
+<circle cx="268.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d9a62" stroke-width="0.45"/>
+<line x1="265.80" y1="97.00" x2="270.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="268.00" y1="94.80" x2="268.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="268.00" y1="93.40" x2="268.00" y2="85.95" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="268.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">E5</text>
+<text x="268.00" y="92.40" class="mono" fill="#3d9a62" font-size="1.45" text-anchor="middle">○7</text>
+<circle cx="278.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d7ec4" stroke-width="0.45"/>
+<line x1="275.80" y1="97.00" x2="280.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="278.00" y1="94.80" x2="278.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="278.00" y1="93.40" x2="278.00" y2="80.00" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="278.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">F5</text>
+<text x="278.00" y="92.40" class="mono" fill="#3d7ec4" font-size="1.45" text-anchor="middle">●0</text>
+<circle cx="288.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d7ec4" stroke-width="0.45"/>
+<line x1="285.80" y1="97.00" x2="290.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="288.00" y1="94.80" x2="288.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="288.00" y1="93.40" x2="288.00" y2="80.85" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="288.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">F#5</text>
+<text x="288.00" y="92.40" class="mono" fill="#3d7ec4" font-size="1.45" text-anchor="middle">●1</text>
+<circle cx="298.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d7ec4" stroke-width="0.45"/>
+<line x1="295.80" y1="97.00" x2="300.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="298.00" y1="94.80" x2="298.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="298.00" y1="93.40" x2="298.00" y2="81.70" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="298.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">G5</text>
+<text x="298.00" y="92.40" class="mono" fill="#3d7ec4" font-size="1.45" text-anchor="middle">●2</text>
+<circle cx="308.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d7ec4" stroke-width="0.45"/>
+<line x1="305.80" y1="97.00" x2="310.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="308.00" y1="94.80" x2="308.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="308.00" y1="93.40" x2="308.00" y2="82.55" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="308.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">G#5</text>
+<text x="308.00" y="92.40" class="mono" fill="#3d7ec4" font-size="1.45" text-anchor="middle">●3</text>
+<circle cx="318.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d7ec4" stroke-width="0.45"/>
+<line x1="315.80" y1="97.00" x2="320.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="318.00" y1="94.80" x2="318.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="318.00" y1="93.40" x2="318.00" y2="83.40" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="318.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">A5</text>
+<text x="318.00" y="92.40" class="mono" fill="#3d7ec4" font-size="1.45" text-anchor="middle">●4</text>
+<circle cx="328.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d7ec4" stroke-width="0.45"/>
+<line x1="325.80" y1="97.00" x2="330.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="328.00" y1="94.80" x2="328.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="328.00" y1="93.40" x2="328.00" y2="84.25" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="328.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">A#5</text>
+<text x="328.00" y="92.40" class="mono" fill="#3d7ec4" font-size="1.45" text-anchor="middle">○5</text>
+<circle cx="338.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d7ec4" stroke-width="0.45"/>
+<line x1="335.80" y1="97.00" x2="340.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="338.00" y1="94.80" x2="338.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="338.00" y1="93.40" x2="338.00" y2="85.10" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="338.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">B5</text>
+<text x="338.00" y="92.40" class="mono" fill="#3d7ec4" font-size="1.45" text-anchor="middle">○6</text>
+<circle cx="348.00" cy="97.00" r="3.60" fill="#11100e" stroke="#3d7ec4" stroke-width="0.45"/>
+<line x1="345.80" y1="97.00" x2="350.20" y2="97.00" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="348.00" y1="94.80" x2="348.00" y2="99.20" stroke="#4a4844" stroke-width="0.2"/>
+<line x1="348.00" y1="93.40" x2="348.00" y2="85.95" stroke="#7ec8c3" stroke-width="0.22" opacity="0.7"/>
+<text x="348.00" y="97.70" class="w" font-size="1.55" text-anchor="middle" font-weight="600">C6</text>
+<text x="348.00" y="92.40" class="mono" fill="#3d7ec4" font-size="1.45" text-anchor="middle">○7</text>
+</g>
+<g id="botoes" >
+<text x="72.00" y="42.20" class="w" font-size="1.7">botões (X aproximado nas fotos; KO/KI = mapa Casio / weltenschule)</text>
+<circle cx="72.00" cy="47.50" r="3.10" fill="#141210" stroke="#c45c6a" stroke-width="0.4" opacity="0.45"/>
+<text x="72.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="0.45">vol−</text>
+<circle cx="82.00" cy="47.50" r="3.10" fill="#141210" stroke="#9b6bb3" stroke-width="0.4" opacity="0.45"/>
+<text x="82.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="0.45">vol+</text>
+<circle cx="94.00" cy="47.50" r="3.10" fill="#141210" stroke="#c45c6a" stroke-width="0.4" opacity="0.45"/>
+<text x="94.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="0.45">tmp−</text>
+<circle cx="104.00" cy="47.50" r="3.10" fill="#141210" stroke="#9b6bb3" stroke-width="0.4" opacity="0.45"/>
+<text x="104.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="0.45">tmp+</text>
+<circle cx="116.00" cy="47.50" r="3.10" fill="#141210" stroke="#9b6bb3" stroke-width="0.4" opacity="0.45"/>
+<text x="116.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="0.45">rhy</text>
+<circle cx="134.00" cy="47.50" r="3.10" fill="#141210" stroke="#6a8a9b" stroke-width="0.4" opacity="1"/>
+<text x="134.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">demo</text>
+<circle cx="148.00" cy="47.50" r="3.10" fill="#141210" stroke="#c45c6a" stroke-width="0.4" opacity="1"/>
+<text x="148.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">stop</text>
+<circle cx="172.00" cy="47.50" r="3.10" fill="#141210" stroke="#9b6bb3" stroke-width="0.4" opacity="1"/>
+<text x="172.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">0</text>
+<circle cx="182.00" cy="47.50" r="3.10" fill="#141210" stroke="#9b6bb3" stroke-width="0.4" opacity="1"/>
+<text x="182.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">1</text>
+<circle cx="192.00" cy="47.50" r="3.10" fill="#141210" stroke="#9b6bb3" stroke-width="0.4" opacity="1"/>
+<text x="192.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">2</text>
+<circle cx="202.00" cy="47.50" r="3.10" fill="#141210" stroke="#9b6bb3" stroke-width="0.4" opacity="1"/>
+<text x="202.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">3</text>
+<circle cx="212.00" cy="47.50" r="3.10" fill="#141210" stroke="#9b6bb3" stroke-width="0.4" opacity="1"/>
+<text x="212.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">4</text>
+<circle cx="228.00" cy="47.50" r="3.10" fill="#141210" stroke="#c45c6a" stroke-width="0.4" opacity="1"/>
+<text x="228.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">5</text>
+<circle cx="238.00" cy="47.50" r="3.10" fill="#141210" stroke="#c45c6a" stroke-width="0.4" opacity="1"/>
+<text x="238.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">6</text>
+<circle cx="248.00" cy="47.50" r="3.10" fill="#141210" stroke="#c45c6a" stroke-width="0.4" opacity="1"/>
+<text x="248.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">7</text>
+<circle cx="258.00" cy="47.50" r="3.10" fill="#141210" stroke="#c45c6a" stroke-width="0.4" opacity="1"/>
+<text x="258.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">8</text>
+<circle cx="268.00" cy="47.50" r="3.10" fill="#141210" stroke="#c45c6a" stroke-width="0.4" opacity="1"/>
+<text x="268.00" y="48.10" class="w" font-size="1.5" text-anchor="middle" opacity="1">9</text>
+</g>
+<g id="lsi1" >
+<rect x="222.00" y="54.00" width="42.00" height="12.00" fill="#0f1c16" stroke="#c8c0b0" stroke-width="0.35" rx="0.4"/>
+<text x="243.00" y="59.20" class="w" font-size="2.4" text-anchor="middle" font-weight="700">LSI1  M6387</text>
+<text x="243.00" y="62.60" class="w" font-size="1.6" text-anchor="middle">11–18 KI  ·  24–30 KO  ·  7 GND</text>
+</g>
+</g>
+<line x1="24.00" y1="116.00" x2="74.00" y2="116.00" stroke="#1a1814" stroke-width="0.4"/>
+<line x1="24.00" y1="115.00" x2="24.00" y2="117.00" stroke="#1a1814" stroke-width="0.4"/>
+<line x1="74.00" y1="115.00" x2="74.00" y2="117.00" stroke="#1a1814" stroke-width="0.4"/>
+<text x="49.00" y="120.00" font-size="2.4" text-anchor="middle">50 mm</text>
+<text x="376.00" y="120.00" class="dim" font-size="2.2" text-anchor="end">352 × 74 mm  (caixa SA-1 375 mm; placa ~4,8:1 como nas fotos)</text>
+<text x="73.00" y="120.00" class="mono" fill="#e07a3d" font-size="2.2" text-anchor="middle" font-weight="700">KO0 p.30</text>
+<text x="153.00" y="120.00" class="mono" fill="#d4a017" font-size="2.2" text-anchor="middle" font-weight="700">KO1 p.29</text>
+<text x="233.00" y="120.00" class="mono" fill="#3d9a62" font-size="2.2" text-anchor="middle" font-weight="700">KO2 p.28</text>
+<text x="313.00" y="120.00" class="mono" fill="#3d7ec4" font-size="2.2" text-anchor="middle" font-weight="700">KO3 p.27</text>
+<text x="24.00" y="128.00" font-size="4" font-weight="700">Como ler a palheta</text>
+<text x="24.00" y="134.00" font-size="2.6">● KI0–4  medido no aprender desta unidade (2026-08-31)   ○ KI5–7  teórico — saltado no aprender, validar com sonda</text>
+<text x="24.00" y="139.00" font-size="2.6">Cor do anel = KO Casio (cobre / pino do M6387). MCP diferente do Casio = tabela de baixo (serpentina KO1↔KO3 + KI0–4).</text>
+<text x="24.00" y="144.00" font-size="2.6">A tecla NÃO fecha contra o GND (pino 7). Continuidade só KO↔KI com a borracha premida. Jumpers pretos = carbono a saltar o barramento KI.</text>
+<text x="24.00" y="148.00" font-size="3.6" font-weight="700">Mapa Casio no cobre  —  pinos do M6387  (SM PK-5 M3210 + weltenschule; KO2 KI2 = B4)</text>
+<rect x="24.00" y="151.00" width="22.00" height="9.50" fill="#1a1814"/>
+<text x="35.00" y="157.20" class="w mono" font-size="2.1" text-anchor="middle">KO\KI</text>
+<rect x="46.00" y="151.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="57.25" y="155.20" class="w mono" font-size="2" text-anchor="middle">KI0</text>
+<text x="57.25" y="158.40" class="w" font-size="1.6" text-anchor="middle">p.11</text>
+<rect x="68.50" y="151.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="79.75" y="155.20" class="w mono" font-size="2" text-anchor="middle">KI1</text>
+<text x="79.75" y="158.40" class="w" font-size="1.6" text-anchor="middle">p.12</text>
+<rect x="91.00" y="151.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="102.25" y="155.20" class="w mono" font-size="2" text-anchor="middle">KI2</text>
+<text x="102.25" y="158.40" class="w" font-size="1.6" text-anchor="middle">p.13</text>
+<rect x="113.50" y="151.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="124.75" y="155.20" class="w mono" font-size="2" text-anchor="middle">KI3</text>
+<text x="124.75" y="158.40" class="w" font-size="1.6" text-anchor="middle">p.14</text>
+<rect x="136.00" y="151.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="147.25" y="155.20" class="w mono" font-size="2" text-anchor="middle">KI4</text>
+<text x="147.25" y="158.40" class="w" font-size="1.6" text-anchor="middle">p.15</text>
+<rect x="158.50" y="151.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="169.75" y="155.20" class="w mono" font-size="2" text-anchor="middle">KI5</text>
+<text x="169.75" y="158.40" class="w" font-size="1.6" text-anchor="middle">p.16</text>
+<rect x="181.00" y="151.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="192.25" y="155.20" class="w mono" font-size="2" text-anchor="middle">KI6</text>
+<text x="192.25" y="158.40" class="w" font-size="1.6" text-anchor="middle">p.17</text>
+<rect x="203.50" y="151.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="214.75" y="155.20" class="w mono" font-size="2" text-anchor="middle">KI7</text>
+<text x="214.75" y="158.40" class="w" font-size="1.6" text-anchor="middle">p.18</text>
+<rect x="24.00" y="160.50" width="22.00" height="9.50" fill="#e07a3d"/>
+<text x="35.00" y="164.90" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO0</text>
+<text x="35.00" y="167.90" class="w" font-size="1.6" text-anchor="middle">p.30</text>
+<rect x="46.00" y="160.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="166.50" class="mono" font-size="2.15" text-anchor="middle">F3</text>
+<rect x="68.50" y="160.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="166.50" class="mono" font-size="2.15" text-anchor="middle">F#3</text>
+<rect x="91.00" y="160.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="166.50" class="mono" font-size="2.15" text-anchor="middle">G3</text>
+<rect x="113.50" y="160.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="166.50" class="mono" font-size="2.15" text-anchor="middle">G#3</text>
+<rect x="136.00" y="160.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="166.50" class="mono" font-size="2.15" text-anchor="middle">A3</text>
+<rect x="158.50" y="160.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="166.50" class="mono" font-size="2.15" text-anchor="middle">A#3</text>
+<rect x="181.00" y="160.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="166.50" class="mono" font-size="2.15" text-anchor="middle">B3</text>
+<rect x="203.50" y="160.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="166.50" class="mono" font-size="2.15" text-anchor="middle">C4</text>
+<rect x="24.00" y="170.00" width="22.00" height="9.50" fill="#d4a017"/>
+<text x="35.00" y="174.40" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO1</text>
+<text x="35.00" y="177.40" class="w" font-size="1.6" text-anchor="middle">p.29</text>
+<rect x="46.00" y="170.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="176.00" class="mono" font-size="2.15" text-anchor="middle">C#4</text>
+<rect x="68.50" y="170.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="176.00" class="mono" font-size="2.15" text-anchor="middle">D4</text>
+<rect x="91.00" y="170.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="176.00" class="mono" font-size="2.15" text-anchor="middle">D#4</text>
+<rect x="113.50" y="170.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="176.00" class="mono" font-size="2.15" text-anchor="middle">E4</text>
+<rect x="136.00" y="170.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="176.00" class="mono" font-size="2.15" text-anchor="middle">F4</text>
+<rect x="158.50" y="170.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="176.00" class="mono" font-size="2.15" text-anchor="middle">F#4</text>
+<rect x="181.00" y="170.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="176.00" class="mono" font-size="2.15" text-anchor="middle">G4</text>
+<rect x="203.50" y="170.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="176.00" class="mono" font-size="2.15" text-anchor="middle">G#4</text>
+<rect x="24.00" y="179.50" width="22.00" height="9.50" fill="#3d9a62"/>
+<text x="35.00" y="183.90" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO2</text>
+<text x="35.00" y="186.90" class="w" font-size="1.6" text-anchor="middle">p.28</text>
+<rect x="46.00" y="179.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="185.50" class="mono" font-size="2.15" text-anchor="middle">A4</text>
+<rect x="68.50" y="179.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="185.50" class="mono" font-size="2.15" text-anchor="middle">A#4</text>
+<rect x="91.00" y="179.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="185.50" class="mono" font-size="2.15" text-anchor="middle">B4</text>
+<rect x="113.50" y="179.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="185.50" class="mono" font-size="2.15" text-anchor="middle">C5</text>
+<rect x="136.00" y="179.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="185.50" class="mono" font-size="2.15" text-anchor="middle">C#5</text>
+<rect x="158.50" y="179.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="185.50" class="mono" font-size="2.15" text-anchor="middle">D5</text>
+<rect x="181.00" y="179.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="185.50" class="mono" font-size="2.15" text-anchor="middle">D#5</text>
+<rect x="203.50" y="179.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="185.50" class="mono" font-size="2.15" text-anchor="middle">E5</text>
+<rect x="24.00" y="189.00" width="22.00" height="9.50" fill="#3d7ec4"/>
+<text x="35.00" y="193.40" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO3</text>
+<text x="35.00" y="196.40" class="w" font-size="1.6" text-anchor="middle">p.27</text>
+<rect x="46.00" y="189.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="195.00" class="mono" font-size="2.15" text-anchor="middle">F5</text>
+<rect x="68.50" y="189.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="195.00" class="mono" font-size="2.15" text-anchor="middle">F#5</text>
+<rect x="91.00" y="189.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="195.00" class="mono" font-size="2.15" text-anchor="middle">G5</text>
+<rect x="113.50" y="189.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="195.00" class="mono" font-size="2.15" text-anchor="middle">G#5</text>
+<rect x="136.00" y="189.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="195.00" class="mono" font-size="2.15" text-anchor="middle">A5</text>
+<rect x="158.50" y="189.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="195.00" class="mono" font-size="2.15" text-anchor="middle">A#5</text>
+<rect x="181.00" y="189.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="195.00" class="mono" font-size="2.15" text-anchor="middle">B5</text>
+<rect x="203.50" y="189.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="195.00" class="mono" font-size="2.15" text-anchor="middle">C6</text>
+<rect x="24.00" y="198.50" width="22.00" height="9.50" fill="#9b6bb3"/>
+<text x="35.00" y="202.90" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO4</text>
+<text x="35.00" y="205.90" class="w" font-size="1.6" text-anchor="middle">p.26</text>
+<rect x="46.00" y="198.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="204.50" class="mono" font-size="2.15" text-anchor="middle">0</text>
+<rect x="68.50" y="198.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="204.50" class="mono" font-size="2.15" text-anchor="middle">1</text>
+<rect x="91.00" y="198.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="204.50" class="mono" font-size="2.15" text-anchor="middle">2</text>
+<rect x="113.50" y="198.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="204.50" class="mono" font-size="2.15" text-anchor="middle">3</text>
+<rect x="136.00" y="198.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="204.50" class="mono" font-size="2.15" text-anchor="middle">4</text>
+<rect x="158.50" y="198.50" width="22.50" height="9.50" fill="#e4ddd0" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="204.50" class="mono" font-size="2.15" text-anchor="middle">tempo+</text>
+<rect x="181.00" y="198.50" width="22.50" height="9.50" fill="#e4ddd0" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="204.50" class="mono" font-size="2.15" text-anchor="middle">vol+</text>
+<rect x="203.50" y="198.50" width="22.50" height="9.50" fill="#e4ddd0" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="204.50" class="mono" font-size="2.15" text-anchor="middle">rhythm</text>
+<rect x="24.00" y="208.00" width="22.00" height="9.50" fill="#c45c6a"/>
+<text x="35.00" y="212.40" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO5</text>
+<text x="35.00" y="215.40" class="w" font-size="1.6" text-anchor="middle">p.25</text>
+<rect x="46.00" y="208.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="214.00" class="mono" font-size="2.15" text-anchor="middle">5</text>
+<rect x="68.50" y="208.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="214.00" class="mono" font-size="2.15" text-anchor="middle">6</text>
+<rect x="91.00" y="208.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="214.00" class="mono" font-size="2.15" text-anchor="middle">7</text>
+<rect x="113.50" y="208.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="214.00" class="mono" font-size="2.15" text-anchor="middle">8</text>
+<rect x="136.00" y="208.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="214.00" class="mono" font-size="2.15" text-anchor="middle">9</text>
+<rect x="158.50" y="208.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="214.00" class="mono" font-size="2.15" text-anchor="middle">stop</text>
+<rect x="181.00" y="208.00" width="22.50" height="9.50" fill="#e4ddd0" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="214.00" class="mono" font-size="2.15" text-anchor="middle">tempo−</text>
+<rect x="203.50" y="208.00" width="22.50" height="9.50" fill="#e4ddd0" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="214.00" class="mono" font-size="2.15" text-anchor="middle">vol−</text>
+<rect x="24.00" y="217.50" width="22.00" height="9.50" fill="#6a8a9b"/>
+<text x="35.00" y="221.90" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO6</text>
+<text x="35.00" y="224.90" class="w" font-size="1.6" text-anchor="middle">p.24</text>
+<rect x="46.00" y="217.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="223.50" class="mono" font-size="2.15" text-anchor="middle">0*</text>
+<rect x="68.50" y="217.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="223.50" class="mono" font-size="2.15" text-anchor="middle">1*</text>
+<rect x="91.00" y="217.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="223.50" class="mono" font-size="2.15" text-anchor="middle">2*</text>
+<rect x="113.50" y="217.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="223.50" class="mono" font-size="2.15" text-anchor="middle">3*</text>
+<rect x="136.00" y="217.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="223.50" class="mono" font-size="2.15" text-anchor="middle">4*</text>
+<rect x="158.50" y="217.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="223.50" class="mono" font-size="2.15" text-anchor="middle">demo</text>
+<rect x="181.00" y="217.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="223.50" class="mono" font-size="2.15" text-anchor="middle">demo</text>
+<rect x="203.50" y="217.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="223.50" class="mono" font-size="2.15" text-anchor="middle">demo</text>
+<text x="24.00" y="251.00" class="dim" font-size="2.2">* cópia na PCB, muitas vezes sem borracha no SA-1.  tempo/vol/rhythm: ignorados (volume = EC11).</text>
+<text x="24.00" y="268.00" font-size="3.6" font-weight="700">Mapa aprendido no MCP desta unidade  —  firmware/pico/matrix.h  (KI5–7 piano e KO4 0–4: teórico)</text>
+<rect x="24.00" y="271.00" width="22.00" height="9.50" fill="#1a1814"/>
+<text x="35.00" y="277.20" class="w mono" font-size="2.1" text-anchor="middle">KO\KI</text>
+<rect x="46.00" y="271.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="57.25" y="275.20" class="w mono" font-size="2" text-anchor="middle">KI0</text>
+<text x="57.25" y="278.40" class="w" font-size="1.6" text-anchor="middle">p.11</text>
+<rect x="68.50" y="271.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="79.75" y="275.20" class="w mono" font-size="2" text-anchor="middle">KI1</text>
+<text x="79.75" y="278.40" class="w" font-size="1.6" text-anchor="middle">p.12</text>
+<rect x="91.00" y="271.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="102.25" y="275.20" class="w mono" font-size="2" text-anchor="middle">KI2</text>
+<text x="102.25" y="278.40" class="w" font-size="1.6" text-anchor="middle">p.13</text>
+<rect x="113.50" y="271.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="124.75" y="275.20" class="w mono" font-size="2" text-anchor="middle">KI3</text>
+<text x="124.75" y="278.40" class="w" font-size="1.6" text-anchor="middle">p.14</text>
+<rect x="136.00" y="271.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="147.25" y="275.20" class="w mono" font-size="2" text-anchor="middle">KI4</text>
+<text x="147.25" y="278.40" class="w" font-size="1.6" text-anchor="middle">p.15</text>
+<rect x="158.50" y="271.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="169.75" y="275.20" class="w mono" font-size="2" text-anchor="middle">KI5</text>
+<text x="169.75" y="278.40" class="w" font-size="1.6" text-anchor="middle">p.16</text>
+<rect x="181.00" y="271.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="192.25" y="275.20" class="w mono" font-size="2" text-anchor="middle">KI6</text>
+<text x="192.25" y="278.40" class="w" font-size="1.6" text-anchor="middle">p.17</text>
+<rect x="203.50" y="271.00" width="22.50" height="9.50" fill="#1a1814"/>
+<text x="214.75" y="275.20" class="w mono" font-size="2" text-anchor="middle">KI7</text>
+<text x="214.75" y="278.40" class="w" font-size="1.6" text-anchor="middle">p.18</text>
+<rect x="24.00" y="280.50" width="22.00" height="9.50" fill="#e07a3d"/>
+<text x="35.00" y="284.90" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO0</text>
+<text x="35.00" y="287.90" class="w" font-size="1.6" text-anchor="middle">p.30</text>
+<rect x="46.00" y="280.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="286.50" class="mono" font-size="2.15" text-anchor="middle">F3</text>
+<rect x="68.50" y="280.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="286.50" class="mono" font-size="2.15" text-anchor="middle">F#3</text>
+<rect x="91.00" y="280.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="286.50" class="mono" font-size="2.15" text-anchor="middle">G3</text>
+<rect x="113.50" y="280.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="286.50" class="mono" font-size="2.15" text-anchor="middle">G#3</text>
+<rect x="136.00" y="280.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="286.50" class="mono" font-size="2.15" text-anchor="middle">A3</text>
+<rect x="158.50" y="280.50" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="286.50" class="mono" font-size="2.15" text-anchor="middle">A#3</text>
+<rect x="181.00" y="280.50" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="286.50" class="mono" font-size="2.15" text-anchor="middle">B3</text>
+<rect x="203.50" y="280.50" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="286.50" class="mono" font-size="2.15" text-anchor="middle">C4</text>
+<rect x="24.00" y="290.00" width="22.00" height="9.50" fill="#d4a017"/>
+<text x="35.00" y="294.40" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO1</text>
+<text x="35.00" y="297.40" class="w" font-size="1.6" text-anchor="middle">p.29</text>
+<rect x="46.00" y="290.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="296.00" class="mono" font-size="2.15" text-anchor="middle">A5</text>
+<rect x="68.50" y="290.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="296.00" class="mono" font-size="2.15" text-anchor="middle">G#5</text>
+<rect x="91.00" y="290.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="296.00" class="mono" font-size="2.15" text-anchor="middle">G5</text>
+<rect x="113.50" y="290.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="296.00" class="mono" font-size="2.15" text-anchor="middle">F#5</text>
+<rect x="136.00" y="290.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="296.00" class="mono" font-size="2.15" text-anchor="middle">F5</text>
+<rect x="158.50" y="290.00" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="296.00" class="mono" font-size="2.15" text-anchor="middle">A#5</text>
+<rect x="181.00" y="290.00" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="296.00" class="mono" font-size="2.15" text-anchor="middle">B5</text>
+<rect x="203.50" y="290.00" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="296.00" class="mono" font-size="2.15" text-anchor="middle">C6</text>
+<rect x="24.00" y="299.50" width="22.00" height="9.50" fill="#3d9a62"/>
+<text x="35.00" y="303.90" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO2</text>
+<text x="35.00" y="306.90" class="w" font-size="1.6" text-anchor="middle">p.28</text>
+<rect x="46.00" y="299.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="305.50" class="mono" font-size="2.15" text-anchor="middle">C#5</text>
+<rect x="68.50" y="299.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="305.50" class="mono" font-size="2.15" text-anchor="middle">C5</text>
+<rect x="91.00" y="299.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="305.50" class="mono" font-size="2.15" text-anchor="middle">B4</text>
+<rect x="113.50" y="299.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="305.50" class="mono" font-size="2.15" text-anchor="middle">A#4</text>
+<rect x="136.00" y="299.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="305.50" class="mono" font-size="2.15" text-anchor="middle">A4</text>
+<rect x="158.50" y="299.50" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="305.50" class="mono" font-size="2.15" text-anchor="middle">D5</text>
+<rect x="181.00" y="299.50" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="305.50" class="mono" font-size="2.15" text-anchor="middle">D#5</text>
+<rect x="203.50" y="299.50" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="305.50" class="mono" font-size="2.15" text-anchor="middle">E5</text>
+<rect x="24.00" y="309.00" width="22.00" height="9.50" fill="#3d7ec4"/>
+<text x="35.00" y="313.40" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO3</text>
+<text x="35.00" y="316.40" class="w" font-size="1.6" text-anchor="middle">p.27</text>
+<rect x="46.00" y="309.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="315.00" class="mono" font-size="2.15" text-anchor="middle">F4</text>
+<rect x="68.50" y="309.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="315.00" class="mono" font-size="2.15" text-anchor="middle">E4</text>
+<rect x="91.00" y="309.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="315.00" class="mono" font-size="2.15" text-anchor="middle">D#4</text>
+<rect x="113.50" y="309.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="315.00" class="mono" font-size="2.15" text-anchor="middle">D4</text>
+<rect x="136.00" y="309.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="315.00" class="mono" font-size="2.15" text-anchor="middle">C#4</text>
+<rect x="158.50" y="309.00" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="315.00" class="mono" font-size="2.15" text-anchor="middle">F#4</text>
+<rect x="181.00" y="309.00" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="315.00" class="mono" font-size="2.15" text-anchor="middle">G4</text>
+<rect x="203.50" y="309.00" width="22.50" height="9.50" fill="#efe6c8" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="315.00" class="mono" font-size="2.15" text-anchor="middle">G#4</text>
+<rect x="24.00" y="318.50" width="22.00" height="9.50" fill="#9b6bb3"/>
+<text x="35.00" y="322.90" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO4</text>
+<text x="35.00" y="325.90" class="w" font-size="1.6" text-anchor="middle">p.26</text>
+<rect x="46.00" y="318.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="324.50" class="mono" font-size="2.15" text-anchor="middle">0</text>
+<rect x="68.50" y="318.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="324.50" class="mono" font-size="2.15" text-anchor="middle">1</text>
+<rect x="91.00" y="318.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="324.50" class="mono" font-size="2.15" text-anchor="middle">2</text>
+<rect x="113.50" y="318.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="324.50" class="mono" font-size="2.15" text-anchor="middle">3</text>
+<rect x="136.00" y="318.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="324.50" class="mono" font-size="2.15" text-anchor="middle">4</text>
+<rect x="158.50" y="318.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="324.50" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="181.00" y="318.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="324.50" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="203.50" y="318.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="324.50" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="24.00" y="328.00" width="22.00" height="9.50" fill="#c45c6a"/>
+<text x="35.00" y="332.40" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO5</text>
+<text x="35.00" y="335.40" class="w" font-size="1.6" text-anchor="middle">p.25</text>
+<rect x="46.00" y="328.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="334.00" class="mono" font-size="2.15" text-anchor="middle">5</text>
+<rect x="68.50" y="328.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="334.00" class="mono" font-size="2.15" text-anchor="middle">6</text>
+<rect x="91.00" y="328.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="334.00" class="mono" font-size="2.15" text-anchor="middle">7</text>
+<rect x="113.50" y="328.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="334.00" class="mono" font-size="2.15" text-anchor="middle">8</text>
+<rect x="136.00" y="328.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="334.00" class="mono" font-size="2.15" text-anchor="middle">9</text>
+<rect x="158.50" y="328.00" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="334.00" class="mono" font-size="2.15" text-anchor="middle">stop</text>
+<rect x="181.00" y="328.00" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="334.00" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="203.50" y="328.00" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="334.00" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="24.00" y="337.50" width="22.00" height="9.50" fill="#6a8a9b"/>
+<text x="35.00" y="341.90" class="w mono" font-size="2.1" text-anchor="middle" font-weight="700">KO6</text>
+<text x="35.00" y="344.90" class="w" font-size="1.6" text-anchor="middle">p.24</text>
+<rect x="46.00" y="337.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="57.25" y="343.50" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="68.50" y="337.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="79.75" y="343.50" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="91.00" y="337.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="102.25" y="343.50" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="113.50" y="337.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="124.75" y="343.50" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="136.00" y="337.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="147.25" y="343.50" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="158.50" y="337.50" width="22.50" height="9.50" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="169.75" y="343.50" class="mono" font-size="2.15" text-anchor="middle">demo</text>
+<rect x="181.00" y="337.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="192.25" y="343.50" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<rect x="203.50" y="337.50" width="22.50" height="9.50" fill="#ddd8cc" stroke="#c9c2b4" stroke-width="0.2"/>
+<text x="214.75" y="343.50" class="mono" font-size="2.15" text-anchor="middle">—</text>
+<text x="24.00" y="371.00" class="dim" font-size="2.2">KO0 = Casio.  KO1↔KO3 e KI0–4 invertidos nas linhas agudas = serpentina no cobre ou cambos 29↔27. Não «corrigir» o firmware para a tabela Casio sem medir.</text>
+<text x="24.00" y="390.00" font-size="3.6" font-weight="700">Jump  tocos LSI1 → CJMCU-2317  (se o pino 1 estiver certo)</text>
+<rect x="24.00" y="394.00" width="86.00" height="16.00" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.25" rx="1"/>
+<text x="67.00" y="399.00" class="mono" font-size="2.3" text-anchor="middle" font-weight="700">11–18  KI0–7</text>
+<text x="67.00" y="403.50" font-size="2.2" text-anchor="middle">→ GPA0–7</text>
+<text x="67.00" y="407.50" class="dim" font-size="1.8" text-anchor="middle">perto do texto B0/A0</text>
+<rect x="114.00" y="394.00" width="86.00" height="16.00" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.25" rx="1"/>
+<text x="157.00" y="399.00" class="mono" font-size="2.3" text-anchor="middle" font-weight="700">30…24  KO0–6</text>
+<text x="157.00" y="403.50" font-size="2.2" text-anchor="middle">→ GPB0–6</text>
+<text x="157.00" y="407.50" class="dim" font-size="1.8" text-anchor="middle">lado oposto do par</text>
+<rect x="204.00" y="394.00" width="86.00" height="16.00" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.25" rx="1"/>
+<text x="247.00" y="399.00" class="mono" font-size="2.3" text-anchor="middle" font-weight="700">7  GND</text>
+<text x="247.00" y="403.50" font-size="2.2" text-anchor="middle">→ GND</text>
+<text x="247.00" y="407.50" class="dim" font-size="1.8" text-anchor="middle">comum com o Pico</text>
+<rect x="294.00" y="394.00" width="86.00" height="16.00" fill="#f7f3ea" stroke="#c9c2b4" stroke-width="0.25" rx="1"/>
+<text x="337.00" y="399.00" class="mono" font-size="2.3" text-anchor="middle" font-weight="700">23  KO7</text>
+<text x="337.00" y="403.50" font-size="2.2" text-anchor="middle">→ solto</text>
+<text x="337.00" y="407.50" class="dim" font-size="1.8" text-anchor="middle">não varre tecla</text>
+<text x="24.00" y="422.00" font-size="3.6" font-weight="700">Sete pares que fecham o mapa  (continuidade, pilhas/USB fora)</text>
+<rect x="24.00" y="428.00" width="88.00" height="16.00" fill="#1a1814" rx="1"/>
+<text x="32.00" y="434.50" class="w" font-size="2.6" font-weight="700">F3</text>
+<text x="32.00" y="440.00" class="w mono" font-size="1.8">30 ↔ 11   KO0 KI0</text>
+<rect x="116.00" y="428.00" width="88.00" height="16.00" fill="#1a1814" rx="1"/>
+<text x="124.00" y="434.50" class="w" font-size="2.6" font-weight="700">C4</text>
+<text x="124.00" y="440.00" class="w mono" font-size="1.8">30 ↔ 18   KO0 KI7</text>
+<rect x="208.00" y="428.00" width="88.00" height="16.00" fill="#1a1814" rx="1"/>
+<text x="216.00" y="434.50" class="w" font-size="2.6" font-weight="700">C#4</text>
+<text x="216.00" y="440.00" class="w mono" font-size="1.8">29 ↔ 11   KO1 KI0  Casio</text>
+<rect x="300.00" y="428.00" width="88.00" height="16.00" fill="#1a1814" rx="1"/>
+<text x="308.00" y="434.50" class="w" font-size="2.6" font-weight="700">C6</text>
+<text x="308.00" y="440.00" class="w mono" font-size="1.8">27 ↔ 18   KO3 KI7</text>
+<rect x="24.00" y="446.00" width="88.00" height="16.00" fill="#1a1814" rx="1"/>
+<text x="32.00" y="452.50" class="w" font-size="2.6" font-weight="700">0</text>
+<text x="32.00" y="458.00" class="w mono" font-size="1.8">26 ↔ 11   KO4 KI0</text>
+<rect x="116.00" y="446.00" width="88.00" height="16.00" fill="#1a1814" rx="1"/>
+<text x="124.00" y="452.50" class="w" font-size="2.6" font-weight="700">stop</text>
+<text x="124.00" y="458.00" class="w mono" font-size="1.8">25 ↔ 16   KO5 KI5</text>
+<rect x="208.00" y="446.00" width="88.00" height="16.00" fill="#1a1814" rx="1"/>
+<text x="216.00" y="452.50" class="w" font-size="2.6" font-weight="700">demo</text>
+<text x="216.00" y="458.00" class="w mono" font-size="1.8">24 ↔ 16   KO6 KI5–7</text>
+<text x="24.00" y="470.00" font-size="2.5">Se F3 = 30↔11 mas C#4 = 27↔15 (e F4 = 27↔11): cambos 29 e 27 trocados — é o padrão já no matrix.h. Deixe o mapa aprendido ou troque os fios, não as duas coisas.</text>
+<text x="24.00" y="486.00" font-size="3.6" font-weight="700">Confiança</text>
+<rect x="24.00" y="492.00" width="14.00" height="8.00" fill="#3d9a62" rx="1"/>
+<text x="31.00" y="497.60" class="w" font-size="2.1" text-anchor="middle">alta</text>
+<text x="42.00" y="497.60" font-size="2.4">Topologia 8 KI × 4 KO de piano; pinos 11–18 / 24–30; KO7 NC; palhetas não vão ao GND. Fotos + SM M3210 + weltenschule.</text>
+<rect x="24.00" y="504.00" width="14.00" height="8.00" fill="#d4a017" rx="1"/>
+<text x="31.00" y="509.60" class="w" font-size="2.1" text-anchor="middle">média</text>
+<text x="42.00" y="509.60" font-size="2.4">KO0 piano = Casio nesta unidade. Botões 5–9 / stop / demo no MCP. Posição X dos botões no SVG é aproximada.</text>
+<rect x="24.00" y="516.00" width="14.00" height="8.00" fill="#c45c6a" rx="1"/>
+<text x="31.00" y="521.60" class="w" font-size="2.1" text-anchor="middle">aberta</text>
+<text x="42.00" y="521.60" font-size="2.4">KI5–7 das 32 teclas (A#3 B3 C4 / F#4 G4 G#4 / D5 D#5 E5 / A#5 B5 C6) e botões 0–4: teóricos até a sonda DOWN.</text>
+<text x="24.00" y="534.00" class="dim" font-size="2.3">Fontes: Casio PK-5 SM (PCB M3210-MA1M, mesma família); weltenschule.de SA-1; fotos verso desta placa; log aprender 2026-08-31 em matrix.h.</text>
+<text x="24.00" y="542.00" class="dim" font-size="2.3">O Lab (lab/static/index.html) usa o mapa aprendido. Esta folha é o circuito no cobre. Os dois têm de coexistir até os sete pares acima estarem anotados.</text>
+<text x="24.00" y="560.00" font-size="3.2" font-weight="700">M6387 visto do lado dos componentes  (chanfro = pino 1, esquerda 1→15 para baixo)</text>
+<rect x="52.00" y="566.00" width="18.00" height="52.00" fill="#1a1814" rx="0.6"/>
+<text x="61.00" y="593.00" class="w" font-size="2.2" text-anchor="middle" transform="rotate(-90 61 593)">M6387</text>
+<circle cx="52.00" cy="569.00" r="0.80" fill="#f4efe4"/>
+<text x="50.50" y="569.70" class="mono" font-size="2" text-anchor="end">1  TEST</text>
+<circle cx="52.00" cy="575.20" r="0.80" fill="#f4efe4"/>
+<text x="50.50" y="575.90" class="mono" font-size="2" text-anchor="end">7  GND ★</text>
+<circle cx="52.00" cy="581.40" r="0.80" fill="#f4efe4"/>
+<text x="50.50" y="582.10" class="mono" font-size="2" text-anchor="end">10  VDD</text>
+<circle cx="52.00" cy="587.60" r="0.80" fill="#f4efe4"/>
+<text x="50.50" y="588.30" class="mono" font-size="2" text-anchor="end">11  KI0 ★</text>
+<circle cx="52.00" cy="593.80" r="0.80" fill="#f4efe4"/>
+<text x="50.50" y="594.50" class="mono" font-size="2" text-anchor="end">12  KI1</text>
+<circle cx="52.00" cy="600.00" r="0.80" fill="#f4efe4"/>
+<text x="50.50" y="600.70" class="mono" font-size="2" text-anchor="end">13  KI2</text>
+<circle cx="52.00" cy="606.20" r="0.80" fill="#f4efe4"/>
+<text x="50.50" y="606.90" class="mono" font-size="2" text-anchor="end">14  KI3</text>
+<circle cx="52.00" cy="612.40" r="0.80" fill="#f4efe4"/>
+<text x="50.50" y="613.10" class="mono" font-size="2" text-anchor="end">15  KI4 ★</text>
+<circle cx="70.00" cy="569.00" r="0.80" fill="#f4efe4"/>
+<text x="72.00" y="569.70" class="mono" font-size="2">30  KO0 ★</text>
+<circle cx="70.00" cy="574.00" r="0.80" fill="#f4efe4"/>
+<text x="72.00" y="574.70" class="mono" font-size="2">29  KO1</text>
+<circle cx="70.00" cy="579.00" r="0.80" fill="#f4efe4"/>
+<text x="72.00" y="579.70" class="mono" font-size="2">28  KO2</text>
+<circle cx="70.00" cy="584.00" r="0.80" fill="#f4efe4"/>
+<text x="72.00" y="584.70" class="mono" font-size="2">27  KO3 ★</text>
+<circle cx="70.00" cy="589.00" r="0.80" fill="#f4efe4"/>
+<text x="72.00" y="589.70" class="mono" font-size="2">26  KO4</text>
+<circle cx="70.00" cy="594.00" r="0.80" fill="#f4efe4"/>
+<text x="72.00" y="594.70" class="mono" font-size="2">25  KO5</text>
+<circle cx="70.00" cy="599.00" r="0.80" fill="#f4efe4"/>
+<text x="72.00" y="599.70" class="mono" font-size="2">24  KO6 ★</text>
+<circle cx="70.00" cy="604.00" r="0.80" fill="#f4efe4"/>
+<text x="72.00" y="604.70" class="mono" font-size="2">23  KO7 NC</text>
+<circle cx="70.00" cy="609.00" r="0.80" fill="#f4efe4"/>
+<text x="72.00" y="609.70" class="mono" font-size="2">18  KI7 ★</text>
+<circle cx="70.00" cy="614.00" r="0.80" fill="#f4efe4"/>
+<text x="72.00" y="614.70" class="mono" font-size="2">16  KI5</text>
+<text x="124.00" y="574.00" font-size="2.4">No verso a numeração está espelhada. Marque o pino 1 com caneta antes de virar.</text>
+<text x="124.00" y="580.00" font-size="2.4">★ = soldar cambo.  KI5–7 = pinos 16, 17, 18 (canto depois do 15, a contar pelo outro lado).</text>
+<text x="124.00" y="586.00" font-size="2.4">GPA = entradas + pull-up (LOW = tecla).  GPB = varredura activa LOW.</text>
+<text x="124.00" y="592.00" font-size="2.4">Documentação: hardware/MATRIZ.md  ·  jump: ETAPA-1.md  ·  firmware: firmware/pico/matrix.h</text>
+</svg>

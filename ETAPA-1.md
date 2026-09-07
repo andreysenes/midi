@@ -2,6 +2,8 @@
 
 Nesta etapa **não** ligue encoders nem joystick. Só: isolar o `M6387`, pular os 15 fios da matriz no MCP, e confirmar com a sonda.
 
+Circuito 1:1 (verso da `M3210-MAIM(F)`): [hardware/MATRIZ.md](hardware/MATRIZ.md) · [m3210-maim.svg](hardware/m3210-maim.svg).
+
 Peças agora: placa `M3210-MAIM(F)`, CJMCU-2317, Pico 2020, fios, multímetro.
 
 ## Esquemas
@@ -269,32 +271,124 @@ Ponta preta no **7**. Ponta vermelha nos outros tocos, **sem** apertar tecla:
 
 Se 11–18 ou 24–30 apitarem com o 7, o pad está em curto com o terra (trilha rasgada ou solda). Não pule esses.
 
-### Mapear a matriz (mude a ponta preta)
+### Mapear a matriz (42 toques — 32 teclas + 0–9)
 
-1. Borrachas no lugar, teclas livres.
-2. Ponta **preta no toco 30** (KO0), vermelha no **11** (KI0).
-3. Aperte **F3** (branca mais grave). Tem que apitar. Solte: para.
-4. Preta no **27**, vermelha no **18**. Aperte **C6** (branca mais aguda). Apita.
+USB do Pico **fora**. Pilhas / DC fora. Multímetro em **continuidade** ou **ohms** — não DC volts. Borrachas no sítio.
 
-Ordem sugerida (preta = KO, vermelha = KI):
+A coluna da direita é hipótese (manual PK-5 / SA-1). O dado é o par que **apita**. Se o esperado falhar, deixe a tecla premida e varra os outros KI (11–18), depois os outros KO (30…24). Anote o par real.
 
-| Apertar | Preta KO | Vermelha KI |
+MCP pode ficar ligado: caminho da borracha = **100 Ω–2 kΩ**. Apito **sem** tecla, ou ohms muito baixos (~0 Ω) = curto de cambo/solda, não a borracha.
+
+**Como medir uma tecla**
+
+1. Ponta **preta** no toco KO da linha.
+2. Ponta **vermelha** no toco KI da coluna.
+3. Sem tecla: aberto / OL. Apertar: apito. Soltar: abre.
+4. Se apitar noutro KI além do esperado, anote os dois — é curto ou KO trocado.
+
+Tocos: KI0–7 = **11 12 13 14 15 16 17 18**. KO0–6 = **30 29 28 27 26 25 24**.
+
+#### Piano — KO0 toco 30 (F3 … C4)
+
+Preta **fixa no 30**. Vermelha muda. Teclas da esquerda para a direita, cromático (brancas e pretas).
+
+| Apertar | Vermelha | Esperado |
 | --- | --- | --- |
-| F3 | 30 | 11 |
-| F#3 | 30 | 12 |
-| G3 | 30 | 13 |
-| … até C4 | 30 | 18 |
-| C#4 | 29 | 11 |
-| … | … | … |
-| C6 | 27 | 18 |
-| Botão 0 | 26 | 11 |
-| Stop | 25 | 16 |
+| F3 (branca mais grave) | 11 | KO0 KI0 |
+| F#3 | 12 | KO0 KI1 |
+| G3 | 13 | KO0 KI2 |
+| G#3 | 14 | KO0 KI3 |
+| A3 | 15 | KO0 KI4 |
+| A#3 | 16 | KO0 KI5 |
+| B3 | 17 | KO0 KI6 |
+| C4 | 18 | KO0 KI7 |
 
-Sem tecla: infinito / aberto. Com tecla: apito ou poucos ohms (carbono da borracha, 100 Ω–2 kΩ é normal; não precisa ser 0 Ω).
+#### Piano — KO1 toco 29 (C#4 … G#4)
 
-Se F3 não fechar 30↔11: a numeração do pino 1 está invertida. Teste o canto oposto (toco que você achava 16 pode ser o 1). Anote o par que apitar e manda.
+Preta **no 29**.
+
+| Apertar | Vermelha | Esperado |
+| --- | --- | --- |
+| C#4 | 11 | KO1 KI0 |
+| D4 | 12 | KO1 KI1 |
+| D#4 | 13 | KO1 KI2 |
+| E4 | 14 | KO1 KI3 |
+| F4 | 15 | KO1 KI4 |
+| F#4 | 16 | KO1 KI5 |
+| G4 | 17 | KO1 KI6 |
+| G#4 | 18 | KO1 KI7 |
+
+#### Piano — KO2 toco 28 (A4 … E5)
+
+Preta **no 28**.
+
+| Apertar | Vermelha | Esperado |
+| --- | --- | --- |
+| A4 | 11 | KO2 KI0 |
+| A#4 | 12 | KO2 KI1 |
+| B4 | 13 | KO2 KI2 |
+| C5 | 14 | KO2 KI3 |
+| C#5 | 15 | KO2 KI4 |
+| D5 | 16 | KO2 KI5 |
+| D#5 | 17 | KO2 KI6 |
+| E5 | 18 | KO2 KI7 |
+
+#### Piano — KO3 toco 27 (F5 … C6)
+
+Preta **no 27**.
+
+| Apertar | Vermelha | Esperado |
+| --- | --- | --- |
+| F5 | 11 | KO3 KI0 |
+| F#5 | 12 | KO3 KI1 |
+| G5 | 13 | KO3 KI2 |
+| G#5 | 14 | KO3 KI3 |
+| A5 | 15 | KO3 KI4 |
+| A#5 | 16 | KO3 KI5 |
+| B5 | 17 | KO3 KI6 |
+| C6 (branca mais aguda) | 18 | KO3 KI7 |
+
+#### Botões 0–4 — KO4 toco 26
+
+Preta **no 26**.
+
+| Apertar | Vermelha | Esperado |
+| --- | --- | --- |
+| 0 | 11 | KO4 KI0 |
+| 1 | 12 | KO4 KI1 |
+| 2 | 13 | KO4 KI2 |
+| 3 | 14 | KO4 KI3 |
+| 4 | 15 | KO4 KI4 |
+
+#### Botões 5–9 — KO5 toco 25
+
+Preta **no 25**.
+
+| Apertar | Vermelha | Esperado |
+| --- | --- | --- |
+| 5 | 11 | KO5 KI0 |
+| 6 | 12 | KO5 KI1 |
+| 7 | 13 | KO5 KI2 |
+| 8 | 14 | KO5 KI3 |
+| 9 | 15 | KO5 KI4 |
+
+### Se não bater
+
+| Sintoma | O que fazer |
+| --- | --- |
+| F3 não fecha 30↔11 | Pino 1 invertido. Tecla premida, varra 11–18 e 30…24; manda o par que apitar |
+| Fecha no KI certo **e** noutro | Curto entre esses KI (cambo ou solda no par `Bn/An` do CJMCU) |
+| F3 fecha 30↔11 **e** 26↔11 | Curto KO0–KO4 (tocos **30** e **26**, GPB0/GPB4) |
+| A#3/B3/C4 mudos (16/17/18) | Cambos KI5–7 no furo **B** em vez do **A**, ou curto com o toco **25** |
+| Apita **sem** tecla | Curto permanente. Não pule esses fios |
+| Ω ~0 com tecla | Curto metálico, não borracha |
+| 100 Ω–2 kΩ com tecla, abre ao soltar | Par bom |
+
+Manda o resultado **linha a linha** (ex. `F3  30↔11  ok` ou `F3  30↔15`). Não feche o mapa no firmware até as 32 + 0–9 estarem anotadas.
 
 ## 3. Ligar os cambos no CJMCU
+
+Ordem no ferro, lista para ir riscando e verso do módulo: [hardware/SOLDA-MCP.md](hardware/SOLDA-MCP.md) · [cjmcu-2317-solda.svg](hardware/cjmcu-2317-solda.svg).
 
 Verso do módulo, texto `CJMCU` legível. `B0/A0` é **dois furos**: o mais perto do texto = **GPA**; o do outro lado = **GPB**.  
 Não use o `A0` da **coluna esquerda** (endereço).
@@ -402,4 +496,4 @@ Outros comandos: `h` ajuda, `m` mapa já, `c` limpa `#` vistos, `r` sai do apren
 - [ ] Botões 0–9 e stop/demo nas linhas KO4–KO6 (tempo / vol / rhythm da placa: ignorados)
 - [ ] Nenhuma tecla dispara sozinha (GND comum + isolamento ok)
 
-Aí entram EC11, KY-023 e firmware MIDI (`firmware/pico/pico.ino`).
+Aí: [Etapa 2](ETAPA-2.md) — OLED, EC11, KY-023, WS2812, PCM5102A.

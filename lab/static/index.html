@@ -59,23 +59,100 @@
       font: 12px var(--mono); padding: 6px 10px; border-radius: 999px; background: #141210; border: 1px solid var(--line);
     }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .enc-row { align-items: start; }
+    .enc { min-width: 0; }
     .enc { font-family: var(--mono); }
     .enc .n { font-size: 36px; font-weight: 600; color: var(--amber); line-height: 1; }
     .enc .lbl { color: var(--dim); font-size: 12px; margin-top: 4px; }
-    .joy-wrap { display: flex; gap: 14px; align-items: center; }
-    canvas { background: #0e0d0b; border-radius: 8px; border: 1px solid var(--line); }
+    .joy-wrap { display: flex; gap: 14px; align-items: flex-start; }
+    .joy-pad { position: relative; width: 160px; height: 160px; flex-shrink: 0; margin: 16px 32px 16px 36px; }
+    .joy-dir {
+      position: absolute; font: 10px var(--mono); color: var(--dim); letter-spacing: .04em;
+    }
+    .joy-dir.n { top: -14px; left: 0; right: 0; text-align: center; }
+    .joy-dir.s { bottom: -14px; left: 0; right: 0; text-align: center; }
+    .joy-dir.w { left: -28px; top: 74px; }
+    .joy-dir.e { right: -24px; top: 74px; }
+    .joy-pad canvas { display: block; }
     .joy-meta { font: 12px var(--mono); color: var(--dim); line-height: 1.6; }
+    .joy-cfg {
+      font: 11px var(--mono); color: var(--dim); margin: 10px 0 0;
+      background: #141210; border: 1px solid var(--line); border-radius: 6px;
+      padding: 8px 10px; white-space: pre-wrap;
+      max-height: 320px; overflow: auto; line-height: 1.4;
+    }
+    .joy-wiz {
+      margin-top: 14px; padding: 10px 12px; border-radius: 8px;
+      background: #141210; border: 1px solid var(--line);
+    }
+    .joy-wiz-step {
+      font: 13px var(--mono); color: var(--amber); margin: 0 0 6px;
+    }
+    .joy-dir.on { color: var(--amber); font-weight: 700; }
+    button.on { border-color: var(--amber); color: var(--amber); }
+    canvas { background: #0e0d0b; border-radius: 8px; border: 1px solid var(--line); }
     .matrix {
       display: grid; grid-template-columns: 36px repeat(8, 1fr); gap: 4px; font: 10px var(--mono);
     }
     .matrix .h, .matrix .r { color: var(--dim); text-align: center; padding-top: 6px; }
     .cell {
-      height: 28px; border-radius: 4px; background: #141210; border: 1px solid #2a2722;
-      display: flex; align-items: center; justify-content: center; color: #5c564a;
+      height: 36px; border-radius: 4px; background: #141210; border: 1px solid #2a2722;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #5c564a; line-height: 1.15; padding: 2px;
     }
+    .cell .theo { font-size: 10px; }
+    .cell .learn { font-size: 8px; color: #7a7468; }
     .cell.seen { background: #1c2618; color: #8aa67a; border-color: #2c3a26; }
     .cell.down { background: var(--hold); color: #1a1408; border-color: #d4b56a; font-weight: 700; }
+    .cell.down .learn { color: #5a4a20; }
     .cell.stuck { background: #3a1e1a; color: #e09a90; border-color: #5a2e28; }
+    .cell.pair { box-shadow: inset 0 0 0 1px var(--bad); }
+    .warn-banner {
+      display: none; margin: 0 0 10px; padding: 8px 10px; border-radius: 6px;
+      background: #3a1e1a; border: 1px solid #5a2e28; color: #e09a90; font: 12px var(--mono);
+    }
+    .warn-banner.on { display: block; }
+    .matrix-tools {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px;
+    }
+    .matrix-tools label {
+      font: 12px var(--sans); color: var(--dim); display: flex; gap: 6px; align-items: center;
+    }
+    .ws-strip {
+      display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 12px;
+    }
+    .ws-led {
+      width: 36px; height: 36px; border-radius: 8px; border: 2px solid #3d382f;
+      cursor: pointer; background: #1a1814; box-shadow: inset 0 0 8px #000;
+    }
+    .ws-led.active { border-color: var(--amber); }
+    .ws-controls {
+      display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; align-items: center;
+      font: 12px var(--mono); color: var(--dim); max-width: 420px;
+    }
+    .ws-controls input[type="color"] {
+      width: 48px; height: 32px; padding: 2px; cursor: pointer;
+    }
+    .ws-controls input[type="range"] { width: 100%; }
+    .audio-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 8px 0; }
+    .audio-row label { font: 12px var(--mono); color: var(--dim); display: flex; gap: 8px; align-items: center; }
+    .audio-row input[type="range"] { width: 160px; }
+    .aud-chk {
+      display: grid; grid-template-columns: repeat(4, minmax(140px, 1fr)); gap: 8px;
+      margin: 10px 0 6px;
+    }
+    .aud-pin {
+      background: #141210; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+      font: 12px var(--mono);
+    }
+    .aud-pin .k { color: var(--dim); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+    .aud-pin .v { margin-top: 4px; color: var(--ink); }
+    .aud-pin.ok { border-color: #3d5a32; background: #1c2618; }
+    .aud-pin.ok .v { color: var(--ok); }
+    .aud-pin.bad { border-color: #5a2e28; background: #3a1e1a; }
+    .aud-pin.bad .v { color: var(--bad); }
+    .aud-pin.dim .v { color: var(--dim); }
+    @media (max-width: 900px) { .aud-chk { grid-template-columns: 1fr 1fr; } }
     .btns { display: flex; flex-wrap: wrap; gap: 6px; }
     .span {
       grid-column: 1 / -1;
@@ -102,11 +179,42 @@
     .casio-svg .grille { stroke: var(--line); stroke-width: 1.2; fill: none; }
     .casio-svg .roll-frame { fill: #0e0d0b; stroke: var(--line); stroke-width: 1; }
     .casio-svg .roll-note { fill: var(--hold); opacity: .85; }
+    .casio-svg.learn-on [data-ui] { cursor: pointer; }
+    .casio-svg g.learn-able .pad {
+      stroke: #6a5a3a;
+      stroke-width: 1.4;
+    }
+    .casio-svg g.learn-able .lbl { fill: #c4b896; }
+    .casio-svg g.learn-target .key-w,
+    .casio-svg g.learn-target .pad {
+      fill: #3a2e18;
+      stroke: var(--amber);
+      stroke-width: 2.4;
+    }
+    .casio-svg g.learn-target .key-b {
+      fill: var(--amber);
+      stroke: #fff3c4;
+      stroke-width: 2.4;
+    }
+    .casio-svg g.learn-target .lbl { fill: var(--amber); font-weight: 700; }
+    .casio-svg g.learn-done .key-w,
+    .casio-svg g.learn-done .pad { stroke: var(--ok); }
+    .casio-svg g.learn-done .key-b { stroke: var(--ok); }
+    .learn-bar {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px;
+    }
+    .learn-bar .hint { margin: 0; flex: 1; min-width: 220px; }
+    @keyframes learnPulse {
+      50% { opacity: .55; }
+    }
+    .casio-svg g.learn-target { animation: learnPulse 1s ease-in-out infinite; }
     .log {
-      grid-column: 1 / -1; min-height: 180px; max-height: 280px; overflow: auto;
+      grid-column: 1 / -1; min-height: 260px; max-height: 420px; overflow: auto;
       font: 12px var(--mono); background: #0e0d0b; border-radius: 8px; padding: 10px 12px;
       white-space: pre-wrap; line-height: 1.45; color: #cfc6b6;
     }
+    .log .ts { color: #6f685c; margin-right: 8px; }
+    .log .tx { color: var(--amber); }
     .log .err { color: var(--bad); }
     .log .ok { color: var(--ok); }
     .hint { color: var(--dim); font-size: 12px; margin-top: 8px; }
@@ -119,6 +227,10 @@
 <body>
   <header>
     <h1>Casio SA-1 <span>Lab</span></h1>
+    <nav style="margin-right:12px">
+      <a href="/" style="color:var(--amber);text-decoration:none;font-size:13px;margin-right:10px">Sonda</a>
+      <a href="/midi" style="color:var(--dim);text-decoration:none;font-size:13px">MIDI</a>
+    </nav>
     <span id="link"><span class="dot" id="linkDot"></span><span id="linkTxt">desconectado</span></span>
     <div class="grow"></div>
     <select id="port"></select>
@@ -133,32 +245,131 @@
       <div class="pills">
         <span class="pill" id="pMcp">MCP —</span>
         <span class="pill" id="pOled">OLED —</span>
+        <span class="pill" id="pWs">WS —</span>
+        <span class="pill" id="pDac">DAC —</span>
         <span class="pill" id="pCli">CLI —</span>
+        <span class="pill" id="pIo">rx 0 · tx 0</span>
+        <span class="pill" id="pLastKey">última tecla —</span>
       </div>
-      <p class="hint">Grave a sonda uma vez. Depois teste tudo daqui: teclas, encoders, stick e tela.</p>
+      <p class="hint">Grave a sonda uma vez. Depois teste tudo daqui: teclas, encoders, stick, LEDs, tela e PCM5102A.</p>
     </section>
     <section class="card">
       <h2>EC11</h2>
-      <div class="row">
-        <div class="enc"><div class="n" id="e1">0</div><div class="lbl">EC11-1 oitava · GP18/19</div></div>
-        <div class="enc"><div class="n" id="e2">0</div><div class="lbl">EC11-2 volume · GP21/22</div></div>
+      <div class="row enc-row" id="encRow">
+        <div class="enc" id="encBox1" style="order:2">
+          <div class="n" id="e1">0</div>
+          <div class="lbl" id="e1lbl">EC11-1 oitava · GP18/19</div>
+        </div>
+        <div class="enc" id="encBox2" style="order:1">
+          <div class="n" id="e2">0</div>
+          <div class="lbl" id="e2lbl">EC11-2 volume · GP21/22</div>
+        </div>
       </div>
+      <div class="btns" style="margin-top:10px">
+        <button type="button" id="encSwap" class="on">Trocado — 2 | 1</button>
+      </div>
+      <p class="hint" id="encHint">Posição trocada: esquerda = EC11-2 (GP21/22), direita = EC11-1 (GP18/19).</p>
     </section>
     <section class="card span">
       <h2>SA-1</h2>
+      <div class="learn-bar">
+        <div class="btns">
+          <button type="button" class="primary" id="learnStart">Aprender</button>
+          <button type="button" id="learnSkip">Pular</button>
+          <button type="button" id="learnBack">Voltar</button>
+          <button type="button" id="learnStop">Parar</button>
+        </div>
+        <p class="hint" id="learnHintSa">Clica no painel (T−, SEL, piano…) para aprender essa tecla. Aperta a física — ou clica com ela já premida — para gravar a posição KO/KI.</p>
+      </div>
       <svg class="casio-svg" id="casio" viewBox="0 0 900 292" role="img" aria-label="Casio SA-1"></svg>
-      <p class="hint">Contorno do painel. Tecla ou botão acende quando o hardware desce.</p>
+      <p class="hint">Tecla ou botão acende quando o hardware desce. No aprender, o amarelo a pulsar é a que deves carregar.</p>
     </section>
     <section class="card">
       <h2>Matriz KO × KI</h2>
+      <div class="warn-banner" id="koWarn"></div>
+      <div class="matrix-tools">
+        <label><input type="checkbox" id="histToggle" /> histórico (verde)</label>
+        <button type="button" id="btnClearSeen">Limpar histórico</button>
+      </div>
       <div class="matrix" id="matrix"></div>
+      <p class="hint">Amarelo = agora · vermelho = colado no boot · verde = histórico (opcional). Nome de cima = teórico Casio; de baixo = mapa aprendido se diferente.</p>
     </section>
     <section class="card">
       <h2>Joystick KY-023</h2>
       <div class="joy-wrap">
-        <canvas id="joy" width="160" height="160"></canvas>
+        <div class="joy-pad">
+          <span class="joy-dir n" id="joyDirN">cima</span>
+          <span class="joy-dir s" id="joyDirS">baixo</span>
+          <span class="joy-dir w" id="joyDirW">esq</span>
+          <span class="joy-dir e" id="joyDirE">dir</span>
+          <canvas id="joy" width="160" height="160"></canvas>
+        </div>
         <div class="joy-meta" id="joyMeta">X —<br>Y —<br>SW solto</div>
       </div>
+      <div class="joy-wiz" id="joyWiz">
+        <div class="joy-wiz-step" id="joyWizStep">Assistente parado</div>
+        <p class="hint" id="joyWizHint">Inicia o assistente: centro → cima → esq → dir → baixo → clique → volta 360°. Se o ponto for para o lado errado, o mapa (X↔Y / inverter) corrige-se sozinho.</p>
+        <div class="btns">
+          <button type="button" class="primary" id="joyWizStart">Calibrar (assistente)</button>
+          <button type="button" id="joyWizNext" disabled>Capturar / avançar</button>
+          <button type="button" id="joyWizSkip" disabled>Saltar etapa</button>
+          <button type="button" id="joyWizStop" disabled>Parar</button>
+        </div>
+      </div>
+      <div class="btns" style="margin-top:12px">
+        <button type="button" id="joyCal">Recentrar</button>
+        <button type="button" id="joyInvX" class="on">Inverter X</button>
+        <button type="button" id="joyInvY">Inverter Y</button>
+        <button type="button" id="joySwap" class="on">Trocar X↔Y</button>
+        <button type="button" id="joyReset">Reset eixos</button>
+      </div>
+      <p class="hint">Pitch = esquerda/direita · Mod = cima/baixo. O ponto usa o alcance real (assimetria por lado).</p>
+      <pre class="joy-cfg" id="joyCfg">static const bool JOY_INVERT_X = true;
+static const bool JOY_INVERT_Y = false;
+static const bool JOY_SWAP_XY = true;
+static const int JOY_MIN_X = 2048;
+static const int JOY_MAX_X = 2048;
+static const int JOY_MIN_Y = 2048;
+static const int JOY_MAX_Y = 2048;</pre>
+    </section>
+    <section class="card span">
+      <h2>WS2812 8×1 · GP16</h2>
+      <div class="ws-strip" id="wsStrip"></div>
+      <div class="ws-controls">
+        <span>LED</span><span id="wsSelLbl">0</span>
+        <span>Cor</span><input type="color" id="wsColor" value="#ff0000" />
+        <span>Opacidade</span><input type="range" id="wsAlpha" min="0" max="100" value="40" />
+        <span>Master</span><input type="range" id="wsMaster" min="0" max="100" value="100" />
+      </div>
+      <div class="btns" style="margin-top:10px">
+        <button type="button" id="wsApply">Aplicar</button>
+        <button type="button" id="wsOff">Apagar</button>
+        <button type="button" id="wsWhite">Branco</button>
+        <button type="button" id="wsRainbow">Rainbow</button>
+        <button type="button" id="wsId">Identificar</button>
+      </div>
+      <p class="hint">VCC da barra no <strong>VBUS 5 V</strong>. Rainbow corre na sonda (não no browser). Mesmo botão para parar.</p>
+    </section>
+    <section class="card span">
+      <h2>PCM5102A · GP10/11/12</h2>
+      <div class="btns">
+        <button type="button" id="audMute">Mudo</button>
+        <button type="button" id="audTone" class="on">Tom 440</button>
+        <button type="button" id="audKeys">Teclas</button>
+        <button type="button" id="audClock">Clock</button>
+      </div>
+      <div class="audio-row">
+        <label>Volume <input type="range" id="audVol" min="0" max="127" value="40" /> <span id="audVolLbl">40</span></label>
+        <label>Hz <input type="range" id="audHz" min="110" max="880" value="440" step="10" /> <span id="audHzLbl">440</span></label>
+        <button type="button" id="audCheck">Verificar I2S</button>
+      </div>
+      <div class="aud-chk">
+        <div class="aud-pin dim" id="audPinBck"><div class="k">BCK · GP10</div><div class="v" id="audPinBckV">—</div></div>
+        <div class="aud-pin dim" id="audPinLrck"><div class="k">LRCK · GP11</div><div class="v" id="audPinLrckV">—</div></div>
+        <div class="aud-pin dim" id="audPinDout"><div class="k">DOUT envia · GP12</div><div class="v" id="audPinDoutV">—</div></div>
+        <div class="aud-pin dim" id="audPinDin"><div class="k">DIN recebe · GP13</div><div class="v" id="audPinDinV">—</div></div>
+      </div>
+      <p class="hint" id="audHint">Jack 3,5 mm. SCK do DAC no GND. Verificar lê os relógios e o bit-stream no Pico. O PCM5102A não devolve o analógico — loopback digital = jumper GP12→GP13.</p>
     </section>
     <section class="card span">
       <h2>Comandos</h2>
@@ -176,50 +387,112 @@
       </div>
       <p class="hint" id="learnHint"></p>
     </section>
-    <pre class="log card" id="log"></pre>
+    <section class="card span">
+      <h2>Log Serial</h2>
+      <pre class="log" id="log"></pre>
+      <p class="hint">Cada comando e cada linha do Pico aparece aqui. Se ficar mudo com o ponto verde, feche o Serial Monitor do Arduino IDE e reconecte.</p>
+    </section>
   </main>
   <script>
     const names = [
       ["F3","F#3","G3","G#3","A3","A#3","B3","C4"],
-      ["C#4","D4","D#4","E4","F4","F#4","G4","G#4"],
-      ["A4","A#4","B4","C5","C#5","D5","D#5","E5"],
-      ["F5","F#5","G5","G#5","A5","A#5","B5","C6"],
-      ["0","1","2","3","4","-","-","-"],
-      ["5","6","7","8","9","stop","-","-"],
-      ["-","-","-","-","-","demo","demo","demo"],
+      ["A5","G#5","G5","F#5","F5","A#5","B5","C6"],
+      ["C#5","C5","B4","A#4","A4","D5","D#5","E5"],
+      ["F4","E4","D#4","D4","C#4","F#4","G4","G#4"],
+      ["0","1","2","3","4","tempo+","-","sel"],
+      ["5","6","7","8","9","stop","tempo-","-"],
+      ["-","-","-","-","-","demo","-","-"],
     ];
     // Mesmo mapa que firmware/pico/matrix.h — KO/KI → tecla ou botão do SA-1.
-    const MATRIX = [
+    const MATRIX_DEFAULT = [
       [53, 54, 55, 56, 57, 58, 59, 60],
       [81, 80, 79, 78, 77, 82, 83, 84],
       [73, 72, 71, 70, 69, 74, 75, 76],
       [65, 64, 63, 62, 61, 66, 67, 68],
-      [200, 201, 202, 203, 204, 255, 255, 255],
-      [205, 206, 207, 208, 209, 215, 255, 255],
+      [200, 201, 202, 203, 204, 210, 255, 212],
+      [205, 206, 207, 208, 209, 215, 211, 255],
       [255, 255, 255, 255, 255, 216, 255, 255],
     ];
+    let MATRIX = MATRIX_DEFAULT.map((row) => row.slice());
+    const LEARN_STORE_KEY = "casio-sa1-learn-v2";
     const NS = "http://www.w3.org/2000/svg";
     const ROLL_MS = 4000;
+    const LEARN_SEQ = [
+      "F3","F#3","G3","G#3","A3","A#3","B3","C4",
+      "C#4","D4","D#4","E4","F4","F#4","G4","G#4",
+      "A4","A#4","B4","C5","C#5","D5","D#5","E5",
+      "F5","F#5","G5","G#5","A5","A#5","B5","C6",
+      "tempo-","tempo+","sel",
+      "0","1","2","3","4","5","6","7","8","9","stop",
+    ];
     const keyGeom = [];
     const rollHits = [];
     let rollGroup = null;
     let rollClip = { x: 88, y: 50, w: 798, h: 70 };
     const held = Array.from({ length: 7 }, () => Array(8).fill(false));
     const seen = Array.from({ length: 7 }, () => Array(8).fill(false));
+    const stuck = Array.from({ length: 7 }, () => Array(8).fill(false));
     const $ = (id) => document.getElementById(id);
     const logEl = $("log");
     const portEl = $("port");
     let connected = false;
     let lastState = null;
     let busy = false;
+    let rxBytes = 0;
+    let txBytes = 0;
+    let sawState = false;
+    let sseDown = false;
+    let showHistory = false;
+    const learn = {
+      on: false, step: 0, tot: 46, name: "", st: "", waitUp: false,
+      done: new Set(), doneUi: new Set(),
+    };
+    let wsSel = 0;
+    const wsState = Array.from({ length: 8 }, () => ({ color: "#ff0000", alpha: 40 }));
+    let wsMasterPct = 100;
+    let wsRainbowOn = false;
+    let wsRainbowHue = 0;
+    let wsRainbowTimer = 0;
+    const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+
+    function midiLabel(code) {
+      if (code == null || code === 255) return "-";
+      if (code >= 200 && code <= 209) return String(code - 200);
+      if (code === 210) return "tempo+";
+      if (code === 211) return "tempo-";
+      if (code === 212) return "sel";
+      if (code === 215) return "stop";
+      if (code === 216) return "demo";
+      if (code >= 53 && code <= 84) {
+        return NOTE_NAMES[code % 12] + (Math.floor(code / 12) - 1);
+      }
+      return "?";
+    }
+
+    function stamp() {
+      const d = new Date();
+      return [d.getHours(), d.getMinutes(), d.getSeconds()]
+        .map((n) => String(n).padStart(2, "0"))
+        .join(":");
+    }
 
     function log(text, cls) {
       const line = document.createElement("div");
       if (cls) line.className = cls;
-      line.textContent = text;
+      const ts = document.createElement("span");
+      ts.className = "ts";
+      ts.textContent = stamp();
+      line.appendChild(ts);
+      line.appendChild(document.createTextNode(text));
       logEl.appendChild(line);
       logEl.scrollTop = logEl.scrollHeight;
       while (logEl.childNodes.length > 2000) logEl.removeChild(logEl.firstChild);
+    }
+
+    function setIo(rx, tx) {
+      if (rx != null) rxBytes = rx;
+      if (tx != null) txBytes = tx;
+      $("pIo").textContent = "rx " + rxBytes + " · tx " + txBytes;
     }
 
     function fmt(n) {
@@ -237,9 +510,275 @@
       if (code == null || code === 255) return null;
       if (code >= 53 && code <= 84) return "k" + (code - 53);
       if (code >= 200 && code <= 209) return "t" + (code - 200);
+      if (code === 210) return "tempo-up";
+      if (code === 211) return "tempo-dn";
+      if (code === 212) return "select";
       if (code === 215) return "stop";
       if (code === 216) return "demo";
       return null;
+    }
+
+    function learnCode(i) {
+      if (i < 32) return 53 + i;
+      if (i === 32) return 211;
+      if (i === 33) return 210;
+      if (i === 34) return 212;
+      if (i >= 35 && i <= 44) return 200 + (i - 35);
+      if (i === 45) return 215;
+      return 255;
+    }
+
+    function learnNameToUi(name) {
+      if (!name) return null;
+      if (name === "stop") return "stop";
+      if (name === "demo") return "demo";
+      if (name === "tempo-" || name === "tdn" || name === "t-") return "tempo-dn";
+      if (name === "tempo+" || name === "tup" || name === "t+") return "tempo-up";
+      if (name === "sel" || name === "select") return "select";
+      if (/^[0-9]$/.test(name)) return "t" + name;
+      const m = name.match(/^([A-G]#?)(\d)$/);
+      if (!m) return null;
+      const nn = NOTE_NAMES.indexOf(m[1]);
+      if (nn < 0) return null;
+      const midi = nn + (Number(m[2]) + 1) * 12;
+      if (midi < 53 || midi > 84) return null;
+      return "k" + (midi - 53);
+    }
+
+    function uiToLearnName(id) {
+      if (id === "stop" || id === "demo") return id;
+      if (id === "tempo-dn") return "tempo-";
+      if (id === "tempo-up") return "tempo+";
+      if (id === "select") return "sel";
+      if (id && id.startsWith("t") && id.length === 2) return id.slice(1);
+      if (id && id.startsWith("k")) {
+        const midi = 53 + Number(id.slice(1));
+        return midiLabel(midi);
+      }
+      return null;
+    }
+
+    function learnWireName(name) {
+      if (name === "tempo-") return "tdn";
+      if (name === "tempo+") return "tup";
+      return name;
+    }
+
+    function learnDisplayName(name) {
+      if (name === "tempo-") return "tempo− (T−)";
+      if (name === "tempo+") return "tempo+ (T+)";
+      if (name === "sel") return "SEL";
+      return name || "";
+    }
+
+    function learnTargetUi() {
+      if (!learn.on || !learn.name) return null;
+      if (learn.st === "ok" || learn.st === "done" || learn.st === "stop") return null;
+      return learnNameToUi(learn.name);
+    }
+
+    function updateLearnUi() {
+      const on = learn.on;
+      const skip = $("learnSkip");
+      const back = $("learnBack");
+      const stop = $("learnStop");
+      if (skip) skip.disabled = !on;
+      if (back) back.disabled = !on;
+      if (stop) stop.disabled = !on;
+      const svg = $("casio");
+      if (svg) svg.classList.toggle("learn-on", true);
+      const startBtn = $("learnStart");
+      if (startBtn) startBtn.textContent = on ? "Reiniciar" : "Aprender";
+      const n = learn.step + 1;
+      const tot = learn.tot || LEARN_SEQ.length;
+      let msg = "Clica T−, SEL, uma tecla do piano… para aprender essa. Aperta a física (ou clica com ela já premida) para gravar KO/KI.";
+      if (on && learn.waitUp && learn.st === "ok") {
+        msg = "Gravou " + learnDisplayName(learn.name) + " — solta tudo antes da próxima.";
+      } else if (on && learn.waitUp) {
+        msg = "Solta as teclas… depois aperta " + learnDisplayName(learn.name) + ".";
+      } else if (on && learn.name) {
+        msg = "Aperta sozinha  [" + n + "/" + tot + "]  " + learnDisplayName(learn.name) +
+          "   ·  ou clica T− / T+ / SEL / tecla no painel";
+      } else if (learn.st === "done") {
+        msg = "Aprender completo (ou finalizado). matrix.h no log. l para recomeçar.";
+      } else if (learn.st === "stop") {
+        msg = "Aprender parado. Clica Aprender ou uma tecla no painel.";
+      } else if (learn.done.size) {
+        msg = "Mapa guardado no browser: " + learn.done.size + "/" + tot +
+          " teclas. Continua com Aprender / clica no painel (sobrevive ao refresh).";
+      }
+      const a = $("learnHintSa");
+      const b = $("learnHint");
+      if (a) a.textContent = msg;
+      if (b) b.textContent = msg;
+    }
+
+    function resetMatrixDefault() {
+      MATRIX = MATRIX_DEFAULT.map((row) => row.slice());
+    }
+
+    function rebuildLearnDoneUi() {
+      learn.doneUi = new Set();
+      for (const name of learn.done) {
+        const ui = learnNameToUi(name);
+        if (ui) learn.doneUi.add(ui);
+      }
+    }
+
+    function saveLearnStore() {
+      try {
+        localStorage.setItem(LEARN_STORE_KEY, JSON.stringify({
+          v: 1,
+          matrix: MATRIX,
+          done: [...learn.done],
+          step: learn.step,
+          tot: learn.tot,
+          name: learn.name,
+          on: learn.on,
+          st: learn.st,
+          waitUp: learn.waitUp,
+          savedAt: Date.now(),
+        }));
+      } catch (err) {
+        console.warn("learn store save", err);
+      }
+    }
+
+    function loadLearnStore() {
+      try {
+        const raw = localStorage.getItem(LEARN_STORE_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        if (!data || !Array.isArray(data.matrix) || data.matrix.length !== 7) return false;
+        for (let r = 0; r < 7; r++) {
+          if (!Array.isArray(data.matrix[r]) || data.matrix[r].length !== 8) return false;
+          for (let c = 0; c < 8; c++) MATRIX[r][c] = +data.matrix[r][c];
+        }
+        learn.done = new Set(Array.isArray(data.done) ? data.done : []);
+        rebuildLearnDoneUi();
+        if (data.step != null) learn.step = +data.step;
+        if (data.tot != null) learn.tot = +data.tot;
+        if (data.name != null) learn.name = String(data.name);
+        learn.on = !!data.on;
+        learn.st = data.st || (learn.on ? "wait" : (learn.done.size ? "done" : ""));
+        learn.waitUp = !!data.waitUp;
+        return true;
+      } catch (err) {
+        console.warn("learn store load", err);
+        return false;
+      }
+    }
+
+    function clearLearnStore() {
+      try {
+        localStorage.removeItem(LEARN_STORE_KEY);
+      } catch (_) {}
+    }
+
+    function countHeldLive() {
+      let n = 0;
+      let ko = -1, ki = -1;
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (!held[r][c] || stuck[r][c]) continue;
+          n++;
+          ko = r;
+          ki = c;
+        }
+      }
+      return { n, ko, ki };
+    }
+
+    function selectLearnKey(name) {
+      const i = LEARN_SEQ.indexOf(name);
+      if (i < 0) {
+        log("essa tecla não entra no mapa", "err");
+        return;
+      }
+      markLearnUi(name, false);
+      const live = countHeldLive();
+      applyLearn({
+        on: 1, st: "wait", n: name, i, tot: LEARN_SEQ.length, w: 0,
+      });
+      log(
+        "aprender " + learnDisplayName(name) +
+        (live.n
+          ? " — a gravar KO" + live.ko + " KI" + live.ki
+          : " — aperta a tecla física"),
+        "ok"
+      );
+      cmd("w " + learnWireName(name)).catch((e) => log(e.message, "err"));
+    }
+
+    function markLearnUi(name, on) {
+      if (!name) return;
+      if (on) learn.done.add(name);
+      else learn.done.delete(name);
+      const ui = learnNameToUi(name);
+      if (!ui) return;
+      if (on) learn.doneUi.add(ui);
+      else learn.doneUi.delete(ui);
+    }
+
+    function applyLearn(l) {
+      if (l.st === "start") {
+        learn.done = new Set();
+        learn.doneUi = new Set();
+        resetMatrixDefault();
+        clearLearnStore();
+      }
+      learn.on = !!l.on;
+      if (l.i != null) learn.step = +l.i;
+      if (l.tot != null) learn.tot = +l.tot;
+      if (l.n != null) learn.name = l.n;
+      if (l.w != null) learn.waitUp = !!l.w;
+      if (l.st) learn.st = l.st;
+      if (l.st === "ok") {
+        learn.waitUp = true;
+        markLearnUi(l.n, true);
+        if (l.ko != null && l.ko >= 0 && l.ki != null && l.i != null) {
+          MATRIX[l.ko][l.ki] = learnCode(+l.i);
+        }
+      }
+      if (l.st === "skip") {
+        const skipped = l.n || learn.name;
+        markLearnUi(skipped, false);
+        const skippedI = LEARN_SEQ.indexOf(skipped);
+        const i = l.i != null && LEARN_SEQ[l.i] === skipped ? +l.i : skippedI;
+        const nextI = i >= 0 ? i + 1 : learn.step + 1;
+        if (nextI >= LEARN_SEQ.length) {
+          learn.on = false;
+          learn.waitUp = false;
+          learn.st = "done";
+          learn.name = "";
+        } else {
+          learn.on = true;
+          learn.step = nextI;
+          learn.name = LEARN_SEQ[nextI];
+          learn.st = "wait";
+          learn.waitUp = !!l.w;
+        }
+      }
+      if (l.st === "back") {
+        markLearnUi(l.n, false);
+      }
+      if (l.st === "done" || l.st === "stop") {
+        learn.on = false;
+        learn.waitUp = false;
+      }
+      saveLearnStore();
+      if (learn.st === "done") {
+        api("/api/learn-matrix", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ matrix: MATRIX, done: [...learn.done] }),
+        }).then((r) => {
+          log("mapa escrito em matrix.h · " + (r.cells || 0) + " células", "ok");
+        }).catch((e) => log(e.message, "err"));
+      }
+      updateLearnUi();
+      paintCasio();
+      paintMatrix();
     }
 
     function addPad(parent, id, x, y, w, h, label) {
@@ -250,6 +789,9 @@
       const t = svgEl("text", { class: "lbl", x: x + w / 2, y: y + h / 2 + 3 });
       t.textContent = label;
       g.appendChild(t);
+      const title = svgEl("title", {});
+      title.textContent = uiToLearnName(id) || label;
+      g.appendChild(title);
       parent.appendChild(g);
     }
 
@@ -272,16 +814,12 @@
       }
       svg.appendChild(grille);
 
-      addPad(svg, "power", 20, 14, 40, 22, "PWR");
-      addPad(svg, "vol-dn", 72, 14, 24, 22, "▼");
-      addPad(svg, "vol-up", 100, 14, 24, 22, "▲");
-      addPad(svg, "demo", 140, 14, 40, 22, "DEMO");
-      addPad(svg, "tempo-dn", 196, 14, 24, 22, "▼");
-      addPad(svg, "tempo-up", 224, 14, 24, 22, "▲");
-      addPad(svg, "select", 256, 14, 34, 22, "SEL");
-      addPad(svg, "stop", 296, 14, 40, 22, "STOP");
+      addPad(svg, "tempo-dn", 20, 14, 28, 22, "T−");
+      addPad(svg, "tempo-up", 52, 14, 28, 22, "T+");
+      addPad(svg, "select", 84, 14, 36, 22, "SEL");
+      addPad(svg, "stop", 128, 14, 40, 22, "STOP");
       for (let i = 0; i < 10; i++) {
-        addPad(svg, "t" + i, 356 + i * 30, 14, 26, 22, String(i));
+        addPad(svg, "t" + i, 180 + i * 30, 14, 26, 22, String(i));
       }
 
       svg.appendChild(svgEl("rect", {
@@ -312,6 +850,9 @@
         g.appendChild(svgEl("rect", {
           class: "key-w", x, y: keyY, width: whiteW - 1, height: whiteH, rx: 2,
         }));
+        const title = svgEl("title", {});
+        title.textContent = midiLabel(midi);
+        g.appendChild(title);
         svg.appendChild(g);
       });
       blackAfter.forEach((whiteI) => {
@@ -323,7 +864,21 @@
         g.appendChild(svgEl("rect", {
           class: "key-b", x, y: keyY, width: blackW, height: blackH, rx: 1,
         }));
+        const title = svgEl("title", {});
+        title.textContent = midiLabel(midi);
+        g.appendChild(title);
         svg.appendChild(g);
+      });
+      svg.classList.add("learn-on");
+      svg.addEventListener("click", (ev) => {
+        const g = ev.target.closest("[data-ui]");
+        if (!g) return;
+        const name = uiToLearnName(g.getAttribute("data-ui"));
+        if (!name) {
+          log("essa tecla não entra no mapa", "err");
+          return;
+        }
+        selectLearnKey(name);
       });
     }
 
@@ -341,8 +896,18 @@
 
     function paintCasio() {
       const on = heldUi();
+      const target = learnTargetUi();
+      const able = new Set();
+      for (const name of LEARN_SEQ) {
+        const ui = learnNameToUi(name);
+        if (ui) able.add(ui);
+      }
       document.querySelectorAll("#casio [data-ui]").forEach((el) => {
-        el.classList.toggle("down", on.has(el.getAttribute("data-ui")));
+        const id = el.getAttribute("data-ui");
+        el.classList.toggle("down", on.has(id));
+        el.classList.toggle("learn-target", id === target);
+        el.classList.toggle("learn-done", learn.doneUi.has(id) && id !== target);
+        el.classList.toggle("learn-able", able.has(id) && id !== target && !learn.doneUi.has(id));
       });
       const now = performance.now();
       const live = new Set(rollHits.filter((h) => h.end == null).map((h) => h.id));
@@ -404,53 +969,653 @@
           const cell = document.createElement("div");
           cell.className = "cell";
           cell.id = "c" + r + c;
-          cell.textContent = names[r][c];
+          const theo = document.createElement("span");
+          theo.className = "theo";
+          theo.textContent = names[r][c];
+          cell.appendChild(theo);
+          const learned = midiLabel(MATRIX[r][c]);
+          if (learned !== names[r][c] && learned !== "-") {
+            const lr = document.createElement("span");
+            lr.className = "learn";
+            lr.textContent = learned;
+            cell.appendChild(lr);
+          }
           root.appendChild(cell);
         }
       }
+    }
+
+    function updateKoWarn() {
+      const kis = [];
+      for (let c = 0; c < 8; c++) {
+        if (held[0][c] && held[4][c]) kis.push(c);
+      }
+      const el = $("koWarn");
+      if (!kis.length) {
+        el.className = "warn-banner";
+        el.textContent = "";
+        return;
+      }
+      el.className = "warn-banner on";
+      el.textContent =
+        "KO0+KO4 no KI" + kis.join(",") +
+        " — tecla de piano e botão juntos. Conferir GPB0/GPB4 (tocos 30 e 26).";
     }
 
     function paintMatrix() {
       for (let r = 0; r < 7; r++) {
         for (let c = 0; c < 8; c++) {
           const el = $("c" + r + c);
-          el.className = "cell" + (held[r][c] ? " down" : seen[r][c] ? " seen" : "");
+          let cls = "cell";
+          if (stuck[r][c]) cls += " stuck";
+          else if (held[r][c]) cls += " down";
+          else if (showHistory && seen[r][c]) cls += " seen";
+          if (held[0][c] && held[4][c] && (r === 0 || r === 4)) cls += " pair";
+          el.className = cls;
+          const learned = midiLabel(MATRIX[r][c]);
+          let lr = el.querySelector(".learn");
+          if (learned !== names[r][c] && learned !== "-") {
+            if (!lr) {
+              lr = document.createElement("span");
+              lr.className = "learn";
+              el.appendChild(lr);
+            }
+            lr.textContent = learned;
+          } else if (lr) {
+            lr.remove();
+          }
         }
       }
+      updateKoWarn();
       paintCasio();
+    }
+
+    let encSwapUi = true;
+
+    function paintEncLabels(es) {
+      encSwapUi = !!es;
+      const a = $("encBox1");
+      const b = $("encBox2");
+      if (a && b) {
+        a.style.order = encSwapUi ? "2" : "1";
+        b.style.order = encSwapUi ? "1" : "2";
+      }
+      const l1 = $("e1lbl");
+      const l2 = $("e2lbl");
+      if (l1) l1.textContent = "EC11-1 oitava · GP18/19";
+      if (l2) l2.textContent = "EC11-2 volume · GP21/22";
+      const btn = $("encSwap");
+      if (btn) {
+        btn.classList.toggle("on", encSwapUi);
+        btn.textContent = encSwapUi ? "Trocado — 2 | 1" : "Trocar 1↔2";
+      }
+      const hint = $("encHint");
+      if (hint) {
+        hint.textContent = encSwapUi
+          ? "Posição trocada: esquerda = EC11-2 (GP21/22), direita = EC11-1 (GP18/19)."
+          : "Gira um encoder físico e vê qual contador mexe. Se estiver trocado, usa Trocar 1↔2.";
+      }
+    }
+
+    const joyTrack = {
+      xn: null, xx: null, yn: null, yx: null,
+      logs: [], lastLogMs: 0,
+      fx: null, fy: null,
+    };
+
+    function joyTrackReset(x, y) {
+      joyTrack.xn = x ?? null;
+      joyTrack.xx = x ?? null;
+      joyTrack.yn = y ?? null;
+      joyTrack.yx = y ?? null;
+      joyTrack.fx = x ?? null;
+      joyTrack.fy = y ?? null;
+    }
+
+    function joyTrackExpand(s) {
+      if (!s || s.x == null || s.y == null) return;
+      joyTrack.xn = joyTrack.xn == null ? s.x : Math.min(joyTrack.xn, s.x);
+      joyTrack.xx = joyTrack.xx == null ? s.x : Math.max(joyTrack.xx, s.x);
+      joyTrack.yn = joyTrack.yn == null ? s.y : Math.min(joyTrack.yn, s.y);
+      joyTrack.yx = joyTrack.yx == null ? s.y : Math.max(joyTrack.yx, s.y);
+    }
+
+    function joyRangeWide(n, x) {
+      return n != null && x != null && (x - n) > 40;
+    }
+
+    function joyAdcMax(s) {
+      const samples = [s?.x, s?.y, s?.cx, s?.cy, s?.rx, s?.ry, s?.xx, s?.yx]
+        .filter((n) => n != null);
+      if (samples.length && samples.every((n) => n <= 1400)) return 1023;
+      if (s?.am === 1023 || s?.am === 4095) return s.am;
+      const c = s?.cx ?? s?.x ?? 2048;
+      return c < 1400 ? 1023 : 4095;
+    }
+
+    function joyPairMap(x, y, s, adc) {
+      if (s.xy) { const t = x; x = y; y = t; }
+      if (s.ix) x = adc - x;
+      if (s.iy) y = adc - y;
+      return { x, y };
+    }
+
+    function joyMapFromRaw(s) {
+      if (!s) return s;
+      const adc = joyAdcMax(s);
+      const hasRaw = s.rx != null && s.ry != null;
+      const srcX = hasRaw ? s.rx : s.x;
+      const srcY = hasRaw ? s.ry : s.y;
+      if (srcX == null || srcY == null) return s;
+      const p = joyPairMap(srcX, srcY, s, adc);
+      const c = joyPairMap(s.cx ?? srcX, s.cy ?? srcY, s, adc);
+      let xn = s.xn, xx = s.xx, yn = s.yn, yx = s.yx;
+      if (xn != null && xx != null) {
+        const a = joyPairMap(xn, s.yn ?? yn, s, adc);
+        const b = joyPairMap(xx, s.yx ?? yx, s, adc);
+        xn = Math.min(a.x, b.x);
+        xx = Math.max(a.x, b.x);
+        yn = Math.min(a.y, b.y);
+        yx = Math.max(a.y, b.y);
+      }
+      return { ...s, x: p.x, y: p.y, cx: c.x, cy: c.y, xn, xx, yn, yx, am: adc };
+    }
+
+    function ingestJoy(s) {
+      if (!s || s.x == null) return s;
+      const prev = lastState || {};
+      const merged = joyMapFromRaw({ ...prev, ...s });
+      const adc = joyAdcMax(merged);
+      const dead = merged.dz != null ? merged.dz : Math.max(10, Math.round(adc * 0.018));
+      merged.dz = dead;
+      merged.am = adc;
+      if (joyTrack.fx == null) {
+        joyTrack.fx = merged.x;
+        joyTrack.fy = merged.y;
+      } else {
+        joyTrack.fx = joyTrack.fx * 0.6 + merged.x * 0.4;
+        joyTrack.fy = joyTrack.fy * 0.6 + merged.y * 0.4;
+      }
+      let x = Math.round(joyTrack.fx), y = Math.round(joyTrack.fy);
+      const cxs = merged.cx ?? Math.round(adc / 2), cys = merged.cy ?? cxs;
+      if (Math.hypot(x - cxs, y - cys) <= dead) {
+        x = cxs;
+        y = cys;
+      }
+      merged.x = x;
+      merged.y = y;
+      if (Math.hypot(x - cxs, y - cys) > dead) {
+        joyTrackExpand(merged);
+      }
+      const fwX = joyRangeWide(merged.xn, merged.xx);
+      const fwY = joyRangeWide(merged.yn, merged.yx);
+      merged.xn = fwX ? Math.min(merged.xn, joyTrack.xn) : joyTrack.xn;
+      merged.xx = fwX ? Math.max(merged.xx, joyTrack.xx) : joyTrack.xx;
+      merged.yn = fwY ? Math.min(merged.yn, joyTrack.yn) : joyTrack.yn;
+      merged.yx = fwY ? Math.max(merged.yx, joyTrack.yx) : joyTrack.yx;
+      const now = Date.now();
+      const logMove = Math.hypot(x - cxs, y - cys) > dead;
+      if ((logMove && now - joyTrack.lastLogMs >= 80) || now - joyTrack.lastLogMs >= 200) {
+        joyTrack.lastLogMs = now;
+        const dx = merged.x - cxs;
+        const dy = merged.y - cys;
+        joyTrack.logs.push(
+          stamp() + "  X=" + merged.x + " Y=" + merged.y +
+          "  cx=" + cxs + "/" + cys +
+          "  Δ" + (dx >= 0 ? "+" : "") + dx +
+          "," + (dy >= 0 ? "+" : "") + dy +
+          "  adc=" + adc +
+          "  ix=" + (merged.ix ? 1 : 0) +
+          " iy=" + (merged.iy ? 1 : 0) +
+          " xy=" + (merged.xy ? 1 : 0) +
+          (merged.rx != null ? "  raw=" + merged.rx + "/" + merged.ry : "")
+        );
+        if (joyTrack.logs.length > 40) joyTrack.logs.shift();
+      }
+      lastState = merged;
+      return merged;
+    }
+
+    function paintJoyCal(s) {
+      const ix = !!(s && s.ix);
+      const iy = !!(s && s.iy);
+      const xy = !!(s && s.xy);
+      const setOn = (id, on) => {
+        const el = $(id);
+        if (el) el.classList.toggle("on", on);
+      };
+      setOn("joyInvX", ix);
+      setOn("joyInvY", iy);
+      setOn("joySwap", xy);
+      const cfg = $("joyCfg");
+      if (cfg) {
+        const xn = s?.xn ?? 2048, xx = s?.xx ?? 2048;
+        const yn = s?.yn ?? 2048, yx = s?.yx ?? 2048;
+        cfg.textContent =
+          "static const bool JOY_INVERT_X = " + (ix ? "true" : "false") + ";\n" +
+          "static const bool JOY_INVERT_Y = " + (iy ? "true" : "false") + ";\n" +
+          "static const bool JOY_SWAP_XY = " + (xy ? "true" : "false") + ";\n" +
+          "static const int JOY_MIN_X = " + xn + ";\n" +
+          "static const int JOY_MAX_X = " + xx + ";\n" +
+          "static const int JOY_MIN_Y = " + yn + ";\n" +
+          "static const int JOY_MAX_Y = " + yx + ";\n" +
+          "static const int JOY_ADC_MAX = " + (s?.am ?? joyAdcMax(s)) + ";\n" +
+          "static const int JOY_DEADZONE = " + (s?.dz ?? 12) + ";\n" +
+          "static const int JOY_CIRCLE_R = " + (s?.cr ?? 0) + ";\n" +
+          "--- log stick (adc · flags · Δ no centro) ---\n" +
+          (joyTrack.logs.length ? joyTrack.logs.join("\n") : "(à espera de JOY…)");
+        cfg.scrollTop = cfg.scrollHeight;
+      }
+    }
+
+    const JOY_WIZ_STEPS = [
+      { id: "center", title: "1/7 · Centro", hint: "Solta o stick no meio e clica Capturar.", dir: null, need: "center" },
+      { id: "up", title: "2/7 · Cima ao máximo", hint: "Empurra o stick para CIMA (longe de ti) até ao batente. Se o ponto for para o lado, o mapa corrige.", dir: "n", need: "edge" },
+      { id: "left", title: "3/7 · Esquerda ao máximo", hint: "Empurra para a ESQUERDA até ao batente. O lado real identifica inverter X.", dir: "w", need: "edge" },
+      { id: "right", title: "4/7 · Direita ao máximo", hint: "Empurra para a DIREITA até ao batente.", dir: "e", need: "edge" },
+      { id: "down", title: "5/7 · Baixo ao máximo", hint: "Empurra para BAIXO (para ti) até ao batente.", dir: "s", need: "edge" },
+      { id: "click", title: "6/7 · Clique", hint: "Clica e segura o botão do stick (SW).", dir: null, need: "click" },
+      { id: "circle", title: "7/7 · Volta 360°", hint: "Gira no batente (anel). Medimos o raio do círculo — o ponto deve seguir a circunferência, não o quadrado.", dir: null, need: "circle" },
+    ];
+    const JOY_DIR_PT = { n: "cima", s: "baixo", w: "esquerda", e: "direita" };
+    const joyWiz = {
+      on: false, step: 0, holdSince: 0,
+      samples: { up: null, left: null, right: null, down: null },
+      trail: [], circleSince: 0, angleSeen: new Set(),
+      hyps: [],
+      rawCx: 2048, rawCy: 2048,
+      guess: { swap: false, invX: false, invY: false },
+      syncing: false,
+    };
+
+    function joyAdcCeil(s) {
+      return joyAdcMax(s);
+    }
+
+    function joyNorm(s) {
+      if (!s) return { nx: 0, ny: 0, dx: 0, dy: 0 };
+      const adc = joyAdcMax(s);
+      const cxs = s.cx ?? Math.round(adc / 2), cys = s.cy ?? cxs;
+      const xn = s.xn ?? cxs, xx = s.xx ?? cxs;
+      const yn = s.yn ?? cys, yx = s.yx ?? cys;
+      const dx = s.x - cxs, dy = s.y - cys;
+      const dead = s.dz != null ? s.dz : Math.max(10, Math.round(adc * 0.018));
+      if (Math.hypot(dx, dy) <= dead) return { nx: 0, ny: 0, dx: 0, dy: 0 };
+      const cr = s.cr || 0;
+      if (cr > 40) {
+        let nx = dx / cr, ny = dy / cr;
+        const len = Math.hypot(nx, ny);
+        if (len > 1) { nx /= len; ny /= len; }
+        return { nx, ny, dx, dy };
+      }
+      const half = adc / 2;
+      const wideX = joyRangeWide(xn, xx);
+      const wideY = joyRangeWide(yn, yx);
+      const spanL = Math.max(wideX ? (cxs - xn) : half, 1);
+      const spanR = Math.max(wideX ? (xx - cxs) : half, 1);
+      const spanD = Math.max(wideY ? (cys - yn) : half, 1);
+      const spanU = Math.max(wideY ? (yx - cys) : half, 1);
+      let nx = dx >= 0 ? dx / spanR : dx / spanL;
+      let ny = dy >= 0 ? dy / spanU : dy / spanD;
+      const len = Math.hypot(nx, ny);
+      if (len > 1) { nx /= len; ny /= len; }
+      return { nx, ny, dx, dy };
+    }
+
+    function joyWizPaintDirs(dir) {
+      [["n","joyDirN"],["s","joyDirS"],["w","joyDirW"],["e","joyDirE"]].forEach(([d,id]) => {
+        const el = $(id);
+        if (el) el.classList.toggle("on", dir === d);
+      });
+    }
+
+    function joyWizUpdateUi() {
+      const stepEl = $("joyWizStep"), hintEl = $("joyWizHint");
+      const next = $("joyWizNext"), skip = $("joyWizSkip");
+      const stop = $("joyWizStop"), start = $("joyWizStart");
+      if (!joyWiz.on) {
+        if (stepEl) stepEl.textContent = "Assistente parado";
+        if (hintEl) hintEl.textContent = "Inicia o assistente: centro → cima → esq → dir → baixo → clique → volta 360°.";
+        if (next) next.disabled = true;
+        if (skip) skip.disabled = true;
+        if (stop) stop.disabled = true;
+        if (start) start.textContent = "Calibrar (assistente)";
+        joyWizPaintDirs(null);
+        return;
+      }
+      const st = JOY_WIZ_STEPS[joyWiz.step];
+      if (stepEl) stepEl.textContent = st.title;
+      if (hintEl) hintEl.textContent = st.hint;
+      if (next) next.disabled = false;
+      if (skip) skip.disabled = false;
+      if (stop) stop.disabled = false;
+      if (start) start.textContent = "A calibrar…";
+      joyWizPaintDirs(st.dir);
+    }
+
+    function joyWizRawDelta(p) {
+      const rx = p.rx != null ? p.rx : p.x;
+      const ry = p.ry != null ? p.ry : p.y;
+      return { dx: rx - joyWiz.rawCx, dy: ry - joyWiz.rawCy };
+    }
+
+    function joyWizScreenDir(nx, ny) {
+      if (Math.hypot(nx, ny) < 0.22) return null;
+      if (Math.abs(nx) > Math.abs(ny)) return nx > 0 ? "e" : "w";
+      return ny > 0 ? "n" : "s";
+    }
+
+    function joyWizInfer() {
+      const { up, left, right, down } = joyWiz.samples;
+      let swap = false, invX = false, invY = false;
+      if (up) {
+        const u = joyWizRawDelta(up);
+        swap = Math.abs(u.dx) > Math.abs(u.dy);
+        invY = (swap ? u.dx : u.dy) < 0;
+      } else if (down) {
+        const d = joyWizRawDelta(down);
+        swap = Math.abs(d.dx) > Math.abs(d.dy);
+        invY = (swap ? d.dx : d.dy) > 0;
+      }
+      if (left) {
+        const l = joyWizRawDelta(left);
+        if (!up && !down) swap = Math.abs(l.dy) > Math.abs(l.dx);
+        invX = (swap ? l.dy : l.dx) > 0;
+      } else if (right) {
+        const r = joyWizRawDelta(right);
+        if (!up && !down && !left) swap = Math.abs(r.dy) > Math.abs(r.dx);
+        invX = (swap ? r.dy : r.dx) < 0;
+      }
+      return { swap, invX, invY };
+    }
+
+    function joyWizExplain(want, got, guess, prev) {
+      const parts = [];
+      if (want && got && want !== got) {
+        parts.push("pediu " + JOY_DIR_PT[want] + ", o ponto foi para " + JOY_DIR_PT[got]);
+      }
+      if (guess.swap !== prev.swap) parts.push(guess.swap ? "Trocar X↔Y" : "X/Y alinhados");
+      if (guess.invX !== prev.invX) parts.push(guess.invX ? "Inverter X" : "X normal");
+      if (guess.invY !== prev.invY) parts.push(guess.invY ? "Inverter Y" : "Y normal");
+      return parts.join(" → ");
+    }
+
+    async function joyWizSyncFlags(guess, reason) {
+      const same =
+        !!lastState?.xy === guess.swap &&
+        !!lastState?.ix === guess.invX &&
+        !!lastState?.iy === guess.invY;
+      joyWiz.guess = guess;
+      if (same) return;
+      if (joyWiz.syncing) return;
+      joyWiz.syncing = true;
+      try {
+        await cmd("j0");
+        if (guess.swap) await cmd("js");
+        if (guess.invX) await cmd("jx");
+        if (guess.invY) await cmd("jy");
+        const s = { ...(lastState || {}), ix: guess.invX ? 1 : 0, iy: guess.invY ? 1 : 0, xy: guess.swap ? 1 : 0 };
+        if (s.rx != null) {
+          const m = joyMapFromRaw(s);
+          s.x = m.x;
+          s.y = m.y;
+        }
+        lastState = s;
+        drawJoy(s);
+        if (reason) log("JOY lado: " + reason, "ok");
+      } finally {
+        joyWiz.syncing = false;
+      }
+    }
+
+    async function joyWizStart() {
+      joyWiz.on = true; joyWiz.step = 0; joyWiz.holdSince = 0;
+      joyWiz.samples = { up: null, left: null, right: null, down: null };
+      joyWiz.trail = []; joyWiz.circleSince = 0; joyWiz.angleSeen = new Set();
+      joyWiz.hyps = [];
+      joyWiz.guess = { swap: false, invX: false, invY: false };
+      joyWiz.syncing = false;
+      joyWizUpdateUi();
+      log("JOY assistente: solta o stick no centro", "ok");
+      try { await cmd("j0"); await cmd("jc"); }
+      catch (e) { log(e.message, "err"); }
+      const s = lastState;
+      joyWiz.rawCx = s?.rx ?? s?.x ?? 2048;
+      joyWiz.rawCy = s?.ry ?? s?.y ?? 2048;
+    }
+
+    function joyWizStopFn() {
+      joyWiz.on = false; joyWiz.trail = []; joyWizUpdateUi();
+      log("JOY assistente parado");
+    }
+
+    async function joyWizApplyOrientation() {
+      const guess = joyWizInfer();
+      await joyWizSyncFlags(guess, "mapa final");
+      const { up, left, right, down } = joyWiz.samples;
+      const pts = [up, left, right, down, ...joyWiz.trail].filter(Boolean);
+      if (!pts.length) return;
+      const adc = joyAdcCeil(lastState);
+      const mapPt = (p) => {
+        let x = p.rx != null ? p.rx : p.x;
+        let y = p.ry != null ? p.ry : p.y;
+        if (guess.swap) { const t = x; x = y; y = t; }
+        if (guess.invX) x = adc - x;
+        if (guess.invY) y = adc - y;
+        return { x, y };
+      };
+      let xn = 1e9, xx = -1e9, yn = 1e9, yx = -1e9;
+      for (const p of pts) {
+        const q = mapPt(p);
+        xn = Math.min(xn, q.x); xx = Math.max(xx, q.x);
+        yn = Math.min(yn, q.y); yx = Math.max(yx, q.y);
+      }
+      const midX = Math.round((xn + xx) / 2), midY = Math.round((yn + yx) / 2);
+      if (xx - xn < 80) { xn = midX - 200; xx = midX + 200; }
+      if (yx - yn < 80) { yn = midY - 200; yx = midY + 200; }
+      const c = mapPt({ rx: joyWiz.rawCx, ry: joyWiz.rawCy });
+      const hyps = pts.map((p) => {
+        const q = mapPt(p);
+        return Math.hypot(q.x - c.x, q.y - c.y);
+      }).filter((h) => h > 40).sort((a, b) => a - b);
+      let cr = 0;
+      if (hyps.length) {
+        const rim = hyps.slice(Math.floor(hyps.length * 0.72));
+        cr = Math.round(rim.reduce((a, b) => a + b, 0) / rim.length);
+      }
+      if (cr > 40) {
+        await cmd("jr " + cr);
+        if (lastState) lastState.cr = cr;
+      }
+      await cmd("jm " + xn + " " + xx + " " + yn + " " + yx);
+      log("JOY mapa  swap=" + (guess.swap?1:0) + " invX=" + (guess.invX?1:0) + " invY=" + (guess.invY?1:0) +
+        "  alcance X " + xn + "..." + xx + " Y " + yn + "..." + yx +
+        (cr ? "  raio " + cr : ""), "ok");
+    }
+
+    async function joyWizAdvance(manual) {
+      if (!joyWiz.on) return;
+      const st = JOY_WIZ_STEPS[joyWiz.step];
+      const s = lastState;
+      if (!s && st.need !== "center") {
+        log("sem estado do stick — conecta a sonda", "err");
+        return;
+      }
+      if (st.id === "center") {
+        try { await cmd("jc"); } catch (e) { log(e.message, "err"); return; }
+        const c = lastState;
+        joyWiz.rawCx = c?.rx ?? c?.x ?? joyWiz.rawCx;
+        joyWiz.rawCy = c?.ry ?? c?.y ?? joyWiz.rawCy;
+      } else if (st.id === "up" || st.id === "left" || st.id === "right" || st.id === "down") {
+        joyWiz.samples[st.id] = { x: s.x, y: s.y, rx: s.rx, ry: s.ry, cx: s.cx, cy: s.cy };
+        const prev = { ...joyWiz.guess };
+        const guess = joyWizInfer();
+        const { nx, ny } = joyNorm(s);
+        const got = joyWizScreenDir(nx, ny);
+        const reason = joyWizExplain(st.dir, got, guess, prev);
+        try { await cmd("je"); } catch (e) { log(e.message, "err"); }
+        log("JOY capturou " + st.id + "  X=" + s.x + " Y=" + s.y + (reason ? "  (" + reason + ")" : ""), "ok");
+        try { await joyWizSyncFlags(guess, reason); } catch (e) { log(e.message, "err"); }
+      } else if (st.id === "click") {
+        if (!s.sw && !manual) { log("ainda sem clique — segura o SW", "err"); return; }
+        log("JOY clique OK", "ok");
+      } else if (st.id === "circle") {
+        try { await joyWizApplyOrientation(); } catch (e) { log(e.message, "err"); }
+        joyWiz.on = false; joyWizUpdateUi();
+        log("JOY calibração concluída — cola o bloco config.h", "ok");
+        return;
+      }
+      joyWiz.step++;
+      joyWiz.holdSince = 0; joyWiz.circleSince = 0; joyWiz.angleSeen = new Set();
+      if (joyWiz.step >= JOY_WIZ_STEPS.length) joyWiz.on = false;
+      joyWizUpdateUi();
+      if (joyWiz.on && JOY_WIZ_STEPS[joyWiz.step].id === "circle") {
+        joyWiz.circleSince = performance.now(); joyWiz.trail = []; joyWiz.hyps = [];
+        log("JOY: gira no batente 360° — medimos o raio do círculo", "ok");
+      }
+    }
+
+    function joyWizTick(s) {
+      if (!joyWiz.on || !s || joyWiz.syncing) return;
+      const st = JOY_WIZ_STEPS[joyWiz.step];
+      const { nx, ny } = joyNorm(s);
+      const now = performance.now();
+      const mag = Math.hypot(nx, ny);
+      if (st.need === "edge") {
+        const raw = joyWizRawDelta(s);
+        const rmag = Math.hypot(raw.dx, raw.dy);
+        const thr = Math.max(180, Math.round(joyAdcCeil(s) * 0.22));
+        const got = joyWizScreenDir(nx, ny);
+        const hintEl = $("joyWizHint");
+        if (hintEl && got && st.dir && got !== st.dir) {
+          hintEl.textContent = "Pediu " + JOY_DIR_PT[st.dir] + " e o ponto foi para " +
+            JOY_DIR_PT[got] + " — ao capturar corrijo X↔Y / inverter.";
+        }
+        if (rmag > thr) {
+          if (!joyWiz.holdSince) joyWiz.holdSince = now;
+          if (now - joyWiz.holdSince > 450) {
+            joyWiz.holdSince = 0;
+            joyWizAdvance(false).catch((e) => log(e.message, "err"));
+          }
+        } else joyWiz.holdSince = 0;
+      } else if (st.need === "click") {
+        if (s.sw) {
+          if (!joyWiz.holdSince) joyWiz.holdSince = now;
+          if (now - joyWiz.holdSince > 350) {
+            joyWiz.holdSince = 0;
+            joyWizAdvance(false).catch((e) => log(e.message, "err"));
+          }
+        } else joyWiz.holdSince = 0;
+      } else if (st.need === "circle") {
+        joyWiz.trail.push({ x: s.x, y: s.y, rx: s.rx, ry: s.ry });
+        if (joyWiz.trail.length > 400) joyWiz.trail.shift();
+        const raw = joyWizRawDelta(s);
+        const hyp = Math.hypot(raw.dx, raw.dy);
+        if (hyp > 50) {
+          joyWiz.hyps.push(hyp);
+          if (joyWiz.hyps.length > 240) joyWiz.hyps.shift();
+          const sorted = joyWiz.hyps.slice().sort((a, b) => a - b);
+          const rim = sorted.slice(Math.floor(sorted.length * 0.72));
+          const cr = Math.round(rim.reduce((a, b) => a + b, 0) / rim.length);
+          if (cr > 40 && lastState) lastState.cr = cr;
+        }
+        if (mag > 0.35) {
+          joyWiz.angleSeen.add(Math.floor(((Math.atan2(ny, nx) + Math.PI) / (2 * Math.PI)) * 12));
+        }
+        const elapsed = now - (joyWiz.circleSince || now);
+        if (joyWiz.angleSeen.size >= 10 && elapsed > 1800) {
+          joyWizAdvance(false).catch((e) => log(e.message, "err"));
+        }
+      }
     }
 
     function drawJoy(s) {
       const cv = $("joy");
       const ctx = cv.getContext("2d");
       const w = cv.width, h = cv.height, cx = w / 2, cy = h / 2;
+      const R = 58;
       ctx.clearRect(0, 0, w, h);
       ctx.strokeStyle = "#3a362e";
       ctx.beginPath(); ctx.moveTo(cx, 12); ctx.lineTo(cx, h - 12); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(12, cy); ctx.lineTo(w - 12, cy); ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx, cy, 58, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+      if (joyWiz.on) {
+        const st = JOY_WIZ_STEPS[joyWiz.step];
+        if (st && st.dir) {
+          const tx = st.dir === "e" ? cx + R - 8 : st.dir === "w" ? cx - R + 8 : cx;
+          const ty = st.dir === "n" ? cy - R + 8 : st.dir === "s" ? cy + R - 8 : cy;
+          ctx.strokeStyle = "#e2a54a"; ctx.setLineDash([4, 3]);
+          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(tx, ty); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = "#e2a54a";
+          ctx.beginPath(); ctx.arc(tx, ty, 5, 0, Math.PI * 2); ctx.fill();
+        }
+        if (st && st.id === "circle" && joyWiz.trail.length > 1) {
+          ctx.strokeStyle = "#5a7a4a"; ctx.beginPath();
+          for (let i = 0; i < joyWiz.trail.length; i++) {
+            const n = joyNorm({ ...s, x: joyWiz.trail[i].x, y: joyWiz.trail[i].y });
+            const px = cx + n.nx * (R - 6), py = cy - n.ny * (R - 6);
+            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+        }
+      }
       if (!s) return;
-      const nx = Math.max(-1, Math.min(1, (s.x - s.cx) / 1800));
-      const ny = Math.max(-1, Math.min(1, (s.y - s.cy) / 1800));
-      const x = cx + nx * 52;
-      const y = cy + ny * 52;
+      const { nx, ny, dx, dy } = joyNorm(s);
+      const x = cx + nx * (R - 6), y = cy - ny * (R - 6);
       ctx.fillStyle = s.sw ? "#e2a54a" : "#8bc46a";
       ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fill();
+      const cxs = s.cx ?? 2048, cys = s.cy ?? 2048;
+      const xn = s.xn ?? cxs, xx = s.xx ?? cxs;
+      const yn = s.yn ?? cys, yx = s.yx ?? cys;
+      const bits = (s.am === 1023 || (cxs < 1500 && cys < 1500)) ? "10-bit" : "12-bit";
       $("joyMeta").innerHTML =
-        "X " + s.x + "  centro " + s.cx + "<br>Y " + s.y + "  centro " + s.cy +
-        "<br>SW " + (s.sw ? "clique / sustain" : "solto");
+        "X " + s.x + "  Δ" + (dx >= 0 ? "+" : "") + dx + "  pitch<br>" +
+        "Y " + s.y + "  Δ" + (dy >= 0 ? "+" : "") + dy + "  mod<br>" +
+        "SW " + (s.sw ? "clique / sustain" : "solto") + "<br>" +
+        "centro " + cxs + " / " + cys + " · " + bits + "<br>" +
+        "alcance X " + xn + "..." + xx + " · Y " + yn + "..." + yx +
+        (s.rx != null ? "<br>raw " + s.rx + " / " + s.ry : "");
+      paintJoyCal(s);
+      joyWizTick(s);
+    }
+
+    function applyMasks(hArr, sArr) {
+      if (!Array.isArray(hArr) || hArr.length !== 7) return false;
+      for (let r = 0; r < 7; r++) {
+        const hm = Number(hArr[r]) || 0;
+        const sm = Array.isArray(sArr) ? (Number(sArr[r]) || 0) : 0;
+        for (let c = 0; c < 8; c++) {
+          const bit = 1 << c;
+          const isHeld = !!(hm & bit);
+          const isStuck = !!(sm & bit);
+          held[r][c] = isHeld;
+          stuck[r][c] = isStuck;
+          if (isHeld && showHistory) seen[r][c] = true;
+          if (!isHeld && !showHistory) seen[r][c] = false;
+        }
+      }
+      paintMatrix();
+      return true;
     }
 
     function applyState(s) {
-      lastState = s;
+      lastState = ingestJoy(s) || s;
       $("e1").textContent = fmt(s.e1);
       $("e2").textContent = fmt(s.e2);
+      if (s.es != null) paintEncLabels(s.es);
       $("pMcp").textContent = s.mcp ? "MCP ok" : "MCP falhou";
       $("pOled").textContent = s.oled ? ("OLED 0x" + Number(s.oa).toString(16)) : "OLED ausente";
-      drawJoy(s);
-      if (s.ko >= 0 && s.ki >= 0 && s.dn) {
-        held[s.ko][s.ki] = true;
-        seen[s.ko][s.ki] = true;
+      if (s.ws != null) $("pWs").textContent = s.ws ? "WS ok" : "WS ausente";
+      if (s.dac != null) $("pDac").textContent = s.dac ? "DAC ok" : "DAC falhou";
+      paintAudio(s);
+      if (s.wr != null) setWsRainbowUi(!!s.wr);
+      drawJoy(lastState);
+      if (applyMasks(s.h, s.s)) return;
+      if (s.ko >= 0 && s.ki >= 0) {
+        held[s.ko][s.ki] = !!s.dn;
+        if (s.dn && showHistory) seen[s.ko][s.ki] = true;
+        if (!s.dn && !showHistory) seen[s.ko][s.ki] = false;
         paintMatrix();
       }
     }
@@ -458,15 +1623,102 @@
     function applyKey(k) {
       if (k.ko >= 0 && k.ki >= 0) {
         held[k.ko][k.ki] = !!k.dn;
-        if (k.dn) seen[k.ko][k.ki] = true;
+        if (k.dn) {
+          if (showHistory) seen[k.ko][k.ki] = true;
+        } else if (!showHistory) {
+          seen[k.ko][k.ki] = false;
+        }
+        if (k.dn) {
+          const last = "KO" + k.ko + " KI" + k.ki + "  " + names[k.ko][k.ki] +
+            (midiLabel(MATRIX[k.ko][k.ki]) !== names[k.ko][k.ki]
+              ? " → " + midiLabel(MATRIX[k.ko][k.ki])
+              : "");
+          const lastEl = $("pLastKey");
+          if (lastEl) lastEl.textContent = last;
+        }
         paintMatrix();
       }
     }
 
     function parseLine(text) {
-      let m = text.match(/^(DOWN|UP)\s+KO(\d+)\s+KI(\d+)/);
+      let m = text.match(/^LEARN\s+(\w+)(?:\s+\[(\d+)\/(\d+)\])?\s*(\S+)?(?:\s+KO(\d+)\s+KI(\d+))?/);
+      if (m) {
+        applyLearn({
+          on: m[1] !== "done" && m[1] !== "stop",
+          st: m[1],
+          i: m[2] != null ? (+m[2] - 1) : undefined,
+          tot: m[3] != null ? +m[3] : undefined,
+          n: m[4] || "",
+          ko: m[5] != null ? +m[5] : undefined,
+          ki: m[6] != null ? +m[6] : undefined,
+          w: m[1] === "ok" ? 1 : undefined,
+        });
+        return;
+      }
+      m = text.match(/^APERTA sozinha\s+\[(\d+)\/(\d+)\]\s+(\S+)/);
+      if (m) {
+        applyLearn({
+          on: 1, st: "wait", i: +m[1] - 1, tot: +m[2], n: m[3], w: 0,
+        });
+        return;
+      }
+      m = text.match(/^GRAVOU\s+(\S+)\s+=\s+KO(\d+)\s+KI(\d+)/);
+      if (m) {
+        const i = LEARN_SEQ.indexOf(m[1]);
+        applyLearn({
+          on: 1, st: "ok", n: m[1], i: i >= 0 ? i : learn.step,
+          tot: LEARN_SEQ.length, ko: +m[2], ki: +m[3], w: 1,
+        });
+        return;
+      }
+      m = text.match(/^SALTOU\s+(\S+)/);
+      if (m) {
+        applyLearn({ on: 1, st: "skip", n: m[1] });
+        return;
+      }
+      m = text.match(/^VOLTOU\s+refazer\s+(\S+)/);
+      if (m) {
+        const i = LEARN_SEQ.indexOf(m[1]);
+        applyLearn({
+          on: 1, st: "back", n: m[1], i: i >= 0 ? i : undefined,
+        });
+        return;
+      }
+      m = text.match(/^IR\s+(\S+)/);
+      if (m) {
+        const i = LEARN_SEQ.indexOf(m[1]);
+        applyLearn({
+          on: 1, st: "wait", n: m[1], i: i >= 0 ? i : undefined, w: 0,
+        });
+        return;
+      }
+      if (/^APRENDER:/.test(text)) {
+        applyLearn({ on: 1, st: "start", i: 0, tot: LEARN_SEQ.length, n: LEARN_SEQ[0] });
+        return;
+      }
+      if (/aprender completo/.test(text) || /finalizado \(parcial/.test(text)) {
+        applyLearn({ on: 0, st: "done", n: "" });
+        return;
+      }
+      if (/^modo cru/.test(text)) {
+        applyLearn({ on: 0, st: "stop", n: "" });
+        return;
+      }
+      if (/^--- soltou/.test(text)) {
+        learn.waitUp = false;
+        updateLearnUi();
+        paintCasio();
+        return;
+      }
+      m = text.match(/^(DOWN|UP)\s+KO(\d+)\s+KI(\d+)/);
       if (m) {
         applyKey({ ko: +m[2], ki: +m[3], dn: m[1] === "DOWN" ? 1 : 0 });
+        return;
+      }
+      m = text.match(/^WARN\s+KO0\+KO4\s+no\s+KI(\d+)/);
+      if (m) {
+        $("koWarn").className = "warn-banner on";
+        $("koWarn").textContent = text;
         return;
       }
       m = text.match(/^EC11-([12]).*count=(-?\d+)/);
@@ -476,18 +1728,72 @@
       }
       m = text.match(/^JOY\s+X=(\d+)\s+Y=(\d+)\s+SW=(\d+)/);
       if (m) {
-        drawJoy({
+        const ixm = text.match(/ix=(\d)/);
+        const iym = text.match(/iy=(\d)/);
+        const xym = text.match(/xy=(\d)/);
+        drawJoy(ingestJoy({
           x: +m[1], y: +m[2], sw: +m[3],
           cx: lastState?.cx ?? 2048, cy: lastState?.cy ?? 2048,
+          xn: lastState?.xn, xx: lastState?.xx,
+          yn: lastState?.yn, yx: lastState?.yx,
+          rx: lastState?.rx, ry: lastState?.ry,
+          ix: ixm ? +ixm[1] : lastState?.ix,
+          iy: iym ? +iym[1] : lastState?.iy,
+          xy: xym ? +xym[1] : lastState?.xy,
+        }));
+        return;
+      }
+      m = text.match(/^JOY\s+mapa\s+invX=(\d)\s+invY=(\d)\s+swap=(\d)/);
+      if (m) {
+        const next = {
+          ...(lastState || {}),
+          ix: +m[1], iy: +m[2], xy: +m[3],
+          x: lastState?.x ?? 2048, y: lastState?.y ?? 2048,
+          cx: lastState?.cx ?? 2048, cy: lastState?.cy ?? 2048,
+          sw: lastState?.sw ?? 0,
+        };
+        lastState = next;
+        drawJoy(next);
+        return;
+      }
+      m = text.match(/^JOY\s+alcance\s+X=(\d+)\.\.\.(\d+)\s+Y=(\d+)\.\.\.(\d+)/);
+      if (m) {
+        const next = {
+          ...(lastState || {}),
+          xn: +m[1], xx: +m[2], yn: +m[3], yx: +m[4],
+          x: lastState?.x ?? 2048, y: lastState?.y ?? 2048,
+          cx: lastState?.cx ?? 2048, cy: lastState?.cy ?? 2048,
+          sw: lastState?.sw ?? 0,
+        };
+        lastState = next;
+        drawJoy(next);
+        return;
+      }
+      m = text.match(/^AUD\s+check\s+i2s=(\d)\s+bck=(\w+):(\d+)\s+lrck=(\w+):(\d+)\s+dout=(\w+):(\d+)\s+din=(\w+):(\d+)/);
+      if (m) {
+        paintAudioCheck({
+          ackd: 1, dac: +m[1],
+          abk: m[2] === "OK" ? 1 : 0, aeb: +m[3],
+          alr: m[4] === "OK" ? 1 : 0, ael: +m[5],
+          ado: m[6] === "OK" ? 1 : 0, aed: +m[7],
+          adi: m[8] === "LOOP" ? 1 : 0, aei: +m[9],
+          aok: (m[2] === "OK" && m[4] === "OK" && m[6] === "OK") ? 1 : 0,
         });
-        $("joyMeta").innerHTML =
-          "X " + m[1] + "<br>Y " + m[2] + "<br>SW " + (m[3] === "1" ? "clique / sustain" : "solto");
+        return;
+      }
+      m = text.match(/^EC11\s+swap=(\d)/);
+      if (m) {
+        paintEncLabels(+m[1]);
+        return;
+      }
+      if (/JOY  mapa/.test(text) || /JOY_INVERT_/.test(text) || /JOY_SWAP_XY/.test(text) || /JOY_MIN_/.test(text) || /JOY_MAX_/.test(text)) {
         return;
       }
       if (/MCP OK/.test(text)) $("pMcp").textContent = "MCP ok";
       if (/MCP NAO/.test(text)) $("pMcp").textContent = "MCP falhou";
       if (/OLED OK/.test(text)) $("pOled").textContent = "OLED ok";
       if (/OLED ausente/.test(text)) $("pOled").textContent = "OLED ausente";
+      if (/WS\s+OK/.test(text)) $("pWs").textContent = "WS ok";
     }
 
     async function api(path, opts) {
@@ -518,6 +1824,7 @@
       }
       if (!busy) {
         setLink(data.connected, data.port);
+        setIo(data.rx, data.tx);
       }
     }
 
@@ -526,6 +1833,7 @@
       $("linkDot").className = "dot " + (on ? "on" : "off");
       $("linkTxt").textContent = on ? ("ligado " + port) : "desconectado";
       $("btnConnect").textContent = on ? "Desconectar" : "Conectar";
+      if (on) maybeResumeLearn();
     }
 
     async function toggleConnect() {
@@ -557,11 +1865,166 @@
     }
 
     async function cmd(c) {
+      log("> " + c, "tx");
       await api("/api/cmd", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ c }),
       });
+    }
+
+    function hexNoHash(color) {
+      return String(color || "#000000").replace("#", "").toLowerCase();
+    }
+
+    function alpha255(pct) {
+      return Math.round(Math.max(0, Math.min(100, pct)) * 2.55);
+    }
+
+    function paintWsStrip() {
+      for (let i = 0; i < 8; i++) {
+        const el = $("wsLed" + i);
+        if (!el) continue;
+        const st = wsState[i];
+        const a = (st.alpha / 100) * (wsMasterPct / 100);
+        el.style.background = st.color;
+        el.style.opacity = String(0.15 + a * 0.85);
+        el.classList.toggle("active", i === wsSel);
+      }
+      $("wsSelLbl").textContent = String(wsSel);
+      $("wsColor").value = wsState[wsSel].color;
+      $("wsAlpha").value = String(wsState[wsSel].alpha);
+      $("wsMaster").value = String(wsMasterPct);
+    }
+
+    function buildWsStrip() {
+      const root = $("wsStrip");
+      root.innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = "ws-led";
+        el.id = "wsLed" + i;
+        el.title = "LED " + i;
+        el.addEventListener("click", () => {
+          wsSel = i;
+          paintWsStrip();
+        });
+        root.appendChild(el);
+      }
+      paintWsStrip();
+    }
+
+    async function sendWsLed(i, color, alphaPct) {
+      const line = "L " + i + " " + hexNoHash(color) + " " + alpha255(alphaPct);
+      await cmd(line);
+    }
+
+    async function sendWsMaster(pct) {
+      await cmd("L m " + alpha255(pct));
+    }
+
+    function hsvToHex(h) {
+      const s = 1, v = 1;
+      const c = v * s;
+      const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+      const m = v - c;
+      let r = 0, g = 0, b = 0;
+      if (h < 60) { r = c; g = x; }
+      else if (h < 120) { r = x; g = c; }
+      else if (h < 180) { g = c; b = x; }
+      else if (h < 240) { g = x; b = c; }
+      else if (h < 300) { r = x; b = c; }
+      else { r = c; b = x; }
+      const to = (n) => Math.round((n + m) * 255).toString(16).padStart(2, "0");
+      return "#" + to(r) + to(g) + to(b);
+    }
+
+    function wsRainbowFrame() {
+      wsRainbowHue = (wsRainbowHue + 8) % 360;
+      for (let i = 0; i < 8; i++) {
+        wsState[i] = { color: hsvToHex((wsRainbowHue + i * 45) % 360), alpha: 55 };
+      }
+      paintWsStrip();
+    }
+
+    function setWsRainbowUi(on) {
+      wsRainbowOn = !!on;
+      const btn = $("wsRainbow");
+      if (btn) {
+        btn.textContent = wsRainbowOn ? "Parar" : "Rainbow";
+        btn.classList.toggle("on", wsRainbowOn);
+      }
+      if (wsRainbowOn && !wsRainbowTimer) {
+        wsRainbowFrame();
+        wsRainbowTimer = setInterval(wsRainbowFrame, 40);
+      }
+      if (!wsRainbowOn && wsRainbowTimer) {
+        clearInterval(wsRainbowTimer);
+        wsRainbowTimer = 0;
+      }
+    }
+
+    function stopWsRainbow() {
+      setWsRainbowUi(false);
+    }
+
+    async function wsApplySelected() {
+      stopWsRainbow();
+      wsState[wsSel].color = $("wsColor").value;
+      wsState[wsSel].alpha = +$("wsAlpha").value;
+      paintWsStrip();
+      await sendWsLed(wsSel, wsState[wsSel].color, wsState[wsSel].alpha);
+    }
+
+    async function wsPresetOff() {
+      stopWsRainbow();
+      for (let i = 0; i < 8; i++) {
+        wsState[i] = { color: "#000000", alpha: 0 };
+      }
+      paintWsStrip();
+      await cmd("L a 000000 0");
+    }
+
+    async function wsPresetWhite() {
+      stopWsRainbow();
+      for (let i = 0; i < 8; i++) {
+        wsState[i] = { color: "#ffffff", alpha: 35 };
+      }
+      paintWsStrip();
+      await cmd("L a ffffff " + alpha255(35));
+    }
+
+    async function wsPresetRainbow() {
+      if (wsRainbowOn) {
+        stopWsRainbow();
+        for (let i = 0; i < 8; i++) {
+          wsState[i] = { color: "#000000", alpha: 0 };
+        }
+        paintWsStrip();
+        await cmd("L r 0");
+        return;
+      }
+      try {
+        wsMasterPct = 100;
+        $("wsMaster").value = "100";
+        await cmd("L m 255");
+        await cmd("L r 1");
+        setWsRainbowUi(true);
+      } catch (err) {
+        stopWsRainbow();
+        log(err.message, "err");
+      }
+    }
+
+    async function wsPresetId() {
+      stopWsRainbow();
+      const colors = ["#ff0000","#00ff00","#0000ff","#ffff00","#ff00ff","#00ffff","#ffffff","#ff8800"];
+      for (let i = 0; i < 8; i++) {
+        wsState[i] = { color: colors[i], alpha: 55 };
+        await sendWsLed(i, colors[i], 55);
+      }
+      paintWsStrip();
     }
 
     async function flash(fw) {
@@ -575,25 +2038,61 @@
 
     function listen() {
       const es = new EventSource("/api/events");
+      es.onopen = () => {
+        sseDown = false;
+        log("SSE ligado", "ok");
+      };
       es.onmessage = (ev) => {
-        const msg = JSON.parse(ev.data);
+        let msg;
+        try {
+          msg = JSON.parse(ev.data);
+        } catch (err) {
+          log("SSE json: " + err.message + "  " + ev.data, "err");
+          return;
+        }
         if (msg.type === "line") {
-          if (/Bad file descriptor|device not configured/i.test(msg.text)) return;
           parseLine(msg.text);
           log(msg.text);
         }
-        else if (msg.type === "log") log(msg.text, msg.text.startsWith("falhou") ? "err" : "ok");
-        else if (msg.type === "state") applyState(msg);
+        else if (msg.type === "log") {
+          log(msg.text, msg.text.startsWith("falhou") || msg.text.startsWith("sem resposta") ? "err" : "ok");
+        }
+        else if (msg.type === "state") {
+          applyState(msg);
+          if (!sawState) {
+            sawState = true;
+            log(
+              "estado  MCP=" + (msg.mcp ? "ok" : "nao") +
+              " OLED=" + (msg.oled ? "ok" : "nao") +
+              " WS=" + (msg.ws ? "ok" : "nao") +
+              " DAC=" + (msg.dac ? "ok" : "nao") +
+              " E1=" + msg.e1 + " E2=" + msg.e2,
+              "ok"
+            );
+          }
+        }
         else if (msg.type === "key") applyKey(msg);
+        else if (msg.type === "learn") applyLearn(msg);
+        else if (msg.type === "warn") {
+          $("koWarn").className = "warn-banner on";
+          $("koWarn").textContent = msg.text || ("KO0+KO4 no KI" + msg.ki);
+          log(msg.text || ("WARN KI" + msg.ki), "err");
+        }
         else if (msg.type === "status") setLink(msg.connected, msg.port);
       };
-      es.onerror = () => {};
+      es.onerror = () => {
+        if (!sseDown) {
+          sseDown = true;
+          log("SSE caiu — a reconectar…", "err");
+        }
+      };
     }
 
     async function status() {
       const s = await api("/api/status");
       $("pCli").textContent = s.cli ? "arduino-cli ok" : "sem arduino-cli";
       setLink(s.connected, s.port);
+      setIo(s.rx || 0, s.tx || 0);
     }
 
     document.querySelectorAll("button[data-c]").forEach((b) => {
@@ -603,10 +2102,224 @@
     $("btnConnect").onclick = () => toggleConnect().catch((e) => log(e.message, "err"));
     $("btnFlashProbe").onclick = () => flash("probe").catch((e) => log(e.message, "err"));
     $("btnFlashMidi").onclick = () => flash("pico").catch((e) => log(e.message, "err"));
+    $("histToggle").onchange = (ev) => {
+      showHistory = !!ev.target.checked;
+      if (!showHistory) {
+        for (let r = 0; r < 7; r++) for (let c = 0; c < 8; c++) {
+          if (!held[r][c]) seen[r][c] = false;
+        }
+      }
+      paintMatrix();
+    };
+    $("btnClearSeen").onclick = () => {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 8; c++) seen[r][c] = false;
+      paintMatrix();
+      cmd("c").catch((e) => log(e.message, "err"));
+    };
+    $("wsColor").oninput = () => {
+      wsState[wsSel].color = $("wsColor").value;
+      paintWsStrip();
+    };
+    $("wsAlpha").oninput = () => {
+      wsState[wsSel].alpha = +$("wsAlpha").value;
+      paintWsStrip();
+    };
+    $("wsMaster").onchange = () => {
+      wsMasterPct = +$("wsMaster").value;
+      paintWsStrip();
+      sendWsMaster(wsMasterPct).catch((e) => log(e.message, "err"));
+    };
+    $("wsApply").onclick = () => wsApplySelected().catch((e) => log(e.message, "err"));
+    $("wsOff").onclick = () => wsPresetOff().catch((e) => log(e.message, "err"));
+    $("wsWhite").onclick = () => wsPresetWhite().catch((e) => log(e.message, "err"));
+    $("wsRainbow").onclick = () => wsPresetRainbow().catch((e) => log(e.message, "err"));
+    $("wsId").onclick = () => wsPresetId().catch((e) => log(e.message, "err"));
 
+    let audMode = 1;
+    function setAudPin(id, ok, text, dim) {
+      const box = $(id);
+      const lab = $(id + "V");
+      if (!box || !lab) return;
+      box.className = "aud-pin " + (dim ? "dim" : ok ? "ok" : "bad");
+      lab.textContent = text;
+    }
+    function paintAudioCheck(s) {
+      if (!s || !s.ackd) return;
+      setAudPin("audPinBck", !!s.abk, (s.abk ? "pulsa " : "parado ") + (s.aeb ?? "—"), false);
+      setAudPin("audPinLrck", !!s.alr, (s.alr ? "pulsa " : "parado ") + (s.ael ?? "—"), false);
+      setAudPin("audPinDout", !!s.ado, (s.ado ? "a enviar " : "mudo ") + (s.aed ?? "—"), false);
+      setAudPin("audPinDin", !!s.adi,
+        s.adi ? ("loopback " + (s.aei ?? "")) : ("sem retorno " + (s.aei ?? 0)),
+        !s.adi);
+      const hint = $("audHint");
+      if (!hint) return;
+      if (!s.dac) {
+        hint.textContent = "I2S não arrancou — reflashe a sonda.";
+        return;
+      }
+      if (s.aok) {
+        hint.textContent = "Pico a enviar I2S (BCK+LRCK+DOUT). O jack analógico não se lê daqui" +
+          (s.adi ? ". DIN ouve o DOUT — loopback digital ok." : ". DIN sem retorno é normal no PCM5102A.");
+        return;
+      }
+      const miss = [];
+      if (!s.abk) miss.push("BCK GP10");
+      if (!s.alr) miss.push("LRCK GP11");
+      if (!s.ado) miss.push("DOUT GP12");
+      hint.textContent = "Sinal parado em " + miss.join(", ") + ". Conferir fios no módulo (SCK do DAC no GND).";
+    }
+    function paintAudio(s) {
+      if (!s) return;
+      if (s.aum != null && s.aum <= 3) audMode = +s.aum;
+      const ids = ["audMute", "audTone", "audKeys", "audClock"];
+      ids.forEach((id, i) => {
+        const el = $(id);
+        if (el) el.classList.toggle("on", audMode === i);
+      });
+      if (s.av != null && $("audVol")) {
+        $("audVol").value = String(s.av);
+        $("audVolLbl").textContent = String(s.av);
+      }
+      if (s.ah != null && $("audHz")) {
+        $("audHz").value = String(s.ah);
+        $("audHzLbl").textContent = String(s.ah);
+      }
+      if (s.ackd) paintAudioCheck(s);
+      else if (s.dac != null && $("audHint") && !$("audPinBckV").textContent.replace("—", "").trim()) {
+        $("audHint").textContent = (s.dac ? "I2S do Pico ok. " : "I2S não arrancou. ") +
+          "Verificar I2S lê relógio e dados nos pinos. O PCM5102A não devolve o analógico.";
+      }
+    }
+    function setAudMode(m) {
+      audMode = m;
+      paintAudio({ aum: m });
+      cmd("A m " + m).catch((e) => log(e.message, "err"));
+    }
+    $("audMute").onclick = () => setAudMode(0);
+    $("audTone").onclick = () => setAudMode(1);
+    $("audKeys").onclick = () => setAudMode(2);
+    $("audClock").onclick = () => setAudMode(3);
+    $("audVol").onchange = () => {
+      $("audVolLbl").textContent = $("audVol").value;
+      cmd("A v " + $("audVol").value).catch((e) => log(e.message, "err"));
+    };
+    $("audHz").onchange = () => {
+      $("audHzLbl").textContent = $("audHz").value;
+      cmd("A t " + $("audHz").value).catch((e) => log(e.message, "err"));
+    };
+    $("audCheck").onclick = () => cmd("A c").catch((e) => log(e.message, "err"));
+    function skipLearnStep() {
+      const skipped = learn.name;
+      const skippedI = LEARN_SEQ.indexOf(skipped);
+      const i = skippedI >= 0 ? skippedI : (learn.on ? learn.step : -1);
+      if (i < 0) {
+        cmd("n").catch((e) => log(e.message, "err"));
+        return;
+      }
+      applyLearn({ on: 1, st: "skip", n: LEARN_SEQ[i], i, tot: LEARN_SEQ.length });
+      const next = LEARN_SEQ[i + 1];
+      cmd(next ? ("w " + learnWireName(next)) : "f").catch((e) => log(e.message, "err"));
+    }
+    $("learnStart").onclick = () =>
+      cmd(learn.on ? "z" : "l").catch((e) => log(e.message, "err"));
+    $("learnSkip").onclick = () => skipLearnStep();
+    $("learnBack").onclick = () => cmd("b").catch((e) => log(e.message, "err"));
+    let learnResumePending = false;
+    function maybeResumeLearn() {
+      if (!learnResumePending || !connected || !learn.name) return;
+      learnResumePending = false;
+      log("retomando aprender em " + learn.name + "…", "ok");
+      cmd("w " + learnWireName(learn.name)).catch((e) => log(e.message, "err"));
+    }
+
+    $("learnStop").onclick = () => cmd("r").catch((e) => log(e.message, "err"));
+    $("encSwap").onclick = () => {
+      paintEncLabels(!encSwapUi);
+      cmd("e").catch((e) => log(e.message, "err"));
+    };
+    $("joyWizStart").onclick = () => joyWizStart().catch((e) => log(e.message, "err"));
+    $("joyWizNext").onclick = () => joyWizAdvance(true).catch((e) => log(e.message, "err"));
+    $("joyWizSkip").onclick = () => joyWizAdvance(true).catch((e) => log(e.message, "err"));
+    $("joyWizStop").onclick = () => joyWizStopFn();
+    function joyShow(s) {
+      lastState = s;
+      drawJoy(s);
+    }
+
+    function joyToggleFlag(flag) {
+      const prev = lastState || { x: 2048, y: 2048, cx: 2048, cy: 2048, sw: 0 };
+      const rawish = {
+        ...prev,
+        x: prev.rx != null ? prev.rx : prev.x,
+        y: prev.ry != null ? prev.ry : prev.y,
+        cx: prev.rx != null ? (prev.rcx ?? prev.cx) : prev.cx,
+        cy: prev.ry != null ? (prev.rcy ?? prev.cy) : prev.cy,
+        [flag]: prev[flag] ? 0 : 1,
+      };
+      const next = joyMapFromRaw(rawish);
+      joyTrack.logs.push(
+        stamp() + "  * " + flag +
+        "  adc=" + joyAdcMax(next) +
+        "  X=" + next.x + " Y=" + next.y +
+        "  cx=" + next.cx + "/" + next.cy +
+        "  Δ" + Math.round(Math.hypot((next.x ?? 0) - (next.cx ?? 0), (next.y ?? 0) - (next.cy ?? 0)))
+      );
+      if (joyTrack.logs.length > 40) joyTrack.logs.shift();
+      joyTrackReset(next.x, next.y);
+      joyShow(next);
+    }
+
+    $("joyCal").onclick = () => {
+      const s = { ...(lastState || {}) };
+      s.cx = s.x ?? 2048;
+      s.cy = s.y ?? 2048;
+      joyTrackReset(s.x, s.y);
+      joyShow(s);
+      cmd("jc").catch((e) => log(e.message, "err"));
+    };
+    $("joyInvX").onclick = () => {
+      joyToggleFlag("ix");
+      cmd("jx").catch((e) => log(e.message, "err"));
+    };
+    $("joyInvY").onclick = () => {
+      joyToggleFlag("iy");
+      cmd("jy").catch((e) => log(e.message, "err"));
+    };
+    $("joySwap").onclick = () => {
+      joyToggleFlag("xy");
+      cmd("js").catch((e) => log(e.message, "err"));
+    };
+    $("joyReset").onclick = () => {
+      const s = { ...(lastState || {}), ix: 0, iy: 0, xy: 0 };
+      if (s.rx != null && s.ry != null) {
+        s.x = s.rx;
+        s.y = s.ry;
+      }
+      s.cx = s.x ?? 2048;
+      s.cy = s.y ?? 2048;
+      joyTrackReset(s.x, s.y);
+      joyShow(s);
+      cmd("j0").catch((e) => log(e.message, "err"));
+    };
+    joyWizUpdateUi();
+
+    const restoredLearn = loadLearnStore();
+    learnResumePending = !!(restoredLearn && learn.on && learn.name);
     buildCasio();
+    updateLearnUi();
     buildMatrix();
+    buildWsStrip();
     drawJoy(null);
+    if (restoredLearn) {
+      log(
+        "aprender restaurado · " + learn.done.size + "/" +
+        (learn.tot || LEARN_SEQ.length) + " teclas" +
+        (learn.on && learn.name ? (" · agora " + learn.name) : ""),
+        "ok"
+      );
+      paintCasio();
+      paintMatrix();
+    }
     requestAnimationFrame(tickRoll);
     listen();
     status().then(refreshPorts).catch((e) => log(e.message, "err"));
