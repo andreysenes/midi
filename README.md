@@ -225,9 +225,13 @@ Canais de fábrica (tudo separado para a DAW):
 | stop | — | Play/Stop da DAW (MIDI Start ↔ Stop); no Stop também limpa notas (ch 1+2) |
 | demo | 1 + 2 | All Notes Off (CC 120/123) |
 
-Bancos: Tempo ± = banco performance (EC11/joystick). SEL + Tempo ± = banco pads. Bancos 1–8.
+Bancos: SEL + EC11 esquerda = banco performance; SEL + EC11 direita = banco pads. Bancos 1–8. Tempo ± = só CC de tempo (40/41), não muda banco.
 
-WS2812: LEDs 1–4 marcam o tempo do **MIDI Clock** da DAW (compasso 4/4). Com SEL premido, acende o LED vermelho do banco de pads (banco 2 → LED 2). Sem clock, a barra apaga.
+WS2812: idle mostra os dois bancos (performance vermelho, pads azul) com onda fraca nos inativos. Se P e B caem no mesmo LED, as cores **alternam**. Após mudar um banco (~2 s) ou com SEL, o banco em foco pulsa mais forte. Com Play/clock da DAW, LEDs 1–8 marcam colcheias em azul.
+
+OLED: caixas **P**/**B**, nome da track (Mackie), acorde acumulado (ex. `G/D`), BPM e playhead `m:ss` (Mackie assignment quando disponível, senão MIDI clock).
+
+USB-MIDI: o Pico expõe **dois cabos** — (1) Casio SA-1 (notas/CC/clock) e (2) Mackie Control. Na DAW, adiciona Control Surface = Mackie Control no 2.º porto: nome da track, tempo no display, e o botão Stop do SA-1 manda Play/Stop Mackie.
 
 No Lab (`/midi`): modo Dual nos pads, canais editáveis, piano roll também para os botões 0–9.
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string.h>
+#include <stdio.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "config.h"
@@ -11,37 +12,48 @@ static bool oledOk = false;
 static bool oledDirty = true;
 static uint32_t lastOledDrawMs = 0;
 
-static const char *const NOTE_NAMES[12] = {
-    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
-};
-
 struct OledStatus {
   int8_t octave;
   uint8_t volume;
   uint8_t program;
   uint8_t typedDigits;
   uint8_t typedProgram;
-  uint8_t lastNote;
-  bool haveNote;
   bool sustain;
   bool usbMounted;
   bool mcpOk;
   uint8_t perfBank;  // 0..7
   uint8_t padBank;   // 0..7
   bool selHeld;
+  bool bankFocusPad;  // which bank box to emphasize
+  bool bankSelectActive;
   bool clockRunning;
   bool transportPlaying;
-  uint8_t beat;  // 0..3 = tempos 1..4
+  uint8_t beat;  // 0..3
+  uint16_t bpm;  // 0 = unknown
+  uint32_t playSeconds;
+  const char *trackName;   // DAW page / track
+  const char *chordName;   // accumulated chord stack
 };
 
 static void oledMark() {
   oledDirty = true;
 }
 
-static void formatNoteName(uint8_t note, char *buf, size_t n) {
-  const uint8_t pc = note % 12;
-  const int oct = static_cast<int>(note / 12) - 1;
-  snprintf(buf, n, "%s%d", NOTE_NAMES[pc], oct);
+static void oledDrawBankBox(int16_t x, int16_t y, char kind, uint8_t bank1to8, bool emphasize) {
+  char buf[4];
+  snprintf(buf, sizeof(buf), "%c%u", kind, static_cast<unsigned>(bank1to8));
+  const int16_t w = 18;
+  const int16_t h = 10;
+  if (emphasize) {
+    oled.fillRect(x, y, w, h, SSD1306_WHITE);
+    oled.setTextColor(SSD1306_BLACK);
+  } else {
+    oled.drawRect(x, y, w, h, SSD1306_WHITE);
+    oled.setTextColor(SSD1306_WHITE);
+  }
+  oled.setCursor(static_cast<int16_t>(x + 2), static_cast<int16_t>(y + 1));
+  oled.print(buf);
+  oled.setTextColor(SSD1306_WHITE);
 }
 
 static void oledDraw(const OledStatus &st) {
@@ -71,79 +83,104 @@ static void oledDraw(const OledStatus &st) {
     return;
   }
 
-  // Bancos na UI: 1..8 (internos 0..7)
-  oled.setCursor(0, 0);
-  if (st.selHeld) {
-    oled.print(F("BANK "));
-    oled.print(st.padBank + 1);
-  } else {
-    oled.print(F("P"));
-    oled.print(st.perfBank + 1);
-    oled.print(F(" B"));
-    oled.print(st.padBank + 1);
-  }
-  if (st.transportPlaying || st.clockRunning) {
-    oled.print(F(" >"));
-  }
-  oled.setCursor(74, 0);
-  oled.print(F("O"));
-  if (st.octave >= 0) {
-    oled.print('+');
-  }
-  oled.print(st.octave);
-
-  // Duas barras verticais de volume no canto direito (128×32).
-  {
-    const int x0 = 118;
-    const int y0 = 2;
-    const int bw = 4;
-    const int bh = 28;
-    const int gap = 2;
-    const int fill = map(st.volume, 0, 127, 0, bh - 2);
-    for (uint8_t k = 0; k < 2; k++) {
-      const int x = x0 + k * (bw + gap);
-      oled.drawRect(x, y0, bw, bh, SSD1306_WHITE);
-      if (fill > 0) {
-        oled.fillRect(x + 1, y0 + bh - 1 - fill, bw - 2, fill, SSD1306_WHITE);
-      }
-    }
-  }
-
-  oled.setCursor(0, 22);
-  if (st.clockRunning) {
-    for (uint8_t i = 0; i < 4; i++) {
-      if (i) {
-        oled.print('.');
-      }
-      oled.print(i == st.beat ? static_cast<char>('1' + i) : '-');
-    }
-  } else if (st.typedDigits == 1) {
+  // Overlay: program digit entry
+  if (st.typedDigits == 1) {
+    oled.setCursor(0, 0);
     oled.print(F("PGM "));
     oled.print(st.typedProgram / 10);
     oled.print('_');
-  } else {
-    oled.print(F("PGM "));
-    if (st.program < 100) {
-      oled.print('0');
+    oled.setCursor(0, 16);
+    oled.print(F("O"));
+    if (st.octave >= 0) {
+      oled.print('+');
     }
-    if (st.program < 10) {
-      oled.print('0');
-    }
-    oled.print(st.program);
+    oled.print(st.octave);
+    oled.print(F("  vol "));
+    oled.print(st.volume);
+    oled.display();
+    return;
   }
 
-  if (st.haveNote) {
-    char name[6];
-    formatNoteName(st.lastNote, name, sizeof(name));
-    const uint8_t nlen = static_cast<uint8_t>(strlen(name));
-    oled.setCursor(static_cast<int16_t>(80 - nlen * 6), 22);
-    oled.print(name);
+  // Line 0: [P#][B#] — both filled at rest; SEL/select fills only the focus.
+  bool empP = true;
+  bool empB = true;
+  if (st.selHeld) {
+    empP = false;
+    empB = true;
+  } else if (st.bankSelectActive) {
+    empP = !st.bankFocusPad;
+    empB = st.bankFocusPad;
   }
+  oledDrawBankBox(0, 0, 'P', static_cast<uint8_t>(st.perfBank + 1), empP);
+  oledDrawBankBox(20, 0, 'B', static_cast<uint8_t>(st.padBank + 1), empB);
+
+  const char *track = st.trackName ? st.trackName : "--";
+  char tshow[11];
+  {
+    const size_t tlen = strlen(track);
+    if (tlen <= 10) {
+      strncpy(tshow, track, sizeof(tshow));
+      tshow[10] = '\0';
+    } else {
+      memcpy(tshow, track, 7);
+      tshow[7] = '.';
+      tshow[8] = '.';
+      tshow[9] = '.';
+      tshow[10] = '\0';
+    }
+  }
+  oled.setTextColor(SSD1306_WHITE);
+  oled.setCursor(42, 1);
+  oled.print(tshow);
+
+  // Line 1: chord stack (size 2 if short)
+  const char *chord = (st.chordName && st.chordName[0]) ? st.chordName : "";
+  const uint8_t clen = static_cast<uint8_t>(strlen(chord));
+  if (clen > 0 && clen <= 5) {
+    oled.setTextSize(2);
+    oled.setCursor(0, 12);
+    oled.print(chord);
+    oled.setTextSize(1);
+  } else if (clen > 0) {
+    oled.setCursor(0, 12);
+    oled.print(chord);
+  } else {
+    oled.setCursor(0, 12);
+    oled.print(F("-"));
+  }
+
+  // Line 2: BPM + playhead mm:ss (bottom)
+  char left[8];
+  if (st.bpm > 0) {
+    snprintf(left, sizeof(left), "%u", static_cast<unsigned>(st.bpm > 999 ? 999 : st.bpm));
+  } else {
+    snprintf(left, sizeof(left), "--");
+  }
+  const uint32_t sec = st.playSeconds;
+  const uint32_t mm = sec / 60UL;
+  const uint32_t ss = sec % 60UL;
+  char right[8];
+  if (mm < 10) {
+    snprintf(right, sizeof(right), "%lu:%02lu", static_cast<unsigned long>(mm),
+             static_cast<unsigned long>(ss));
+  } else {
+    snprintf(right, sizeof(right), "%lu:%02lu", static_cast<unsigned long>(mm),
+             static_cast<unsigned long>(ss));
+  }
+
+  oled.setCursor(0, 24);
+  oled.print(left);
+  if (st.transportPlaying || st.clockRunning) {
+    oled.print(F(" >"));
+  }
+  const int16_t rw = static_cast<int16_t>(strlen(right) * 6);
+  oled.setCursor(static_cast<int16_t>(128 - rw), 24);
+  oled.print(right);
 
   if (st.sustain) {
-    oled.fillRect(100, 22, 16, 8, SSD1306_WHITE);
+    oled.fillRect(100, 12, 16, 8, SSD1306_WHITE);
     oled.setTextColor(SSD1306_BLACK);
-    oled.setCursor(104, 22);
+    oled.setCursor(104, 12);
     oled.print(F("S"));
     oled.setTextColor(SSD1306_WHITE);
   }

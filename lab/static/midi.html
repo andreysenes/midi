@@ -97,6 +97,14 @@
       border: 1px solid #3d382f; background: #141210; font: 12px var(--mono); cursor: pointer;
     }
     .chip.on { border-color: var(--amber); color: var(--amber); }
+    .chip.perf.on {
+      border-color: #e06070; color: #ffb0b8; background: #3a1518;
+      box-shadow: 0 0 10px rgba(224, 96, 112, 0.35);
+    }
+    .chip.pad.on {
+      border-color: #3a8ec8; color: #9ed0f0; background: #102030;
+      box-shadow: 0 0 10px rgba(58, 142, 200, 0.35);
+    }
     .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
     .key {
       min-height: 48px; border-radius: 8px; border: 1px solid #3d382f; background: #141210;
@@ -139,7 +147,7 @@
   <main>
     <section class="card">
       <h2>DAW</h2>
-      <p class="hint">Grave o firmware MIDI no Pico. O Mac / a DAW vê <strong>Casio SA-1 MIDI</strong>. Canais de fábrica: piano <strong>ch1</strong>, pads 0–9 <strong>ch2</strong> (nota+CC), joystick <strong>ch3</strong> (cima/baixo pitch, esq/dir mod), EC11 <strong>ch4</strong> (track / volume). Tempo ± = CC 40/41 no ch2. Stop = Play/Stop.</p>
+      <p class="hint">Grave o firmware MIDI no Pico. O Mac / a DAW vê <strong>Casio SA-1 MIDI</strong> (cabo 1 = teclado) e um 2.º porto Mackie Control (cabo 2 = track, tempo no OLED, Play/Stop). Canais de fábrica: piano <strong>ch1</strong>, pads 0–9 <strong>ch2</strong> (nota+CC), joystick <strong>ch3</strong>, EC11 <strong>ch4</strong> (track / volume). Tempo ± = CC 40/41 no ch2. Bancos: SEL + EC11 esq = P, SEL + EC11 dir = B. Stop = Mackie Play/Stop + MIDI Start/Stop.</p>
     </section>
     <section class="card">
       <h2>Teste ao vivo</h2>
@@ -149,6 +157,9 @@
         <span class="pill" id="pBank">P1 · B1</span>
         <span class="pill" id="pSel">SEL solto</span>
         <span class="pill" id="pBeat">tempo —</span>
+        <span class="pill" id="pBpm">BPM —</span>
+        <span class="pill" id="pTrack">track —</span>
+        <span class="pill" id="pChord">acorde —</span>
         <span class="pill" id="pNote">nota —</span>
         <span class="pill" id="pWs">WS —</span>
         <span class="pill" id="pLive">stream off</span>
@@ -206,7 +217,7 @@
       <p class="hint">VCC da barra no VBUS 5 V. Rainbow corre no Pico. Mesmo botão para parar.</p>
     </section>
     <section class="card">
-      <h2>Banco performance · Tempo ± · EC11 + joystick</h2>
+      <h2>Banco performance · SEL + EC11 esq · EC11 + joystick</h2>
       <div class="banks" id="perfBanks"></div>
       <div class="ctls" style="margin-top:12px">
         <div class="ctl" data-sel="e0" id="cE0"><strong>EC11-1 track</strong><span id="lE0">—</span></div>
@@ -217,7 +228,7 @@
       </div>
     </section>
     <section class="card">
-      <h2>Banco pads · SEL + Tempo ± · botões 0–9</h2>
+      <h2>Banco pads · SEL + EC11 dir · botões 0–9</h2>
       <div class="banks" id="padBanks"></div>
       <div class="grid" style="margin-top:12px" id="pads"></div>
     </section>
@@ -282,42 +293,72 @@
       }
       return n;
     }
-    function loadLearnStore() {
+    function readLearnLocal() {
       try {
         const raw = localStorage.getItem(LEARN_STORE_KEY);
-        if (!raw) return { n: 0, at: 0 };
+        if (!raw) return null;
         const data = JSON.parse(raw);
-        const n = applyMatrixData(data);
-        return { n, at: +data.savedAt || 0 };
+        if (!data || !Array.isArray(data.matrix) || data.matrix.length !== 7) return null;
+        return data;
       } catch (e) {
-        return { n: 0, at: 0 };
+        return null;
       }
+    }
+    function loadLearnStore() {
+      const data = readLearnLocal();
+      if (!data) return { n: 0, at: 0, done: 0 };
+      const n = applyMatrixData(data);
+      return { n, at: +data.savedAt || 0, done: Array.isArray(data.done) ? data.done.length : 0 };
     }
     let learnedMeta = loadLearnStore();
     let learnedCells = learnedMeta.n;
+    let learnReady = false;
     async function loadLearnFromServer() {
+      const local = readLearnLocal();
+      const localAt = local ? (+local.savedAt || 0) : 0;
+      const localDone = Array.isArray(local?.done) ? local.done.length : 0;
+      const localN = local ? applyMatrixData(local) : 0;
+      let server = null;
       try {
         const data = await api("/api/learn-matrix");
-        if (!data || !data.ok) return learnedCells;
-        const at = +data.savedAt || 0;
-        if (learnedMeta.n && learnedMeta.at && at && at < learnedMeta.at) {
-          return learnedCells;
+        if (data && data.ok) server = data;
+      } catch (e) {}
+      const serverAt = server ? (+server.savedAt || 0) : 0;
+      const serverDone = Array.isArray(server?.done) ? server.done.length : 0;
+      const useLocal = !!(local && localN && (localAt > serverAt || localDone > serverDone || !serverAt));
+      if (useLocal) {
+        learnedCells = localN;
+        learnedMeta = { n: localN, at: localAt, done: localDone };
+        if (!serverAt || localAt > serverAt || localDone > serverDone) {
+          try {
+            await api("/api/learn-matrix", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ matrix: local.matrix, done: local.done || [] }),
+            });
+          } catch (e) {}
         }
-        const n = applyMatrixData(data);
-        if (n) {
-          learnedCells = n;
-          learnedMeta = { n, at };
-        }
-        return learnedCells;
-      } catch (e) {
+        learnReady = true;
         return learnedCells;
       }
+      if (server) {
+        const n = applyMatrixData(server);
+        if (n) {
+          learnedCells = n;
+          learnedMeta = { n, at: serverAt, done: serverDone };
+        }
+      }
+      learnReady = true;
+      return learnedCells;
     }
     async function pushLearnMatrix() {
       const line = "MK " + MATRIX.flat().join(" ");
       await cmd(line);
     }
     async function syncLearnToPico() {
+      if (!learnReady) {
+        await loadLearnFromServer();
+      }
       await cmd("U");
       await pushLearnMatrix();
       await cmd("u");
@@ -328,7 +369,9 @@
     const rollClip = { x: 88, y: 50, w: 798, h: 70 };
     let rollGroup = null;
     let padMask = 0;
-    let live = { oct: 0, vol: 100, pb: 0, bb: 0, sel: 0, note: -1, ws: 0, wr: 0, beat: 0, clk: 0, play: 0 };
+    let live = { oct: 0, vol: 100, pb: 0, bb: 0, sel: 0, note: -1, ws: 0, wr: 0, beat: 0, step: 0, clk: 0, play: 0, bpm: 0, play_s: 0, bf: 1, bs: 0, chord: "", track: "--" };
+    let wsManualOverride = false;
+    let wsPhase = 0;
     let padGeom = [];
     const tempoGeom = {};
     let wsSel = 0;
@@ -587,9 +630,76 @@
       } else {
         $("pBeat").textContent = "■ stop";
       }
+      const bpm = live.bpm || 0;
+      const ps = live.play_s || 0;
+      const mm = Math.floor(ps / 60);
+      const ss = String(ps % 60).padStart(2, "0");
+      $("pBpm").textContent = (bpm ? bpm + " BPM" : "BPM —") + " · " + mm + ":" + ss;
+      $("pTrack").textContent = "track " + (live.track || "--");
+      $("pChord").textContent = live.chord ? ("acorde " + live.chord) : "acorde —";
       $("pNote").textContent = live.note >= 0 ? ("nota " + midiLabel(live.note) + " " + live.note) : "nota —";
       $("pWs").textContent = live.ws ? (live.wr ? "WS rainbow" : "WS ok") : "WS —";
       $("pLive").textContent = "stream on";
+      paintWsFromLive();
+    }
+    function rgbHex(r, g, b) {
+      const h = (n) => n.toString(16).padStart(2, "0");
+      return "#" + h(r) + h(g) + h(b);
+    }
+    function paintWsFromLive() {
+      if (wsRainbowOn || wsManualOverride || live.wr) return;
+      // Tempo / play: blue step chase like firmware
+      if ((live.clk || live.play) && !live.sel && !live.bs) {
+        const step = (live.step != null ? live.step : (live.beat * 2)) & 7;
+        for (let i = 0; i < 8; i++) {
+          wsState[i] = {
+            color: rgbHex(0, 8, 36),
+            alpha: Math.round(((i === step) ? 15 : 5) / 2.55 * 100),
+          };
+        }
+        paintWsStrip();
+        return;
+      }
+      wsPhase = (wsPhase + 2) & 255;
+      const PERF = [56, 0, 4], PERF_SEL = [110, 0, 6];
+      const PAD = [0, 8, 36], PAD_SEL = [0, 18, 70];
+      const WAVE = [22, 14, 6];
+      const selecting = !!(live.sel || live.bs);
+      const focusPad = live.sel ? true : !!live.bf;
+      for (let i = 0; i < 8; i++) {
+        const pos = (wsPhase + i * 32) & 255;
+        const tri = pos < 128 ? pos : 255 - pos;
+        const eased = (tri * tri) / 127;
+        const bgA = Math.round((3 + (eased * 7) / 127) / 2.55 * 100);
+        const isPerf = i === live.pb;
+        const isPad = i === live.bb;
+        let color = rgbHex(...WAVE);
+        let alpha = Math.max(3, Math.min(30, bgA));
+        if (selecting) {
+          const focus = focusPad ? live.bb : live.pb;
+          const other = focusPad ? live.pb : live.bb;
+          if (i === focus) {
+            color = rgbHex(...(focusPad ? PAD_SEL : PERF_SEL));
+            const pulse = wsPhase < 128 ? wsPhase : 255 - wsPhase;
+            alpha = Math.round((20 + (pulse * 10) / 127) / 2.55 * 100);
+          } else if (i === other && other !== focus) {
+            color = rgbHex(...(focusPad ? PERF : PAD));
+            alpha = Math.round(15 / 2.55 * 100);
+          }
+        } else if (isPerf && isPad) {
+          const showPad = (wsPhase & 0x10) !== 0;
+          color = rgbHex(...(showPad ? PAD : PERF));
+          alpha = Math.round(15 / 2.55 * 100);
+        } else if (isPerf) {
+          color = rgbHex(...PERF);
+          alpha = Math.round(15 / 2.55 * 100);
+        } else if (isPad) {
+          color = rgbHex(...PAD);
+          alpha = Math.round(15 / 2.55 * 100);
+        }
+        wsState[i] = { color, alpha };
+      }
+      paintWsStrip();
     }
     function applyLive(s) {
       if (!s || (s.t != null && s.t !== "s")) return;
@@ -610,9 +720,17 @@
       live.ws = s.ws ?? live.ws;
       live.wr = s.wr ?? live.wr;
       live.beat = s.beat ?? live.beat;
+      live.step = s.step ?? live.step;
       live.clk = s.clk ?? live.clk;
       live.play = s.play ?? live.play;
+      live.bpm = s.bpm ?? live.bpm;
+      live.play_s = s.play_s ?? live.play_s;
+      live.bf = s.bf ?? live.bf;
+      live.bs = s.bs ?? live.bs;
+      live.chord = s.chord ?? live.chord;
+      live.track = s.track ?? live.track;
       const bankChanged = (s.pb != null && s.pb !== map.pb) || (s.bb != null && s.bb !== map.bb);
+      if (bankChanged || s.bs || s.sel) wsManualOverride = false;
       if (s.pb != null) map.pb = s.pb;
       if (s.bb != null) map.bb = s.bb;
       $("e1").textContent = fmt(s.e1 ?? 0);
@@ -750,12 +868,12 @@
       $("padBanks").innerHTML = "";
       for (let i = 0; i < 8; i++) {
         const a = document.createElement("button");
-        a.className = "chip" + (map.pb === i ? " on" : "");
+        a.className = "chip perf" + (map.pb === i ? " on" : "");
         a.textContent = String(i + 1);
         a.onclick = () => { map.pb = i; cmd("MB p " + i).catch((e) => log(e.message, "err")); paint(); };
         $("perfBanks").appendChild(a);
         const b = document.createElement("button");
-        b.className = "chip" + (map.bb === i ? " on" : "");
+        b.className = "chip pad" + (map.bb === i ? " on" : "");
         b.textContent = String(i + 1);
         b.onclick = () => { map.bb = i; cmd("MB b " + i).catch((e) => log(e.message, "err")); paint(); };
         $("padBanks").appendChild(b);
@@ -837,7 +955,7 @@
         box.appendChild(field("Canal", num(e.ch, 1, 16, (v) => { e.ch = v; apply(() => pushEnc(i)); })));
         box.appendChild(field("CC", num(e.cc, 0, 127, (v) => { e.cc = v; apply(() => pushEnc(i)); paint(); })));
         box.appendChild(field("Passo", num(e.step, 1, 16, (v) => { e.step = v; apply(() => pushEnc(i)); })));
-        $("inspHint").textContent = "Fábrica: EC11-1 = CC relativo 14 (track na DAW, 65/63). EC11-2 = CC 7 volume. Canal e CC editáveis. Oitava continua disponível como papel.";
+        $("inspHint").textContent = "Fábrica: EC11-1 = CC relativo 14 (track). EC11-2 = CC relativo 7 (volume 65/63, a partir do fader da DAW). Na DAW mapeie os dois como Relative / Binary Offset. Canal e CC editáveis.";
         return;
       }
       if (sel === "joy") {
@@ -868,7 +986,7 @@
         const which = sel === "tup" ? "up" : "dn";
         box.appendChild(field("Canal", num(map.tempo.ch, 1, 16, (v) => { map.tempo.ch = v; apply(pushTempo); paint(); })));
         box.appendChild(field(sel === "tup" ? "CC Tempo +" : "CC Tempo −", num(map.tempo[which], 0, 127, (v) => { map.tempo[which] = v; apply(pushTempo); paint(); })));
-        $("inspHint").textContent = "Tempo ± sai só como CC (127 ao premir, 0 ao soltar). Na DAW: MIDI Learn no tempo ou noutro parâmetro. Continua a mudar o banco local (SEL = pads).";
+        $("inspHint").textContent = "Tempo ± sai só como CC (127 ao premir, 0 ao soltar). Na DAW: MIDI Learn no tempo. Bancos: SEL + EC11 esq = P, SEL + EC11 dir = B.";
       }
     }
 
@@ -986,6 +1104,7 @@
     $("btnConnect").onclick = () => toggleConnect().catch((e) => log(e.message, "err"));
     $("wsApply").onclick = async () => {
       setWsRainbowUi(false);
+      wsManualOverride = true;
       wsState[wsSel].color = $("wsColor").value;
       wsState[wsSel].alpha = +$("wsAlpha").value;
       paintWsStrip();
@@ -993,12 +1112,14 @@
     };
     $("wsOff").onclick = async () => {
       setWsRainbowUi(false);
+      wsManualOverride = true;
       for (let i = 0; i < 8; i++) wsState[i] = { color: "#000000", alpha: 0 };
       paintWsStrip();
       await cmd("L a 000000 0");
     };
     $("wsWhite").onclick = async () => {
       setWsRainbowUi(false);
+      wsManualOverride = true;
       for (let i = 0; i < 8; i++) wsState[i] = { color: "#ffffff", alpha: 35 };
       paintWsStrip();
       await cmd("L a ffffff " + alpha255(35));
@@ -1006,11 +1127,13 @@
     $("wsRainbow").onclick = async () => {
       if (wsRainbowOn) {
         setWsRainbowUi(false);
+        wsManualOverride = false;
         for (let i = 0; i < 8; i++) wsState[i] = { color: "#000000", alpha: 0 };
         paintWsStrip();
         await cmd("L r 0");
         return;
       }
+      wsManualOverride = true;
       wsMasterPct = 100;
       $("wsMaster").value = "100";
       await cmd("L m 255");
@@ -1019,6 +1142,7 @@
     };
     $("wsId").onclick = async () => {
       setWsRainbowUi(false);
+      wsManualOverride = true;
       const colors = ["#ff0000","#00ff00","#0000ff","#ffff00","#ff00ff","#00ffff","#ffffff","#ff8800"];
       for (let i = 0; i < 8; i++) {
         wsState[i] = { color: colors[i], alpha: 55 };

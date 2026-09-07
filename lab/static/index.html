@@ -445,7 +445,7 @@ static const int JOY_MAX_Y = 2048;</pre>
     let showHistory = false;
     const learn = {
       on: false, step: 0, tot: 46, name: "", st: "", waitUp: false,
-      done: new Set(), doneUi: new Set(),
+      done: new Set(), doneUi: new Set(), forceReset: false,
     };
     let wsSel = 0;
     const wsState = Array.from({ length: 8 }, () => ({ color: "#ff0000", alpha: 40 }));
@@ -722,6 +722,11 @@ static const int JOY_MAX_Y = 2048;</pre>
 
     function applyLearn(l) {
       if (l.st === "start") {
+        if (!learn.forceReset && learn.done.size) {
+          log("LEARN start ignorado — mapa do browser mantido (" + learn.done.size + " teclas)", "ok");
+          return;
+        }
+        learn.forceReset = false;
         learn.done = new Set();
         learn.doneUi = new Set();
         resetMatrixDefault();
@@ -2096,7 +2101,10 @@ static const int JOY_MAX_Y = 2048;</pre>
     }
 
     document.querySelectorAll("button[data-c]").forEach((b) => {
-      b.addEventListener("click", () => cmd(b.dataset.c).catch((e) => log(e.message, "err")));
+      b.addEventListener("click", () => {
+        if (b.dataset.c === "l" || b.dataset.c === "z") learn.forceReset = true;
+        cmd(b.dataset.c).catch((e) => log(e.message, "err"));
+      });
     });
     $("btnPorts").onclick = () => refreshPorts().catch((e) => log(e.message, "err"));
     $("btnConnect").onclick = () => toggleConnect().catch((e) => log(e.message, "err"));
@@ -2220,8 +2228,10 @@ static const int JOY_MAX_Y = 2048;</pre>
       const next = LEARN_SEQ[i + 1];
       cmd(next ? ("w " + learnWireName(next)) : "f").catch((e) => log(e.message, "err"));
     }
-    $("learnStart").onclick = () =>
+    $("learnStart").onclick = () => {
+      if (!learn.on) learn.forceReset = true;
       cmd(learn.on ? "z" : "l").catch((e) => log(e.message, "err"));
+    };
     $("learnSkip").onclick = () => skipLearnStep();
     $("learnBack").onclick = () => cmd("b").catch((e) => log(e.message, "err"));
     let learnResumePending = false;
@@ -2319,6 +2329,13 @@ static const int JOY_MAX_Y = 2048;</pre>
       );
       paintCasio();
       paintMatrix();
+      api("/api/learn-matrix", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matrix: MATRIX, done: [...learn.done] }),
+      }).then((r) => {
+        log("mapa do browser gravado no Lab · " + (r.cells || 0) + " células", "ok");
+      }).catch((e) => log(e.message, "err"));
     }
     requestAnimationFrame(tickRoll);
     listen();

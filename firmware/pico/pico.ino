@@ -8,12 +8,17 @@
 #include "audio.h"
 #include "midi_map.h"
 #include "ws.h"
+#include "chord.h"
+#include "mcu.h"
 
 Adafruit_MCP23X17 mcp;
-Adafruit_USBD_MIDI usbMidi;
+Adafruit_USBD_MIDI usbMidi(2);  // cable 0 = instrument, cable 1 = Mackie Control
 MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usbMidi, MIDI);
 
 static bool held[KO_COUNT][KI_COUNT];
+static uint8_t releaseStreak[KO_COUNT][KI_COUNT];
+static int8_t drivenKo = -1;
+static const uint8_t RELEASE_CONFIRM = 2;
 static int8_t octave = 0;
 static uint8_t volume = 100;
 static uint8_t program = 0;
@@ -56,6 +61,17 @@ static uint32_t lastDawClockMs = 0;
 static uint32_t lastInternalBeatMs = 0;
 static const uint16_t INTERNAL_BPM = 120;
 static const uint16_t DAW_CLOCK_HOLD_MS = 200;
+static const uint16_t BANK_SELECT_MS = 2000;
+
+static uint32_t bankSelectUntilMs = 0;
+static bool bankFocusPad = true;
+static uint32_t lastClockTickMs = 0;
+static uint32_t clockSpanAccum = 0;
+static uint8_t clockSpanCount = 0;
+static uint16_t measuredBpm = 0;
+static uint32_t playheadClocks = 0;
+static uint32_t lastPlayheadOledMs = 0;
+static char lastMcuTrack[12] = "--";
 
 static void resetTempoPos() {
   midiClockCount = 0;
@@ -63,23 +79,92 @@ static void resetTempoPos() {
   midiStep = 0;
 }
 
-static void refreshWsFromState() {
+static bool bankSelectActive() {
   if (selHeld) {
-    wsShowBank(padBank);
+    return true;
+  }
+  return bankSelectUntilMs != 0 && static_cast<int32_t>(millis() - bankSelectUntilMs) < 0;
+}
+
+static void armBankSelect(bool pad) {
+  bankFocusPad = pad;
+  bankSelectUntilMs = millis() + BANK_SELECT_MS;
+}
+
+static void refreshWsFromState() {
+  if (bankSelectActive()) {
+    wsShowBank(selHeld ? true : bankFocusPad, perfBank, padBank);
   } else if (midiClockRunning || transportPlaying) {
     wsShowTempo(midiStep);
   } else {
-    wsShowOff();
+    wsShowIdle(perfBank, padBank);
   }
 }
 
+static uint16_t currentBpm() {
+  // Prefer Mackie assignment display when the DAW pushes a tempo token.
+  const uint16_t fromMcu = mcuBpm();
+  if (fromMcu > 0) {
+    return fromMcu;
+  }
+  if (measuredBpm > 0 && lastDawClockMs != 0 &&
+      (millis() - lastDawClockMs) < 2000) {
+    return measuredBpm;
+  }
+  if (transportPlaying &&
+      (lastDawClockMs == 0 || (millis() - lastDawClockMs) >= DAW_CLOCK_HOLD_MS)) {
+    return INTERNAL_BPM;
+  }
+  return measuredBpm;
+}
+
+static uint32_t currentPlaySeconds() {
+  if (mcuHasPlaySeconds()) {
+    return mcuPlaySeconds();
+  }
+  const uint16_t bpm = currentBpm();
+  if (bpm == 0) {
+    return 0;
+  }
+  return (playheadClocks * 60UL) / (static_cast<uint32_t>(bpm) * 24UL);
+}
+
+static void noteDawBpmSample(uint32_t now) {
+  if (lastClockTickMs != 0) {
+    const uint32_t dt = now - lastClockTickMs;
+    if (dt > 2 && dt < 200) {
+      clockSpanAccum += dt;
+      clockSpanCount++;
+      if (clockSpanCount >= 24) {
+        const uint32_t msPerBeat =
+            (clockSpanAccum / clockSpanCount) * 24UL;
+        if (msPerBeat > 0) {
+          measuredBpm = static_cast<uint16_t>(60000UL / msPerBeat);
+          if (measuredBpm < 20) {
+            measuredBpm = 20;
+          }
+          if (measuredBpm > 400) {
+            measuredBpm = 400;
+          }
+        }
+        clockSpanAccum = 0;
+        clockSpanCount = 0;
+      }
+    }
+  }
+  lastClockTickMs = now;
+}
+
 static void onMidiClock() {
-  lastDawClockMs = millis();
+  const uint32_t now = millis();
+  lastDawClockMs = now;
   midiClockRunning = true;
+  noteDawBpmSample(now);
+  playheadClocks++;
   midiClockCount++;
   if (midiClockCount == 12) {
     midiStep = static_cast<uint8_t>((midiBeat * 2 + 1) & 7);
-    if (!selHeld) {
+    if (!bankSelectActive()) {
       wsShowTempo(midiStep);
     }
   } else if (midiClockCount >= 24) {
@@ -87,9 +172,13 @@ static void onMidiClock() {
     midiBeat = static_cast<uint8_t>((midiBeat + 1) & 3);
     midiStep = static_cast<uint8_t>((midiBeat * 2) & 7);
     oledMark();
-    if (!selHeld) {
+    if (!bankSelectActive()) {
       wsShowTempo(midiStep);
     }
+  }
+  if (now - lastPlayheadOledMs >= 250) {
+    lastPlayheadOledMs = now;
+    oledMark();
   }
 }
 
@@ -98,6 +187,10 @@ static void onMidiStart() {
   transportPlaying = true;
   resetTempoPos();
   midiSongPos = 0;
+  playheadClocks = 0;
+  lastClockTickMs = 0;
+  clockSpanAccum = 0;
+  clockSpanCount = 0;
   lastInternalBeatMs = millis();
   oledMark();
   refreshWsFromState();
@@ -116,12 +209,13 @@ static void onMidiStop() {
   transportPlaying = false;
   resetTempoPos();
   lastDawClockMs = 0;
+  lastClockTickMs = 0;
   oledMark();
   refreshWsFromState();
 }
 
 static void tickInternalTempo() {
-  if (selHeld || !transportPlaying) {
+  if (bankSelectActive() || !transportPlaying) {
     return;
   }
   const uint32_t now = millis();
@@ -136,6 +230,8 @@ static void tickInternalTempo() {
   midiStep = static_cast<uint8_t>((midiStep + 1) & 7);
   midiBeat = static_cast<uint8_t>(midiStep >> 1);
   midiClockRunning = true;
+  // Internal metronome: 2 clocks-worth per eighth ≈ 12 MIDI clocks per eighth
+  playheadClocks += 12;
   if ((midiStep & 1) == 0) {
     oledMark();
   }
@@ -148,6 +244,8 @@ static void onMidiSongPos(unsigned int beats) {
   midiBeat = static_cast<uint8_t>((beats / 4) & 3);
   midiStep = static_cast<uint8_t>((beats / 2) & 7);
   midiClockCount = static_cast<uint8_t>((beats % 4) * 6);
+  // 1 sixteenth = 6 MIDI clocks
+  playheadClocks = static_cast<uint32_t>(beats) * 6UL;
   oledMark();
   refreshWsFromState();
 }
@@ -175,10 +273,14 @@ static uint8_t applyOctave(uint8_t note) {
 
 static void emitNoteOn(uint8_t note, uint8_t velocity, uint8_t ch) {
   MIDI.sendNoteOn(note, velocity, ch);
+  chordNote(note, true);
+  oledMark();
 }
 
 static void emitNoteOff(uint8_t note, uint8_t ch) {
   MIDI.sendNoteOff(note, 0, ch);
+  chordNote(note, false);
+  oledMark();
 }
 
 static void emitCc(uint8_t cc, uint8_t value, uint8_t ch) {
@@ -200,17 +302,21 @@ static OledStatus currentOledStatus(bool mcpOk) {
   st.program = program;
   st.typedDigits = typedDigits;
   st.typedProgram = typedProgram;
-  st.lastNote = lastNoteShown;
-  st.haveNote = haveLastNote;
   st.sustain = lastJoySw;
   st.usbMounted = TinyUSBDevice.mounted();
   st.mcpOk = mcpOk;
   st.perfBank = perfBank;
   st.padBank = padBank;
   st.selHeld = selHeld;
+  st.bankFocusPad = bankFocusPad;
+  st.bankSelectActive = bankSelectActive();
   st.clockRunning = midiClockRunning;
   st.transportPlaying = transportPlaying;
   st.beat = midiBeat;
+  st.bpm = currentBpm();
+  st.playSeconds = currentPlaySeconds();
+  st.trackName = mcuTrack();
+  st.chordName = chordText();
   return st;
 }
 
@@ -263,11 +369,25 @@ static void emitJsonState() {
   Serial.print(wsRainbowOn ? 1 : 0);
   Serial.print(F(",\"beat\":"));
   Serial.print(midiBeat);
+  Serial.print(F(",\"step\":"));
+  Serial.print(midiStep);
   Serial.print(F(",\"clk\":"));
   Serial.print(midiClockRunning ? 1 : 0);
   Serial.print(F(",\"play\":"));
   Serial.print(transportPlaying ? 1 : 0);
-  Serial.print(F(",\"h\":["));
+  Serial.print(F(",\"bpm\":"));
+  Serial.print(currentBpm());
+  Serial.print(F(",\"play_s\":"));
+  Serial.print(currentPlaySeconds());
+  Serial.print(F(",\"bf\":"));
+  Serial.print(bankFocusPad ? 1 : 0);
+  Serial.print(F(",\"bs\":"));
+  Serial.print(bankSelectActive() ? 1 : 0);
+  Serial.print(F(",\"chord\":\""));
+  Serial.print(chordText());
+  Serial.print(F("\",\"track\":\""));
+  Serial.print(mcuTrack());
+  Serial.print(F("\",\"h\":["));
   for (uint8_t r = 0; r < 7; r++) {
     if (r) {
       Serial.print(',');
@@ -277,7 +397,9 @@ static void emitJsonState() {
   Serial.println(F("]}"));
 }
 
-static void sendNote(uint8_t baseNote, bool on) {
+static uint8_t lastOnKo = 255;
+
+static void sendNote(uint8_t baseNote, bool on, uint8_t ko) {
   const uint8_t note = applyOctave(baseNote);
   lastNoteShown = note;
   haveLastNote = true;
@@ -285,6 +407,7 @@ static void sendNote(uint8_t baseNote, bool on) {
   Serial.println(note);
   oledMark();
   if (on) {
+    lastOnKo = ko;
     emitNoteOn(note, midiMap.vel, midiMap.ch);
   } else {
     emitNoteOff(note, midiMap.ch);
@@ -299,6 +422,12 @@ static void allNotesOff() {
   emitCc(120, 0, 2);
   emitCc(midiMap.tempoCcUp, 0, midiMap.tempoCh);
   emitCc(midiMap.tempoCcDn, 0, midiMap.tempoCh);
+  chordClear();
+  oledMark();
+}
+
+static bool isVolumeEnc(const EncSlot &e) {
+  return e.cc == CC_VOLUME;
 }
 
 static void sendEncCc(uint8_t i) {
@@ -307,6 +436,32 @@ static void sendEncCc(uint8_t i) {
     return;
   }
   emitCc(e.cc, encVal[perfBank][i], e.ch);
+}
+
+static void nudgeLocalVolume(int8_t step, uint8_t amount) {
+  const int inc = (step > 0 ? static_cast<int>(amount) : -static_cast<int>(amount));
+  volume = clampU7(static_cast<int>(volume) + inc);
+}
+
+static void onMidiControlChange(byte channel, byte number, byte value) {
+  (void)channel;
+  const uint8_t cc = static_cast<uint8_t>(number);
+  const uint8_t val = clampU7(static_cast<int>(value));
+  for (uint8_t i = 0; i < 2; i++) {
+    EncSlot &e = encSlot(i);
+    if (e.cc != cc) {
+      continue;
+    }
+    // Eco do próprio tick relativo (63/65) não é o fader da DAW.
+    if (e.mode == ENC_MODE_REL && (val == 63 || val == 65)) {
+      continue;
+    }
+    encVal[perfBank][i] = val;
+    if (isVolumeEnc(e)) {
+      volume = val;
+    }
+    oledMark();
+  }
 }
 
 static void handlePad(uint8_t digit, bool pressed) {
@@ -357,6 +512,7 @@ static void changeBank(bool pad, int8_t dir) {
     sendEncCc(0);
     sendEncCc(1);
   }
+  armBankSelect(pad);
   oledMark();
   refreshWsFromState();
   Serial.print(F("BANK pb="));
@@ -396,10 +552,8 @@ static void handleButton(uint8_t code, bool pressed) {
       return;
     }
     tempoHeld[which] = pressed;
+    // Tempo ± = só tempo MIDI (CC up/down). Bancos: SEL + EC11.
     emitTempoCc(which, pressed);
-    if (pressed) {
-      changeBank(selHeld, which ? -1 : 1);
-    }
     return;
   }
 
@@ -412,8 +566,9 @@ static void handleButton(uint8_t code, bool pressed) {
   }
   lastButtonMs = now;
   if (code == BTN_STOP) {
-    // Play / Stop da DAW (MIDI realtime Start/Stop).
-    if (transportPlaying || midiClockRunning) {
+    // Play / Stop via Mackie Control (cable 1) + MIDI realtime (cable 0).
+    if (transportPlaying || midiClockRunning || mcuIsHostPlaying()) {
+      mcuSendTransport(false);
       MIDI.sendStop();
       transportPlaying = false;
       midiClockRunning = false;
@@ -421,10 +576,12 @@ static void handleButton(uint8_t code, bool pressed) {
       allNotesOff();
       Serial.println(F("TRANSPORT stop"));
     } else {
+      mcuSendTransport(true);
       MIDI.sendStart();
       transportPlaying = true;
       midiClockRunning = true;
       resetTempoPos();
+      playheadClocks = 0;
       lastDawClockMs = 0;
       lastInternalBeatMs = millis();
       Serial.println(F("TRANSPORT start"));
@@ -450,7 +607,7 @@ static void handleCell(uint8_t row, uint8_t col, bool pressed) {
     return;
   }
   if (code <= 127) {
-    sendNote(code, pressed);
+    sendNote(code, pressed, row);
     return;
   }
   handleButton(code, pressed);
@@ -465,21 +622,118 @@ static bool setupMcp() {
     mcp.pinMode(i, INPUT_PULLUP);
   }
   for (uint8_t i = 0; i < KO_COUNT; i++) {
-    mcp.pinMode(8 + i, OUTPUT);
-    mcp.digitalWrite(8 + i, HIGH);
+    mcp.pinMode(8 + i, INPUT);
   }
   mcp.pinMode(15, INPUT_PULLUP);
   return true;
 }
 
-static void scanMatrix() {
-  for (uint8_t row = 0; row < KO_COUNT; row++) {
-    mcp.writeGPIO(static_cast<uint8_t>(~(1 << row)) & 0x7F, MCP_KO_PORT);
-    delayMicroseconds(SCAN_SETTLE_US);
-    const uint8_t cols = mcp.readGPIO(MCP_KI_PORT);
+static void suppressRectGhosts(uint8_t *raw) {
+  for (uint8_t r1 = 0; r1 < KO_COUNT; r1++) {
+    for (uint8_t r2 = static_cast<uint8_t>(r1 + 1); r2 < KO_COUNT; r2++) {
+      const uint8_t both = raw[r1] & raw[r2];
+      if (both == 0) {
+        continue;
+      }
+      for (uint8_t c1 = 0; c1 < KI_COUNT; c1++) {
+        if ((both & (1 << c1)) == 0) {
+          continue;
+        }
+        for (uint8_t c2 = static_cast<uint8_t>(c1 + 1); c2 < KI_COUNT; c2++) {
+          if ((both & (1 << c2)) == 0) {
+            continue;
+          }
+          const bool was[4] = {
+            held[r1][c1], held[r1][c2], held[r2][c1], held[r2][c2]
+          };
+          uint8_t nr[4];
+          uint8_t nc[4];
+          uint8_t nNew = 0;
+          const uint8_t rr[4] = {r1, r1, r2, r2};
+          const uint8_t cc[4] = {c1, c2, c1, c2};
+          for (uint8_t i = 0; i < 4; i++) {
+            if (!was[i]) {
+              nr[nNew] = rr[i];
+              nc[nNew] = cc[i];
+              nNew++;
+            }
+          }
+          if (nNew == 0) {
+            continue;
+          }
+          int keep = -1;
+          if (nNew > 1) {
+            if (lastOnKo != 255) {
+              for (uint8_t i = 0; i < nNew; i++) {
+                if (nr[i] == lastOnKo) {
+                  keep = static_cast<int>(i);
+                }
+              }
+            }
+            if (keep < 0) {
+              uint8_t bestR = 0;
+              keep = 0;
+              for (uint8_t i = 0; i < nNew; i++) {
+                if (nr[i] >= bestR) {
+                  bestR = nr[i];
+                  keep = static_cast<int>(i);
+                }
+              }
+            }
+          }
+          for (uint8_t i = 0; i < nNew; i++) {
+            if (static_cast<int>(i) == keep) {
+              continue;
+            }
+            raw[nr[i]] = static_cast<uint8_t>(raw[nr[i]] & ~(1 << nc[i]));
+          }
+        }
+      }
+    }
+  }
+}
 
+static void driveKo(uint8_t row) {
+  if (drivenKo >= 0 && drivenKo != static_cast<int8_t>(row)) {
+    mcp.pinMode(8 + drivenKo, INPUT);
+  }
+  mcp.pinMode(8 + row, OUTPUT);
+  mcp.digitalWrite(8 + row, LOW);
+  drivenKo = static_cast<int8_t>(row);
+}
+
+static void releaseKo() {
+  if (drivenKo >= 0) {
+    mcp.pinMode(8 + drivenKo, INPUT);
+    drivenKo = -1;
+  }
+}
+
+static void scanMatrix() {
+  uint8_t raw[KO_COUNT];
+  for (uint8_t row = 0; row < KO_COUNT; row++) {
+    driveKo(row);
+    delayMicroseconds(SCAN_SETTLE_US);
+    raw[row] = static_cast<uint8_t>(~mcp.readGPIO(MCP_KI_PORT));
+  }
+  releaseKo();
+  suppressRectGhosts(raw);
+
+  for (uint8_t row = 0; row < KO_COUNT; row++) {
     for (uint8_t col = 0; col < KI_COUNT; col++) {
-      const bool pressed = (cols & (1 << col)) == 0;
+      const bool rawDown = (raw[row] & (1 << col)) != 0;
+      bool pressed = held[row][col];
+      if (rawDown) {
+        releaseStreak[row][col] = 0;
+        pressed = true;
+      } else if (held[row][col]) {
+        if (releaseStreak[row][col] < 255) {
+          releaseStreak[row][col]++;
+        }
+        if (releaseStreak[row][col] >= RELEASE_CONFIRM) {
+          pressed = false;
+        }
+      }
       if (pressed == held[row][col]) {
         continue;
       }
@@ -487,7 +741,6 @@ static void scanMatrix() {
       handleCell(row, col, pressed);
     }
   }
-  mcp.writeGPIO(0x7F, MCP_KO_PORT);
 }
 
 static void initEncoder(const EncoderPins &pins, EncoderState &state) {
@@ -680,6 +933,13 @@ static void applyEncStep(uint8_t i, int8_t step) {
   }
   if (e.mode == ENC_MODE_REL) {
     emitCc(e.cc, step > 0 ? 65 : 63, e.ch);
+    if (isVolumeEnc(e)) {
+      nudgeLocalVolume(step, e.step == 0 ? 1 : e.step);
+    }
+    if (e.cc == CC_TRACK) {
+      mcuNudgeTrack(step > 0 ? 1 : -1);
+      oledMark();
+    }
     oledMark();
     return;
   }
@@ -740,6 +1000,65 @@ static void readSerialLine(char *buf, size_t cap) {
   buf[n] = '\0';
 }
 
+static void drainUsbMidi() {
+  uint8_t packet[4];
+  while (usbMidi.readPacket(packet)) {
+    const uint8_t cable = static_cast<uint8_t>(packet[0] >> 4);
+    const uint8_t cin = static_cast<uint8_t>(packet[0] & 0x0f);
+    if (cable == 1) {
+      mcuHandlePacket(packet);
+      continue;
+    }
+    switch (cin) {
+      case 0xF:
+        if (packet[1] == 0xF8) {
+          onMidiClock();
+        } else if (packet[1] == 0xFA) {
+          onMidiStart();
+        } else if (packet[1] == 0xFB) {
+          onMidiContinue();
+        } else if (packet[1] == 0xFC) {
+          onMidiStop();
+        }
+        break;
+      case 0x3: {
+        const unsigned beats =
+            static_cast<unsigned>(packet[2]) |
+            (static_cast<unsigned>(packet[3]) << 7);
+        onMidiSongPos(beats);
+        break;
+      }
+      case 0xB: {
+        const byte ch = static_cast<byte>((packet[1] & 0x0f) + 1);
+        onMidiControlChange(ch, packet[2], packet[3]);
+        break;
+      }
+      default:
+        break;
+    }
+  }
+  if (strcmp(lastMcuTrack, mcuTrack()) != 0) {
+    strncpy(lastMcuTrack, mcuTrack(), sizeof(lastMcuTrack) - 1);
+    lastMcuTrack[sizeof(lastMcuTrack) - 1] = '\0';
+    oledMark();
+  }
+  if (mcuTakeTransportDirty()) {
+    // Sync local transport LEDs/OLED from Mackie host feedback.
+    if (mcuIsHostPlaying()) {
+      transportPlaying = true;
+      midiClockRunning = true;
+    } else {
+      transportPlaying = false;
+      // Keep midiClockRunning if clock packets still arrive.
+    }
+    oledMark();
+    refreshWsFromState();
+  }
+  if (mcuTakeDisplayDirty()) {
+    oledMark();
+  }
+}
+
 static void handleSerial() {
   while (Serial.available()) {
     const char c = static_cast<char>(Serial.read());
@@ -748,8 +1067,15 @@ static void handleSerial() {
     }
     if (c == 'M' || c == 'm') {
       char line[320];
+      const uint8_t prevPb = perfBank;
+      const uint8_t prevBb = padBank;
       readSerialLine(line, sizeof(line));
       handleMapCommand(line);
+      if (perfBank != prevPb) {
+        armBankSelect(false);
+      } else if (padBank != prevBb) {
+        armBankSelect(true);
+      }
       oledMark();
       refreshWsFromState();
       continue;
@@ -788,14 +1114,12 @@ void setup() {
   usbMidi.setStringDescriptor("Casio SA-1 MIDI");
   Serial.begin(115200);
   midiMapLoad();
+  chordClear();
+  mcuBegin(&usbMidi);
 
   MIDI.begin();
   MIDI.turnThruOff();
-  MIDI.setHandleClock(onMidiClock);
-  MIDI.setHandleStart(onMidiStart);
-  MIDI.setHandleContinue(onMidiContinue);
-  MIDI.setHandleStop(onMidiStop);
-  MIDI.setHandleSongPosition(onMidiSongPos);
+  // Input demuxed in drainUsbMidi() so MCU cable 1 is not dropped.
 
   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
@@ -827,6 +1151,7 @@ void setup() {
   pinMode(JOY_SW_PIN, INPUT_PULLUP);
   calibrateJoystick();
   digitalWrite(LED_PIN, HIGH);
+  refreshWsFromState();
   oledMark();
 }
 
@@ -848,7 +1173,16 @@ void loop() {
     oledMark();
   }
 
+  static bool wasBankSelect = false;
+  const bool nowBankSelect = bankSelectActive();
+  if (wasBankSelect && !nowBankSelect) {
+    refreshWsFromState();
+    oledMark();
+  }
+  wasBankSelect = nowBankSelect;
+
   handleSerial();
+  drainUsbMidi();
   wsRainbowTick();
   wsIdleTick();
   if (uiStream && millis() - lastJsonMs >= 50) {
@@ -863,8 +1197,6 @@ void loop() {
   }
 
   digitalWrite(LED_PIN, HIGH);
-  while (MIDI.read()) {
-  }
   tickInternalTempo();
   scanMatrix();
   scanEncoders();

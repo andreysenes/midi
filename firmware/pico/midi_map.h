@@ -9,7 +9,8 @@ static const uint8_t BANK_COUNT = 8;
 static const uint8_t PAD_COUNT = 10;
 static const uint16_t MAP_MAGIC = 0xC510;
 // v6: joy eixos. v7: orientação antiga + Y pitch (não oitava).
-static const uint8_t MAP_VER = 7;
+// v8: EC11-2 volume em CC relativo (65/63) — não sobrescreve o fader da track.
+static const uint8_t MAP_VER = 8;
 
 enum EncMode : uint8_t {
   ENC_MODE_CC = 0,
@@ -128,7 +129,7 @@ static void midiMapDefaults() {
   for (uint8_t b = 0; b < BANK_COUNT; b++) {
     if (b == 0) {
       midiMap.enc[b][0] = EncSlot{ENC_MODE_REL, 4, CC_TRACK, 1};
-      midiMap.enc[b][1] = EncSlot{ENC_MODE_CC, 4, CC_VOLUME, 2};
+      midiMap.enc[b][1] = EncSlot{ENC_MODE_REL, 4, CC_VOLUME, 1};
       midiMap.joy[b] = JoySlot{
           JOY_PITCH, 3, 0,
           JOY_CC, 3, CC_MODULATION,
@@ -195,6 +196,13 @@ static void midiMapLoad() {
       j0.yMode = JOY_CC;
       j0.yCh = 3;
       j0.yCc = CC_MODULATION;
+    }
+  }
+  if (midiMap.ver < 8) {
+    EncSlot &vol = midiMap.enc[0][1];
+    if (vol.cc == CC_VOLUME && vol.mode == ENC_MODE_CC) {
+      vol.mode = ENC_MODE_REL;
+      vol.step = 1;
     }
   }
   midiMap.ver = MAP_VER;
