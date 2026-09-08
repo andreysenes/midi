@@ -90,7 +90,12 @@
       letter-spacing: .12em; color: var(--dim);
     }
     .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .hint { color: var(--dim); font-size: 12px; margin: 8px 0 0; line-height: 1.45; }
+    .fm-ops { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .fm-op { background: #141210; border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+    .fm-op h3 { margin: 0 0 8px; font: 11px var(--mono); color: var(--amber); letter-spacing: .08em; }
+    .fm-grid { display: grid; grid-template-columns: 52px 1fr 36px; gap: 3px 8px; align-items: center; font: 11px var(--mono); color: var(--dim); }
+    .fm-grid input[type="range"] { width: 100%; }
+    .fm-mode { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
     .banks { display: flex; gap: 6px; flex-wrap: wrap; }
     .chip {
       min-width: 36px; text-align: center; padding: 6px 8px; border-radius: 6px;
@@ -147,19 +152,20 @@
   <main>
     <section class="card">
       <h2>DAW</h2>
-      <p class="hint">Grave o firmware MIDI no Pico. O Mac / a DAW vê <strong>Casio SA-1 MIDI</strong> (cabo 1 = teclado) e um 2.º porto Mackie Control (cabo 2 = track, tempo no OLED, Play/Stop). Canais de fábrica: piano <strong>ch1</strong>, pads 0–9 <strong>ch2</strong> (nota+CC), joystick <strong>ch3</strong>, EC11 <strong>ch4</strong> (track / volume). Tempo ± = CC 40/41 no ch2. Bancos: SEL + EC11 esq = P, SEL + EC11 dir = B. Stop = Mackie Play/Stop + MIDI Start/Stop.</p>
+      <p class="hint">Grave o firmware MIDI no Pico. O Mac / a DAW vê dois portos: <strong>Casio SA-1</strong> (teclado, pads CC, joystick) e <strong>Mackie Control</strong> (mixer). Na DAW: Control Surface = MackieControl, Input/Output = <strong>Mackie Control</strong> — não o Casio. Banco P1 = piano MIDI ch1, P2 = ch2, … P8 = ch8 (cada track no seu canal). Banco pads 1 = Mackie; bancos 2–8 = CC.</p>
     </section>
     <section class="card">
       <h2>Teste ao vivo</h2>
       <div class="pills">
         <span class="pill" id="pOct">oitava —</span>
         <span class="pill" id="pVol">vol —</span>
-        <span class="pill" id="pBank">P1 · B1</span>
+        <span class="pill" id="pBank">P1 · B1 · ch1</span>
         <span class="pill" id="pSel">SEL solto</span>
         <span class="pill" id="pBeat">tempo —</span>
         <span class="pill" id="pBpm">BPM —</span>
         <span class="pill" id="pTrack">track —</span>
         <span class="pill" id="pChord">acorde —</span>
+        <span class="pill" id="pPatch">FM —</span>
         <span class="pill" id="pNote">nota —</span>
         <span class="pill" id="pWs">WS —</span>
         <span class="pill" id="pLive">stream off</span>
@@ -169,7 +175,7 @@
     <section class="card">
       <h2>SA-1 · teclado e botões</h2>
       <svg class="casio-svg" id="casio" viewBox="0 0 900 292" role="img" aria-label="Casio SA-1"></svg>
-      <p class="hint">Cada tecla mostra a nota MIDI (ch1). Botões 0–9 mostram Dual (N+CC) no ch2. Tempo ± mostra o CC (clica para editar). Pads e Tempo ± no piano roll.</p>
+        <p class="hint">Clica num pad, STOP ou Tempo ± para atribuir Mackie, CC ou oitava. Teclas = notas no porto Casio (não Mackie).</p>
     </section>
     <section class="card">
       <h2>EC11 + joystick</h2>
@@ -199,6 +205,27 @@
       </div>
     </section>
     <section class="card">
+      <h2>Synth FM · PCM5102A</h2>
+      <div class="fm-mode">
+        <button type="button" id="fmOut" class="on">Synth</button>
+        <button type="button" id="fmClock">Clock</button>
+        <button type="button" id="fmIn">In</button>
+      </div>
+      <div class="banks" id="fmPatches"></div>
+      <div class="row" style="margin-top:10px">
+        <label>Algoritmo <input type="number" id="fmAlgo" min="0" max="7" value="2" /></label>
+        <span class="pill" id="fmAlgoN">12|34</span>
+        <label>Feedback <input type="range" id="fmFb" min="0" max="7" value="3" /> <span id="fmFbN">3</span></label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label>LFO rate <input type="range" id="fmLfoR" min="0" max="127" value="18" /></label>
+        <label>LFO pitch <input type="range" id="fmLfoP" min="0" max="127" value="6" /></label>
+        <label>LFO amp <input type="range" id="fmLfoA" min="0" max="127" value="0" /></label>
+      </div>
+      <div class="fm-ops" id="fmOps"></div>
+      <p class="hint">Jack 3,5 mm. 4 operadores, 6 vozes. Ratio em passos de 0,5 (2 = 1.00). Teclas e MIDI USB tocam o mesmo motor. PGM / pads PROG escolhem o timbre 0–7.</p>
+    </section>
+    <section class="card">
       <h2>WS2812 8×1 · GP16</h2>
       <div class="ws-strip" id="wsStrip"></div>
       <div class="ws-controls">
@@ -225,6 +252,7 @@
         <div class="ctl" data-sel="joy" id="cJoy"><strong>Joystick</strong><span id="lJoy">—</span></div>
         <div class="ctl" data-sel="tup" id="cTup"><strong>Tempo +</strong><span id="lTup">—</span></div>
         <div class="ctl" data-sel="tdn" id="cTdn"><strong>Tempo −</strong><span id="lTdn">—</span></div>
+        <div class="ctl" data-sel="stop" id="cStop"><strong>STOP</strong><span id="lStop">—</span></div>
       </div>
     </section>
     <section class="card">
@@ -236,13 +264,13 @@
       <h2>Controlo</h2>
       <div class="insp" id="insp"></div>
       <div class="row" style="margin-top:12px">
-        <label>Canal piano <input type="number" id="gCh" min="1" max="16" value="1" /></label>
+        <label>Canal piano <input type="number" id="gCh" min="1" max="8" value="1" /></label>
         <label>Velocity <input type="number" id="gVel" min="1" max="127" value="100" /></label>
         <button class="primary" id="btnSave">Guardar no Pico</button>
         <button id="btnLoad">Ler</button>
         <button id="btnReset">Factory</button>
       </div>
-      <p class="hint" id="inspHint">Piano = canal 1. Pads Dual = nota+CC no canal 2. Tempo ± = CC 40/41 no canal 2 (editável). Joystick = canal 3. EC11 = canal 4.</p>
+      <p class="hint" id="inspHint">Piano = canal do banco P (P1→ch1 … P8→ch8). Pads Dual = nota+CC no canal 2. Tempo ± = oitava do piano (editável). Joystick = canal 3. EC11 = canal 4.</p>
     </section>
     <section class="card">
       <h2>Log</h2>
@@ -251,17 +279,59 @@
   </main>
   <script>
     const $ = (id) => document.getElementById(id);
-    const ENC_MODES = ["CC", "Oitava", "Off", "CC relativo"];
+    const ENC_MODES = ["CC", "Oitava", "Off", "CC relativo", "Mackie"];
     const JOY_X = ["Pitch", "CC", "Off", "Oitava"];
     const JOY_Y = ["Pitch", "CC", "Off", "Oitava"];
     const SW = ["CC", "Nota", "Off"];
-    const PAD = ["Dual (nota+CC)", "CC", "Nota", "Programa", "Off"];
+    const PAD = ["Dual (nota+CC)", "CC", "Nota", "Programa", "Off", "Mackie"];
+    const MCU_PAD_FNS = (() => {
+      const out = [];
+      const strip = (base, name) => {
+        for (let i = 0; i < 8; i++) out.push({ id: base + i, label: name + " " + (i + 1) });
+      };
+      strip(0x00, "Rec/Arm");
+      strip(0x08, "Solo");
+      strip(0x10, "Mute");
+      strip(0x18, "Select");
+      strip(0x20, "V-Pot");
+      out.push(
+        { id: 0x2E, label: "Bank ←" }, { id: 0x2F, label: "Bank →" },
+        { id: 0x30, label: "Channel ←" }, { id: 0x31, label: "Channel →" },
+        { id: 0x4A, label: "Read" }, { id: 0x4B, label: "Write" },
+        { id: 0x4C, label: "Trim" }, { id: 0x4D, label: "Touch" },
+        { id: 0x4E, label: "Latch" }, { id: 0x4F, label: "Group" },
+        { id: 0x54, label: "Marker" }, { id: 0x55, label: "Nudge" },
+        { id: 0x56, label: "Cycle" }, { id: 0x57, label: "Drop" },
+        { id: 0x58, label: "Replace" }, { id: 0x59, label: "Click" },
+        { id: 0x5A, label: "Solo (global)" },
+        { id: 0x5B, label: "Rewind" }, { id: 0x5C, label: "Fast Forward" },
+        { id: 0x5D, label: "Stop" }, { id: 0x5E, label: "Play" }, { id: 0x5F, label: "Record" }
+      );
+      return out;
+    })();
+    const MCU_ENC_FNS = [
+      ...Array.from({ length: 8 }, (_, i) => ({ id: i, label: "V-Pot / Pan " + (i + 1) })),
+      { id: 8, label: "Jog" },
+      ...Array.from({ length: 8 }, (_, i) => ({ id: 9 + i, label: "Fader " + (i + 1) })),
+      { id: 17, label: "Master fader" },
+      { id: 18, label: "Channel L/R" },
+      { id: 19, label: "Bank L/R" },
+    ];
+    const MCU_STOP_FNS = [{ id: 255, label: "Play/Stop (toggle)" }, ...MCU_PAD_FNS];
+    function mcuPadLabel(id) {
+      const f = MCU_PAD_FNS.find((x) => x.id === id);
+      return f ? f.label : "MCU " + id;
+    }
+    function mcuEncLabel(id) {
+      const f = MCU_ENC_FNS.find((x) => x.id === id);
+      return f ? f.label : "MCU " + id;
+    }
     const emptyEnc = () => ({ mode: 0, ch: 4, cc: 1, step: 2, val: 64 });
     const emptyJoy = () => ({ xm: 0, xch: 3, xcc: 0, ym: 1, ych: 3, ycc: 1, sm: 0, sch: 3, scc: 64 });
     const emptyPad = (d) => ({ mode: 0, ch: 2, cc: 30 + d, note: 36 + d });
     const map = {
       ch: 1, vel: 100, pb: 0, bb: 0,
-      tempo: { ch: 2, up: 40, dn: 41 },
+      tempo: { ch: 2, up: 40, dn: 41, stop: 255, tu: 2, td: 2 },
       enc: Array.from({ length: 8 }, () => [emptyEnc(), emptyEnc()]),
       joy: Array.from({ length: 8 }, emptyJoy),
       pad: Array.from({ length: 8 }, () => Array.from({ length: 10 }, (_, d) => emptyPad(d))),
@@ -369,7 +439,20 @@
     const rollClip = { x: 88, y: 50, w: 798, h: 70 };
     let rollGroup = null;
     let padMask = 0;
-    let live = { oct: 0, vol: 100, pb: 0, bb: 0, sel: 0, note: -1, ws: 0, wr: 0, beat: 0, step: 0, clk: 0, play: 0, bpm: 0, play_s: 0, bf: 1, bs: 0, chord: "", track: "--" };
+    let live = { oct: 0, vol: 100, pb: 0, bb: 0, pch: 1, sel: 0, note: -1, ws: 0, wr: 0, beat: 0, step: 0, clk: 0, play: 0, bpm: 0, play_s: 0, bf: 1, bs: 0, chord: "", track: "--", aum: 0, sp: 0, sa: 2, sf: 3, slr: 18, slp: 6, sla: 0, sn: "EPNO", so: [] };
+    const FM_PATCH = ["EPNO", "BRASS", "BELL", "BASS", "ORGAN", "FLUTE", "CLAV", "LEAD"];
+    const FM_ALGO = ["1-2-3-4", "12+3>4", "12|34", "123+4", "12+3+4", "1>234", "12+34", "1+2+3+4"];
+    const FM_OP_LBL = [
+      ["ratio", "r", 1, 64],
+      ["level", "l", 0, 127],
+      ["atk", "A", 0, 127],
+      ["dec", "d", 0, 127],
+      ["sus", "s", 0, 127],
+      ["rel", "R", 0, 127],
+      ["detune", "t", -64, 63],
+      ["vel", "v", 0, 127],
+    ];
+    let fmLock = false;
     let wsManualOverride = false;
     let wsPhase = 0;
     let padGeom = [];
@@ -421,6 +504,7 @@
     function padOutLabel(d) {
       const p = map.pad[map.bb]?.[d];
       if (!p) return "—";
+      if (p.mode === 5) return mcuPadLabel(p.note);
       if (p.mode === 0) return "N" + p.note + "+CC" + p.cc;
       if (p.mode === 1) return "CC" + p.cc;
       if (p.mode === 2) return noteOutLabel(p.note);
@@ -440,12 +524,24 @@
       parent.appendChild(g);
       if (id.startsWith("t") && id.charAt(1) >= "0" && id.charAt(1) <= "9") {
         padGeom[+id.slice(1)] = { x, w };
+        g.style.cursor = "pointer";
+        g.addEventListener("click", () => {
+          sel = "p" + id.slice(1);
+          paint();
+        });
       }
       if (id === "tempo-up" || id === "tempo-dn") {
         tempoGeom[id] = { x, w };
         g.style.cursor = "pointer";
         g.addEventListener("click", () => {
           sel = id === "tempo-up" ? "tup" : "tdn";
+          paint();
+        });
+      }
+      if (id === "stop") {
+        g.style.cursor = "pointer";
+        g.addEventListener("click", () => {
+          sel = "stop";
           paint();
         });
       }
@@ -525,10 +621,12 @@
       const tup = document.querySelector('#casio [data-midi="tempo-up"]');
       const sel = document.querySelector('#casio [data-midi="select"]');
       const stop = document.querySelector('#casio [data-midi="stop"]');
-      if (tdn) tdn.textContent = "CC" + map.tempo.dn;
-      if (tup) tup.textContent = "CC" + map.tempo.up;
+      if (tdn) tdn.textContent = tempoRoleLabel(map.tempo.td, map.tempo.dn, true);
+      if (tup) tup.textContent = tempoRoleLabel(map.tempo.tu, map.tempo.up, true);
       if (sel) sel.textContent = "shift";
-      if (stop) stop.textContent = live.clk || live.play ? "■ Stop" : "▶ Play";
+      if (stop) stop.textContent = map.tempo.stop === 255
+        ? (live.clk || live.play ? "■ Stop" : "▶ Play")
+        : mcuPadLabel(map.tempo.stop);
     }
     function heldUi() {
       const on = new Set();
@@ -621,7 +719,7 @@
     function paintLive() {
       $("pOct").textContent = "oitava " + fmt(live.oct);
       $("pVol").textContent = "vol " + live.vol;
-      $("pBank").textContent = "P" + (live.pb + 1) + " · B" + (live.bb + 1);
+      $("pBank").textContent = "P" + (live.pb + 1) + " · B" + (live.bb + 1) + " · ch" + (live.pch || (live.pb + 1));
       $("pSel").textContent = live.sel ? "SEL · BANK " + (live.bb + 1) : "SEL solto";
       if (live.play || live.clk) {
         $("pBeat").textContent = live.clk
@@ -638,9 +736,106 @@
       $("pTrack").textContent = "track " + (live.track || "--");
       $("pChord").textContent = live.chord ? ("acorde " + live.chord) : "acorde —";
       $("pNote").textContent = live.note >= 0 ? ("nota " + midiLabel(live.note) + " " + live.note) : "nota —";
+      $("pPatch").textContent = (live.aum === 1 ? "clock" : live.aum === 2 ? "in" : "FM " + (live.sn || FM_PATCH[live.sp] || "EPNO"));
       $("pWs").textContent = live.ws ? (live.wr ? "WS rainbow" : "WS ok") : "WS —";
       $("pLive").textContent = "stream on";
       paintWsFromLive();
+    }
+    function ratioLabel(x) {
+      return (Number(x) / 2).toFixed(1);
+    }
+    function fmOpVal(i, k) {
+      const row = live.so && live.so[i];
+      if (Array.isArray(row) && row[k] != null) return Number(row[k]);
+      return k === 0 ? 2 : k === 1 ? 100 : 0;
+    }
+    function sendFmOp(i) {
+      const v = (key) => $("fm" + i + key).value;
+      cmd("S o " + i + " " + v("r") + " " + v("l") + " " + v("A") + " " + v("d") + " " + v("s") + " " + v("R") + " " + v("t") + " " + v("v"))
+        .catch((e) => log(e.message, "err"));
+    }
+    function sendFmLfo() {
+      cmd("S l " + $("fmLfoR").value + " " + $("fmLfoP").value + " " + $("fmLfoA").value)
+        .catch((e) => log(e.message, "err"));
+    }
+    function paintFm() {
+      if (fmLock) return;
+      const mode = live.aum || 0;
+      $("fmOut").classList.toggle("on", mode === 0);
+      $("fmClock").classList.toggle("on", mode === 1);
+      $("fmIn").classList.toggle("on", mode === 2);
+      const wrap = $("fmPatches");
+      if (!wrap.dataset.ready) {
+        wrap.innerHTML = "";
+        FM_PATCH.forEach((name, i) => {
+          const b = document.createElement("button");
+          b.className = "chip";
+          b.dataset.p = String(i);
+          b.textContent = name;
+          b.onclick = () => cmd("S p " + i).catch((e) => log(e.message, "err"));
+          wrap.appendChild(b);
+        });
+        wrap.dataset.ready = "1";
+      }
+      wrap.querySelectorAll(".chip").forEach((b) => {
+        b.classList.toggle("on", +b.dataset.p === (live.sp || 0));
+      });
+      if (document.activeElement !== $("fmAlgo")) $("fmAlgo").value = live.sa ?? 2;
+      $("fmAlgoN").textContent = FM_ALGO[live.sa || 0] || "";
+      if (document.activeElement !== $("fmFb")) $("fmFb").value = live.sf ?? 0;
+      $("fmFbN").textContent = String(live.sf ?? 0);
+      if (document.activeElement !== $("fmLfoR")) $("fmLfoR").value = live.slr ?? 0;
+      if (document.activeElement !== $("fmLfoP")) $("fmLfoP").value = live.slp ?? 0;
+      if (document.activeElement !== $("fmLfoA")) $("fmLfoA").value = live.sla ?? 0;
+      for (let i = 0; i < 4; i++) {
+        FM_OP_LBL.forEach((spec, k) => {
+          const el = $("fm" + i + spec[1]);
+          const lab = $("fm" + i + spec[1] + "N");
+          if (!el) return;
+          const val = fmOpVal(i, k);
+          if (document.activeElement !== el) el.value = val;
+          if (lab) lab.textContent = spec[1] === "r" ? ratioLabel(val) : String(val);
+        });
+      }
+    }
+    function buildFmOps() {
+      const box = $("fmOps");
+      box.innerHTML = "";
+      for (let i = 0; i < 4; i++) {
+        const card = document.createElement("div");
+        card.className = "fm-op";
+        const h = document.createElement("h3");
+        h.textContent = "OP" + (i + 1) + (i === 0 ? "  · feedback" : i === 3 ? "  · carrier típico" : "");
+        card.appendChild(h);
+        const grid = document.createElement("div");
+        grid.className = "fm-grid";
+        FM_OP_LBL.forEach((spec) => {
+          const lab = document.createElement("span");
+          lab.textContent = spec[0];
+          const inp = document.createElement("input");
+          inp.type = "range";
+          inp.id = "fm" + i + spec[1];
+          inp.min = spec[2];
+          inp.max = spec[3];
+          inp.value = spec[1] === "r" ? 2 : spec[1] === "l" ? 100 : 0;
+          const num = document.createElement("span");
+          inp.id = "fm" + i + spec[1];
+          num.id = "fm" + i + spec[1] + "N";
+          inp.addEventListener("input", () => {
+            fmLock = true;
+            num.textContent = spec[1] === "r" ? ratioLabel(inp.value) : inp.value;
+          });
+          inp.addEventListener("change", () => {
+            fmLock = false;
+            sendFmOp(i);
+          });
+          grid.appendChild(lab);
+          grid.appendChild(inp);
+          grid.appendChild(num);
+        });
+        card.appendChild(grid);
+        box.appendChild(card);
+      }
     }
     function rgbHex(r, g, b) {
       const h = (n) => n.toString(16).padStart(2, "0");
@@ -648,54 +843,44 @@
     }
     function paintWsFromLive() {
       if (wsRainbowOn || wsManualOverride || live.wr) return;
-      // Tempo / play: blue step chase like firmware
       if ((live.clk || live.play) && !live.sel && !live.bs) {
         const step = (live.step != null ? live.step : (live.beat * 2)) & 7;
         for (let i = 0; i < 8; i++) {
-          wsState[i] = {
-            color: rgbHex(0, 8, 36),
-            alpha: Math.round(((i === step) ? 15 : 5) / 2.55 * 100),
-          };
+          if (i === step) {
+            wsState[i] = { color: rgbHex(0, 56, 255), alpha: 100 };
+          } else if ((i & 1) === 0) {
+            wsState[i] = { color: rgbHex(0, 90, 48), alpha: 100 };
+          } else {
+            wsState[i] = { color: rgbHex(0, 0, 22), alpha: 100 };
+          }
         }
         paintWsStrip();
         return;
       }
       wsPhase = (wsPhase + 2) & 255;
-      const PERF = [56, 0, 4], PERF_SEL = [110, 0, 6];
-      const PAD = [0, 8, 36], PAD_SEL = [0, 18, 70];
-      const WAVE = [22, 14, 6];
+      const PERF = [200, 4, 0];
+      const PAD = [220, 130, 0];
+      const BG = [28, 0, 42];
       const selecting = !!(live.sel || live.bs);
       const focusPad = live.sel ? true : !!live.bf;
+      const tri = wsPhase < 128 ? wsPhase : 255 - wsPhase;
+      const pulseA = Math.round((140 + (tri * 115) / 127) / 2.55);
       for (let i = 0; i < 8; i++) {
-        const pos = (wsPhase + i * 32) & 255;
-        const tri = pos < 128 ? pos : 255 - pos;
-        const eased = (tri * tri) / 127;
-        const bgA = Math.round((3 + (eased * 7) / 127) / 2.55 * 100);
         const isPerf = i === live.pb;
         const isPad = i === live.bb;
-        let color = rgbHex(...WAVE);
-        let alpha = Math.max(3, Math.min(30, bgA));
-        if (selecting) {
-          const focus = focusPad ? live.bb : live.pb;
-          const other = focusPad ? live.pb : live.bb;
-          if (i === focus) {
-            color = rgbHex(...(focusPad ? PAD_SEL : PERF_SEL));
-            const pulse = wsPhase < 128 ? wsPhase : 255 - wsPhase;
-            alpha = Math.round((20 + (pulse * 10) / 127) / 2.55 * 100);
-          } else if (i === other && other !== focus) {
-            color = rgbHex(...(focusPad ? PERF : PAD));
-            alpha = Math.round(15 / 2.55 * 100);
-          }
-        } else if (isPerf && isPad) {
-          const showPad = (wsPhase & 0x10) !== 0;
+        const focusLed = focusPad ? live.bb : live.pb;
+        let color = rgbHex(...BG);
+        let alpha = 100;
+        if (isPerf && isPad) {
+          const showPad = selecting ? focusPad : (wsPhase & 0x10) !== 0;
           color = rgbHex(...(showPad ? PAD : PERF));
-          alpha = Math.round(15 / 2.55 * 100);
-        } else if (isPerf) {
-          color = rgbHex(...PERF);
-          alpha = Math.round(15 / 2.55 * 100);
+          alpha = selecting ? pulseA : 86;
         } else if (isPad) {
           color = rgbHex(...PAD);
-          alpha = Math.round(15 / 2.55 * 100);
+          alpha = selecting && i === focusLed ? pulseA : 86;
+        } else if (isPerf) {
+          color = rgbHex(...PERF);
+          alpha = selecting && i === focusLed ? pulseA : 86;
         }
         wsState[i] = { color, alpha };
       }
@@ -729,9 +914,23 @@
       live.bs = s.bs ?? live.bs;
       live.chord = s.chord ?? live.chord;
       live.track = s.track ?? live.track;
+      live.pch = s.pch ?? live.pch;
+      if (s.aum != null) live.aum = s.aum;
+      if (s.sp != null) live.sp = s.sp;
+      if (s.sa != null) live.sa = s.sa;
+      if (s.sf != null) live.sf = s.sf;
+      if (s.slr != null) live.slr = s.slr;
+      if (s.slp != null) live.slp = s.slp;
+      if (s.sla != null) live.sla = s.sla;
+      if (s.sn) live.sn = s.sn;
+      if (Array.isArray(s.so)) live.so = s.so;
+      paintFm();
       const bankChanged = (s.pb != null && s.pb !== map.pb) || (s.bb != null && s.bb !== map.bb);
       if (bankChanged || s.bs || s.sel) wsManualOverride = false;
-      if (s.pb != null) map.pb = s.pb;
+      if (s.pb != null) {
+        map.pb = s.pb;
+        map.ch = s.pb + 1;
+      }
       if (s.bb != null) map.bb = s.bb;
       $("e1").textContent = fmt(s.e1 ?? 0);
       $("e2").textContent = fmt(s.e2 ?? 0);
@@ -842,10 +1041,16 @@
       });
     }
 
+    function tempoRoleLabel(mode, cc, short) {
+      if (mode === 2) return "oitava";
+      if (mode === 1) return mcuPadLabel(cc);
+      return short ? ("CC" + cc) : ("CC" + cc + " ch" + map.tempo.ch);
+    }
     function labelEnc(e) {
       if (e.mode === 1) return "oitava";
       if (e.mode === 2) return "off";
       if (e.mode === 3) return "CCrel " + e.cc + " ch" + e.ch;
+      if (e.mode === 4) return mcuEncLabel(e.cc);
       return "CC" + e.cc + " ch" + e.ch;
     }
     function labelJoy(j) {
@@ -860,6 +1065,7 @@
       if (p.mode === 2) return "N" + p.note;
       if (p.mode === 3) return "PGM " + p.note;
       if (p.mode === 4) return "off";
+      if (p.mode === 5) return mcuPadLabel(p.note);
       return "CC" + p.cc;
     }
 
@@ -870,7 +1076,12 @@
         const a = document.createElement("button");
         a.className = "chip perf" + (map.pb === i ? " on" : "");
         a.textContent = String(i + 1);
-        a.onclick = () => { map.pb = i; cmd("MB p " + i).catch((e) => log(e.message, "err")); paint(); };
+        a.onclick = () => {
+          map.pb = i;
+          map.ch = i + 1;
+          cmd("MB p " + i).catch((e) => log(e.message, "err"));
+          paint();
+        };
         $("perfBanks").appendChild(a);
         const b = document.createElement("button");
         b.className = "chip pad" + (map.bb === i ? " on" : "");
@@ -881,13 +1092,15 @@
       $("lE0").textContent = labelEnc(map.enc[map.pb][0]);
       $("lE1").textContent = labelEnc(map.enc[map.pb][1]);
       $("lJoy").textContent = labelJoy(map.joy[map.pb]);
-      $("lTup").textContent = "CC" + map.tempo.up + " ch" + map.tempo.ch;
-      $("lTdn").textContent = "CC" + map.tempo.dn + " ch" + map.tempo.ch;
+      $("lTup").textContent = tempoRoleLabel(map.tempo.tu, map.tempo.up, false);
+      $("lTdn").textContent = tempoRoleLabel(map.tempo.td, map.tempo.dn, false);
+      $("lStop").textContent = map.tempo.stop === 255 ? "Play/Stop" : mcuPadLabel(map.tempo.stop);
       $("cE0").classList.toggle("on", sel === "e0");
       $("cE1").classList.toggle("on", sel === "e1");
       $("cJoy").classList.toggle("on", sel === "joy");
       $("cTup").classList.toggle("on", sel === "tup");
       $("cTdn").classList.toggle("on", sel === "tdn");
+      $("cStop").classList.toggle("on", sel === "stop");
       const pads = $("pads");
       pads.innerHTML = "";
       for (let d = 0; d < 10; d++) {
@@ -927,6 +1140,25 @@
       s.onchange = () => fn(+s.value);
       return s;
     }
+    function mcuSelect(fns, v, fn) {
+      const s = document.createElement("select");
+      s.style.minWidth = "0";
+      fns.forEach((item) => {
+        const o = document.createElement("option");
+        o.value = item.id;
+        o.textContent = item.label;
+        s.appendChild(o);
+      });
+      if (![...s.options].some((o) => o.value === String(v))) {
+        const o = document.createElement("option");
+        o.value = v;
+        o.textContent = "MCU " + v;
+        s.appendChild(o);
+      }
+      s.value = String(v);
+      s.onchange = () => fn(+s.value);
+      return s;
+    }
 
     async function pushEnc(i) {
       const e = map.enc[map.pb][i];
@@ -941,7 +1173,7 @@
       await cmd("MP " + map.bb + " " + d + " " + p.mode + " " + p.ch + " " + p.cc + " " + p.note);
     }
     async function pushTempo() {
-      await cmd("MT " + map.tempo.ch + " " + map.tempo.up + " " + map.tempo.dn);
+      await cmd("MT " + map.tempo.ch + " " + map.tempo.up + " " + map.tempo.dn + " " + map.tempo.stop + " " + map.tempo.tu + " " + map.tempo.td);
     }
 
     function paintInsp() {
@@ -952,10 +1184,16 @@
         const i = sel === "e0" ? 0 : 1;
         const e = map.enc[map.pb][i];
         box.appendChild(field("Papel", selBox(ENC_MODES, e.mode, (v) => { e.mode = v; apply(() => pushEnc(i)); paint(); })));
+        if (e.mode === 4) {
+          box.appendChild(field("Mackie", mcuSelect(MCU_ENC_FNS, e.cc, (v) => { e.cc = v; apply(() => pushEnc(i)); paint(); })));
+          box.appendChild(field("Passo", num(e.step, 1, 16, (v) => { e.step = v; apply(() => pushEnc(i)); })));
+          $("inspHint").textContent = "Encoder Mackie no porto Mackie Control. Passo ×6 na DAW (acelera ao girar rápido). Channel L/R continua 1 track por clique.";
+          return;
+        }
         box.appendChild(field("Canal", num(e.ch, 1, 16, (v) => { e.ch = v; apply(() => pushEnc(i)); })));
         box.appendChild(field("CC", num(e.cc, 0, 127, (v) => { e.cc = v; apply(() => pushEnc(i)); paint(); })));
         box.appendChild(field("Passo", num(e.step, 1, 16, (v) => { e.step = v; apply(() => pushEnc(i)); })));
-        $("inspHint").textContent = "Fábrica: EC11-1 = CC relativo 14 (track). EC11-2 = CC relativo 7 (volume 65/63, a partir do fader da DAW). Na DAW mapeie os dois como Relative / Binary Offset. Canal e CC editáveis.";
+        $("inspHint").textContent = "Fábrica banco 1: Mackie Channel / Jog. Bancos 2–8: CC absoluto. Na DAW, Relative / Binary Offset só para CC relativo.";
         return;
       }
       if (sel === "joy") {
@@ -969,24 +1207,46 @@
         box.appendChild(field("Clique", selBox(SW, j.sm, (v) => { j.sm = v; apply(pushJoy); paint(); })));
         box.appendChild(field("SW canal", num(j.sch, 1, 16, (v) => { j.sch = v; apply(pushJoy); })));
         box.appendChild(field("SW CC/nota", num(j.scc, 0, 127, (v) => { j.scc = v; apply(pushJoy); paint(); })));
-        $("inspHint").textContent = "Orientação: inverter X e trocar X↔Y. Fábrica: cima/baixo = pitch bend; esquerda/direita = CC 1 mod. Oitava no stick é opcional.";
+        $("inspHint").textContent = "Joystick fica no porto Casio (pitch/mod de fábrica). Não entra no Mackie a menos que mudes o mapa.";
         return;
       }
       if (sel.startsWith("p")) {
         const d = +sel.slice(1);
         const p = map.pad[map.bb][d];
         box.appendChild(field("Papel", selBox(PAD, p.mode, (v) => { p.mode = v; apply(() => pushPad(d)); paint(); })));
+        if (p.mode === 5) {
+          box.appendChild(field("Mackie", mcuSelect(MCU_PAD_FNS, p.note, (v) => { p.note = v; apply(() => pushPad(d)); paint(); })));
+          $("inspHint").textContent = "Pad Mackie no porto Mackie Control. Banco B1 de fábrica: Mute 1–8, Rec, Solo. Bancos 2–8: Dual nota+CC no Casio.";
+          return;
+        }
         box.appendChild(field("Canal", num(p.ch, 1, 16, (v) => { p.ch = v; apply(() => pushPad(d)); })));
         box.appendChild(field("CC", num(p.cc, 0, 127, (v) => { p.cc = v; apply(() => pushPad(d)); paint(); })));
         box.appendChild(field("Nota / PGM", num(p.note, 0, 127, (v) => { p.note = v; apply(() => pushPad(d)); paint(); })));
-        $("inspHint").textContent = "Dual (fábrica): Note On/Off + CC 127/0 no canal 2 — piano roll e MIDI Learn. CC/Nota/Programa/Off para casos especiais.";
+        $("inspHint").textContent = "Dual: Note On/Off + CC 127/0 no porto Casio. Mackie: escolhe Mute/Solo/transport/etc. para o segundo porto.";
+        return;
+      }
+      if (sel === "stop") {
+        box.appendChild(field("Mackie", mcuSelect(MCU_STOP_FNS, map.tempo.stop, (v) => { map.tempo.stop = v; apply(pushTempo); paint(); })));
+        $("inspHint").textContent = "STOP de fábrica alterna Play/Stop no Mackie e envia MIDI Start/Stop no Casio. Podes atribuir Record, Marker, etc.";
         return;
       }
       if (sel === "tup" || sel === "tdn") {
         const which = sel === "tup" ? "up" : "dn";
+        const modeKey = sel === "tup" ? "tu" : "td";
+        const MODE = ["CC", "Mackie", "Oitava"];
+        box.appendChild(field("Papel", selBox(MODE, map.tempo[modeKey], (v) => { map.tempo[modeKey] = v; apply(pushTempo); paint(); })));
+        if (map.tempo[modeKey] === 1) {
+          box.appendChild(field("Mackie", mcuSelect(MCU_PAD_FNS, map.tempo[which], (v) => { map.tempo[which] = v; apply(pushTempo); paint(); })));
+          $("inspHint").textContent = "Tempo ± em Mackie (Rewind / Fast Forward, markers, …) sai no porto Mackie Control.";
+          return;
+        }
+        if (map.tempo[modeKey] === 2) {
+          $("inspHint").textContent = "Tempo ± muda a oitava do piano (mesmo offset das teclas). + sobe, − desce. Limite −2…+3.";
+          return;
+        }
         box.appendChild(field("Canal", num(map.tempo.ch, 1, 16, (v) => { map.tempo.ch = v; apply(pushTempo); paint(); })));
         box.appendChild(field(sel === "tup" ? "CC Tempo +" : "CC Tempo −", num(map.tempo[which], 0, 127, (v) => { map.tempo[which] = v; apply(pushTempo); paint(); })));
-        $("inspHint").textContent = "Tempo ± sai só como CC (127 ao premir, 0 ao soltar). Na DAW: MIDI Learn no tempo. Bancos: SEL + EC11 esq = P, SEL + EC11 dir = B.";
+        $("inspHint").textContent = "Tempo ± sai só como CC no porto Casio. Bancos: SEL + EC11 esq = P, SEL + EC11 dir = B.";
       }
     }
 
@@ -1020,7 +1280,14 @@
         return;
       }
       m = text.match(/^BANK pb=(\d+) bb=(\d+)/);
-      if (m) { map.pb = +m[1]; map.bb = +m[2]; paint(); return; }
+      m = text.match(/^BANK pb=(\d+) bb=(\d+)/);
+      if (m) {
+        map.pb = +m[1];
+        map.bb = +m[2];
+        map.ch = map.pb + 1;
+        paint();
+        return;
+      }
       m = text.match(/^ENC b=(\d+) i=(\d+) mode=(\d+) ch=(\d+) cc=(\d+) step=(\d+)/);
       if (m) {
         map.enc[+m[1]][+m[2]] = { mode: +m[3], ch: +m[4], cc: +m[5], step: +m[6], val: 64 };
@@ -1033,9 +1300,9 @@
         paint();
         return;
       }
-      m = text.match(/^TMP ch=(\d+) up=(\d+) dn=(\d+)/);
+      m = text.match(/^TMP ch=(\d+) up=(\d+) dn=(\d+)(?: stop=(\d+) tu=(\d+) td=(\d+))?/);
       if (m) {
-        map.tempo = { ch: +m[1], up: +m[2], dn: +m[3] };
+        map.tempo = { ch: +m[1], up: +m[2], dn: +m[3], stop: m[4] != null ? +m[4] : 255, tu: m[5] != null ? +m[5] : 2, td: m[6] != null ? +m[6] : 2 };
         paint();
         return;
       }
@@ -1086,12 +1353,31 @@
       }, 400);
     }
 
-    $("cE0").onclick = () => { sel = "e0"; paint(); };
+    $("fmOut").onclick = () => cmd("S m 0").catch((e) => log(e.message, "err"));
+    $("fmClock").onclick = () => cmd("S m 1").catch((e) => log(e.message, "err"));
+    $("fmIn").onclick = () => cmd("S m 2").catch((e) => log(e.message, "err"));
+    $("fmAlgo").onchange = () => cmd("S a " + $("fmAlgo").value).catch((e) => log(e.message, "err"));
+    $("fmFb").oninput = () => { $("fmFbN").textContent = $("fmFb").value; };
+    $("fmFb").onchange = () => cmd("S f " + $("fmFb").value).catch((e) => log(e.message, "err"));
+    ["fmLfoR", "fmLfoP", "fmLfoA"].forEach((id) => {
+      $(id).addEventListener("change", sendFmLfo);
+    });
     $("cE1").onclick = () => { sel = "e1"; paint(); };
     $("cJoy").onclick = () => { sel = "joy"; paint(); };
     $("cTup").onclick = () => { sel = "tup"; paint(); };
     $("cTdn").onclick = () => { sel = "tdn"; paint(); };
-    $("gCh").onchange = () => cmd("MG " + $("gCh").value + " " + $("gVel").value).catch((e) => log(e.message, "err"));
+    $("cStop").onclick = () => { sel = "stop"; paint(); };
+    $("gCh").onchange = () => {
+      const ch = Math.max(1, Math.min(8, +$("gCh").value || 1));
+      $("gCh").value = ch;
+      map.ch = ch;
+      map.pb = ch - 1;
+      Promise.resolve()
+        .then(() => cmd("MB p " + map.pb))
+        .then(() => cmd("MG " + ch + " " + $("gVel").value))
+        .catch((e) => log(e.message, "err"));
+      paint();
+    };
     $("gVel").onchange = () => cmd("MG " + $("gCh").value + " " + $("gVel").value).catch((e) => log(e.message, "err"));
     $("btnSave").onclick = () => {
       syncLearnToPico()
@@ -1184,7 +1470,9 @@
     };
     buildCasio();
     buildWsStrip();
+    buildFmOps();
     paint();
+    paintFm();
     paintLive();
     loadLearnFromServer().then((n) => {
       paintMidiOut();

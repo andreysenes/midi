@@ -10,13 +10,22 @@ static const uint8_t PAD_COUNT = 10;
 static const uint16_t MAP_MAGIC = 0xC510;
 // v6: joy eixos. v7: orientação antiga + Y pitch (não oitava).
 // v8: EC11-2 volume em CC relativo (65/63) — não sobrescreve o fader da track.
-static const uint8_t MAP_VER = 8;
+// v9: PAD_MCU / ENC_MODE_MCU; banco 1 Mackie; STOP/Tempo atribuíveis.
+// v10: Tempo ± de fábrica = oitava do piano (não CC 40/41).
+static const uint8_t MAP_VER = 10;
+static const uint8_t MCU_FN_TOGGLE = 255;
+enum TempoMode : uint8_t {
+  TEMPO_MODE_CC = 0,
+  TEMPO_MODE_MCU = 1,
+  TEMPO_MODE_OCT = 2,
+};
 
 enum EncMode : uint8_t {
   ENC_MODE_CC = 0,
   ENC_MODE_OCT = 1,
   ENC_MODE_OFF = 2,
   ENC_MODE_REL = 3,
+  ENC_MODE_MCU = 4,
 };
 enum JoyAxisMode : uint8_t { JOY_PITCH = 0, JOY_CC = 1, JOY_OFF = 2, JOY_OCTAVE = 3 };
 enum JoySwMode : uint8_t { SW_CC = 0, SW_NOTE = 1, SW_OFF = 2 };
@@ -26,6 +35,7 @@ enum PadMode : uint8_t {
   PAD_NOTE = 2,
   PAD_PROG = 3,
   PAD_OFF = 4,
+  PAD_MCU = 5,
 };
 
 struct EncSlot {
@@ -67,6 +77,9 @@ struct MidiMap {
   uint8_t tempoCh;
   uint8_t tempoCcUp;
   uint8_t tempoCcDn;
+  uint8_t stopNote;      // 255 = Play/Stop toggle
+  uint8_t tempoModeUp;   // TempoMode: CC / MCU / oitava
+  uint8_t tempoModeDn;
 };
 
 static MidiMap midiMap;
@@ -119,6 +132,9 @@ static uint8_t clamp127(int v) {
   return static_cast<uint8_t>(v);
 }
 
+static uint8_t pianoCh();
+static void syncPianoChFromBank();
+
 static void midiMapDefaults() {
   memset(&midiMap, 0, sizeof(midiMap));
   midiMap.magic = MAP_MAGIC;
@@ -128,8 +144,8 @@ static void midiMapDefaults() {
   midiMap.encSwap = 1;
   for (uint8_t b = 0; b < BANK_COUNT; b++) {
     if (b == 0) {
-      midiMap.enc[b][0] = EncSlot{ENC_MODE_REL, 4, CC_TRACK, 1};
-      midiMap.enc[b][1] = EncSlot{ENC_MODE_REL, 4, CC_VOLUME, 1};
+      midiMap.enc[b][0] = EncSlot{ENC_MODE_MCU, 1, 18, 1};  // Channel L/R
+      midiMap.enc[b][1] = EncSlot{ENC_MODE_MCU, 1, 8, 1};   // Jog
       midiMap.joy[b] = JoySlot{
           JOY_PITCH, 3, 0,
           JOY_CC, 3, CC_MODULATION,
@@ -145,15 +161,28 @@ static void midiMapDefaults() {
     encVal[b][0] = 64;
     encVal[b][1] = (b == 0) ? 100 : 64;
     for (uint8_t d = 0; d < PAD_COUNT; d++) {
-      midiMap.pad[b][d] = PadSlot{
-          PAD_DUAL, 2,
-          static_cast<uint8_t>(30 + b * 10 + d),
-          static_cast<uint8_t>(36 + d)};
+      if (b == 0) {
+        if (d < 8) {
+          midiMap.pad[b][d] = PadSlot{PAD_MCU, 1, 0, static_cast<uint8_t>(0x10 + d)};
+        } else if (d == 8) {
+          midiMap.pad[b][d] = PadSlot{PAD_MCU, 1, 0, 0x5F};
+        } else {
+          midiMap.pad[b][d] = PadSlot{PAD_MCU, 1, 0, 0x5A};
+        }
+      } else {
+        midiMap.pad[b][d] = PadSlot{
+            PAD_DUAL, 2,
+            static_cast<uint8_t>(30 + b * 10 + d),
+            static_cast<uint8_t>(36 + d)};
+      }
     }
   }
   midiMap.tempoCh = 2;
   midiMap.tempoCcUp = 40;
   midiMap.tempoCcDn = 41;
+  midiMap.stopNote = MCU_FN_TOGGLE;
+  midiMap.tempoModeUp = TEMPO_MODE_OCT;
+  midiMap.tempoModeDn = TEMPO_MODE_OCT;
   noteMatrixReset();
   noteMatrixToMap();
 }
@@ -205,15 +234,56 @@ static void midiMapLoad() {
       vol.step = 1;
     }
   }
+  if (midiMap.ver < 9) {
+    midiMap.stopNote = MCU_FN_TOGGLE;
+    midiMap.tempoModeUp = 0;
+    midiMap.tempoModeDn = 0;
+    bool factoryPads = true;
+    for (uint8_t d = 0; d < PAD_COUNT; d++) {
+      const PadSlot &p = midiMap.pad[0][d];
+      if (p.mode != PAD_DUAL || p.note != static_cast<uint8_t>(36 + d)) {
+        factoryPads = false;
+        break;
+      }
+    }
+    if (factoryPads) {
+      for (uint8_t d = 0; d < 8; d++) {
+        midiMap.pad[0][d] = PadSlot{PAD_MCU, 1, 0, static_cast<uint8_t>(0x10 + d)};
+      }
+      midiMap.pad[0][8] = PadSlot{PAD_MCU, 1, 0, 0x5F};
+      midiMap.pad[0][9] = PadSlot{PAD_MCU, 1, 0, 0x5A};
+    }
+    if (midiMap.enc[0][0].mode == ENC_MODE_REL && midiMap.enc[0][0].cc == CC_TRACK) {
+      midiMap.enc[0][0] = EncSlot{ENC_MODE_MCU, 1, 18, 1};
+    }
+    if (midiMap.enc[0][1].mode == ENC_MODE_REL && midiMap.enc[0][1].cc == CC_VOLUME) {
+      midiMap.enc[0][1] = EncSlot{ENC_MODE_MCU, 1, 8, 1};
+    }
+  }
+  if (midiMap.ver < 10) {
+    if (midiMap.tempoModeUp == TEMPO_MODE_CC && midiMap.tempoCcUp == 40) {
+      midiMap.tempoModeUp = TEMPO_MODE_OCT;
+    }
+    if (midiMap.tempoModeDn == TEMPO_MODE_CC && midiMap.tempoCcDn == 41) {
+      midiMap.tempoModeDn = TEMPO_MODE_OCT;
+    }
+  }
   midiMap.ver = MAP_VER;
   noteMatrixFromMap();
   midiMap.ch = clampCh(midiMap.ch);
   midiMap.tempoCh = clampCh(midiMap.tempoCh);
   midiMap.tempoCcUp &= 127;
   midiMap.tempoCcDn &= 127;
+  if (midiMap.tempoModeUp > TEMPO_MODE_OCT) {
+    midiMap.tempoModeUp = TEMPO_MODE_CC;
+  }
+  if (midiMap.tempoModeDn > TEMPO_MODE_OCT) {
+    midiMap.tempoModeDn = TEMPO_MODE_CC;
+  }
   if (midiMap.vel == 0) {
     midiMap.vel = NOTE_VELOCITY;
   }
+  syncPianoChFromBank();
 }
 
 static void midiMapSave() {
@@ -221,6 +291,14 @@ static void midiMapSave() {
   noteMatrixToMap();
   EEPROM.put(0, midiMap);
   EEPROM.commit();
+}
+
+static uint8_t pianoCh() {
+  return clampCh(static_cast<int>(perfBank) + 1);
+}
+
+static void syncPianoChFromBank() {
+  midiMap.ch = pianoCh();
 }
 
 static EncSlot &encSlot(uint8_t i) {
@@ -283,7 +361,13 @@ static void printTempoLine() {
   Serial.print(F(" up="));
   Serial.print(midiMap.tempoCcUp);
   Serial.print(F(" dn="));
-  Serial.println(midiMap.tempoCcDn);
+  Serial.print(midiMap.tempoCcDn);
+  Serial.print(F(" stop="));
+  Serial.print(midiMap.stopNote);
+  Serial.print(F(" tu="));
+  Serial.print(midiMap.tempoModeUp);
+  Serial.print(F(" td="));
+  Serial.println(midiMap.tempoModeDn);
 }
 
 static void printPadLine(uint8_t b, uint8_t d) {
@@ -387,10 +471,16 @@ static void handleMapCommand(char *line) {
   if (cmd == 'G' || cmd == 'g') {
     midiMap.ch = clampCh(nextToken(&line));
     midiMap.vel = clamp127(nextToken(&line));
+    if (midiMap.ch >= 1 && midiMap.ch <= BANK_COUNT) {
+      perfBank = static_cast<uint8_t>(midiMap.ch - 1);
+    }
+    syncPianoChFromBank();
     Serial.print(F("MAP ch="));
     Serial.print(midiMap.ch);
     Serial.print(F(" vel="));
-    Serial.println(midiMap.vel);
+    Serial.print(midiMap.vel);
+    Serial.print(F(" pb="));
+    Serial.println(perfBank);
     return;
   }
   if (cmd == 'B' || cmd == 'b') {
@@ -401,13 +491,16 @@ static void handleMapCommand(char *line) {
     uint8_t n = static_cast<uint8_t>(atoi(line) % BANK_COUNT);
     if (which == 'p' || which == 'P') {
       perfBank = n;
+      syncPianoChFromBank();
     } else {
       padBank = n;
     }
     Serial.print(F("BANK pb="));
     Serial.print(perfBank);
     Serial.print(F(" bb="));
-    Serial.println(padBank);
+    Serial.print(padBank);
+    Serial.print(F(" pch="));
+    Serial.println(pianoCh());
     return;
   }
   if (cmd == 'E' || cmd == 'e') {
@@ -459,6 +552,30 @@ static void handleMapCommand(char *line) {
     midiMap.tempoCh = clampCh(nextToken(&line));
     midiMap.tempoCcUp = nextToken(&line) & 127;
     midiMap.tempoCcDn = nextToken(&line) & 127;
+    while (*line == ' ') {
+      line++;
+    }
+    if (*line) {
+      midiMap.stopNote = nextToken(&line);
+      while (*line == ' ') {
+        line++;
+      }
+      if (*line) {
+        midiMap.tempoModeUp = nextToken(&line);
+        if (midiMap.tempoModeUp > TEMPO_MODE_OCT) {
+          midiMap.tempoModeUp = TEMPO_MODE_CC;
+        }
+        while (*line == ' ') {
+          line++;
+        }
+        if (*line) {
+          midiMap.tempoModeDn = nextToken(&line);
+          if (midiMap.tempoModeDn > TEMPO_MODE_OCT) {
+            midiMap.tempoModeDn = TEMPO_MODE_CC;
+          }
+        }
+      }
+    }
     printTempoLine();
     return;
   }
@@ -466,7 +583,7 @@ static void handleMapCommand(char *line) {
     const uint8_t b = nextToken(&line) % BANK_COUNT;
     const uint8_t d = nextToken(&line) % PAD_COUNT;
     uint8_t mode = nextToken(&line);
-    if (mode > PAD_OFF) {
+    if (mode > PAD_MCU) {
       mode = PAD_DUAL;
     }
     midiMap.pad[b][d].mode = mode;

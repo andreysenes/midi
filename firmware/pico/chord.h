@@ -8,6 +8,13 @@ static const char *const CHORD_PC[12] = {
     "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
 };
 
+static void formatNoteName(uint8_t note, char *out, size_t n) {
+  if (!out || n < 4) {
+    return;
+  }
+  snprintf(out, n, "%s%d", CHORD_PC[note % 12], static_cast<int>(note / 12) - 1);
+}
+
 static bool chordHeld[128];
 static uint8_t chordCount = 0;
 // Press order of currently held notes (for live typing display).

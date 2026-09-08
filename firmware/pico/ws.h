@@ -25,12 +25,14 @@ static bool wsBankFocusPad = true;  // [] = pad (azul) vs performance (vermelho)
 static uint8_t wsIdlePhase = 0;
 static uint32_t lastIdleMs = 0;
 
-// Performance = red, pads = blue. Wave = soft warm amber (not bank colors).
-static const uint8_t WS_PERF_R = 56, WS_PERF_G = 0, WS_PERF_B = 4;
-static const uint8_t WS_PERF_SEL_R = 110, WS_PERF_SEL_G = 0, WS_PERF_SEL_B = 6;
-static const uint8_t WS_PAD_R = 0, WS_PAD_G = 8, WS_PAD_B = 36;
-static const uint8_t WS_PAD_SEL_R = 0, WS_PAD_SEL_G = 18, WS_PAD_SEL_B = 70;
-static const uint8_t WS_WAVE_R = 22, WS_WAVE_G = 14, WS_WAVE_B = 6;
+// Bank: purple bed, pads = yellow, performance = red.
+// Tempo: teal on beats, navy on offbeats, current step = bright blue.
+static const uint8_t WS_BANK_BG_R = 28, WS_BANK_BG_G = 0, WS_BANK_BG_B = 42;
+static const uint8_t WS_PERF_R = 200, WS_PERF_G = 4, WS_PERF_B = 0;
+static const uint8_t WS_PAD_R = 220, WS_PAD_G = 130, WS_PAD_B = 0;
+static const uint8_t WS_TEMPO_HI_R = 0, WS_TEMPO_HI_G = 56, WS_TEMPO_HI_B = 255;
+static const uint8_t WS_TEMPO_MID_R = 0, WS_TEMPO_MID_G = 90, WS_TEMPO_MID_B = 48;
+static const uint8_t WS_TEMPO_LO_R = 0, WS_TEMPO_LO_G = 0, WS_TEMPO_LO_B = 22;
 
 static void wsApply() {
   if (!wsOk) {
@@ -68,78 +70,62 @@ static void wsClear() {
   wsApply();
 }
 
-// Smooth traveling wave across all 8 LEDs (one hump spanning the bar).
-static uint8_t wsWaveAlpha(uint8_t i, uint8_t lo, uint8_t span) {
-  // 256 / 8 = 32 → contiguous wave using every LED together.
-  const uint8_t pos = static_cast<uint8_t>(wsIdlePhase + i * 32);
-  const uint8_t tri = pos < 128 ? pos : static_cast<uint8_t>(255 - pos);
-  // Ease: square the triangle for softer peaks (smoothstep-ish).
-  const uint16_t eased = (static_cast<uint16_t>(tri) * tri) / 127;
-  return static_cast<uint8_t>(lo + (eased * span) / 127);
+static void wsNudgeMaster(int8_t step) {
+  int v = static_cast<int>(wsMaster) + static_cast<int>(step) * 8;
+  if (v < 12) {
+    v = 12;
+  }
+  if (v > 255) {
+    v = 255;
+  }
+  wsMaster = static_cast<uint8_t>(v);
+  wsApply();
 }
 
-// Same LED for P+B: alternate red ↔ blue (bit 0x10 ≈ 0.27 s por cor).
+// Same LED for P+B: alternate yellow ↔ red (bit 0x10 ≈ 0.27 s por cor).
 static bool wsSameBankShowPad() {
   return (wsIdlePhase & 0x10) != 0;
 }
 
-// Idle: amber wave on all LEDs; selected banks stay red/blue at 15.
-static void wsRenderIdleBanks() {
+static uint8_t wsPulseAlpha(uint8_t lo, uint8_t hi) {
+  const uint8_t tri = wsIdlePhase < 128 ? wsIdlePhase : static_cast<uint8_t>(255 - wsIdlePhase);
+  return static_cast<uint8_t>(lo + (static_cast<uint16_t>(tri) * (hi - lo)) / 127);
+}
+
+static void wsPaintBankLed(uint8_t i, bool pad, bool pulse) {
+  const uint8_t a = pulse ? wsPulseAlpha(140, 255) : 220;
+  if (pad) {
+    wsSetLed(i, WS_PAD_R, WS_PAD_G, WS_PAD_B, a);
+  } else {
+    wsSetLed(i, WS_PERF_R, WS_PERF_G, WS_PERF_B, a);
+  }
+}
+
+static void wsRenderBanks(bool selecting) {
+  const uint8_t focusLed = wsBankFocusPad ? wsPadBankLed : wsPerfBankLed;
   for (uint8_t i = 0; i < WS_COUNT; i++) {
-    const uint8_t bgA = wsWaveAlpha(i, 3, 7);  // 3–10
     const bool isPerf = (i == wsPerfBankLed);
     const bool isPad = (i == wsPadBankLed);
     if (isPerf && isPad) {
-      if (wsSameBankShowPad()) {
-        wsSetLed(i, WS_PAD_R, WS_PAD_G, WS_PAD_B, 15);
-      } else {
-        wsSetLed(i, WS_PERF_R, WS_PERF_G, WS_PERF_B, 15);
-      }
-    } else if (isPerf) {
-      wsSetLed(i, WS_PERF_R, WS_PERF_G, WS_PERF_B, 15);
+      const bool showPad = selecting ? wsBankFocusPad : wsSameBankShowPad();
+      wsPaintBankLed(i, showPad, selecting);
     } else if (isPad) {
-      wsSetLed(i, WS_PAD_R, WS_PAD_G, WS_PAD_B, 15);
+      wsPaintBankLed(i, true, selecting && i == focusLed);
+    } else if (isPerf) {
+      wsPaintBankLed(i, false, selecting && i == focusLed);
     } else {
-      wsSetLed(i, WS_WAVE_R, WS_WAVE_G, WS_WAVE_B, bgA);
+      wsSetLed(i, WS_BANK_BG_R, WS_BANK_BG_G, WS_BANK_BG_B, 255);
     }
   }
   wsApply();
 }
 
-// Select: [] pulses ~20–30; * at 15; amber wave on the rest.
-static void wsRenderBank() {
-  const uint8_t pulsePos = wsIdlePhase;
-  const uint8_t pulse = pulsePos < 128 ? pulsePos : static_cast<uint8_t>(255 - pulsePos);
-  const uint8_t selA = static_cast<uint8_t>(20 + (static_cast<uint16_t>(pulse) * 10) / 127);
-  const uint8_t focusLed = wsBankFocusPad ? wsPadBankLed : wsPerfBankLed;
-  const uint8_t otherLed = wsBankFocusPad ? wsPerfBankLed : wsPadBankLed;
-  const bool same = (focusLed == otherLed);
+static void wsRenderIdleBanks() {
+  wsRenderBanks(false);
+}
 
-  for (uint8_t i = 0; i < WS_COUNT; i++) {
-    const uint8_t bgA = wsWaveAlpha(i, 3, 7);
-    if (i == focusLed) {
-      if (same && wsSameBankShowPad() != wsBankFocusPad) {
-        if (wsBankFocusPad) {
-          wsSetLed(i, WS_PERF_R, WS_PERF_G, WS_PERF_B, 15);
-        } else {
-          wsSetLed(i, WS_PAD_R, WS_PAD_G, WS_PAD_B, 15);
-        }
-      } else if (wsBankFocusPad) {
-        wsSetLed(i, WS_PAD_SEL_R, WS_PAD_SEL_G, WS_PAD_SEL_B, selA);
-      } else {
-        wsSetLed(i, WS_PERF_SEL_R, WS_PERF_SEL_G, WS_PERF_SEL_B, selA);
-      }
-    } else if (!same && i == otherLed) {
-      if (wsBankFocusPad) {
-        wsSetLed(i, WS_PERF_R, WS_PERF_G, WS_PERF_B, 15);
-      } else {
-        wsSetLed(i, WS_PAD_R, WS_PAD_G, WS_PAD_B, 15);
-      }
-    } else {
-      wsSetLed(i, WS_WAVE_R, WS_WAVE_G, WS_WAVE_B, bgA);
-    }
-  }
-  wsApply();
+static void wsRenderBank() {
+  wsRenderBanks(true);
 }
 
 static void wsRenderPerf() {
@@ -154,10 +140,14 @@ static void wsRenderPerf() {
     return;
   }
   if (wsPerfMode == WS_PERF_TEMPO) {
-    wsSetAll(0, 0, 0, 0);
     for (uint8_t i = 0; i < WS_COUNT; i++) {
-      const uint8_t a = (i == wsTempoStep) ? 15 : 5;
-      wsSetLed(i, 0, 8, 36, a);
+      if (i == wsTempoStep) {
+        wsSetLed(i, WS_TEMPO_HI_R, WS_TEMPO_HI_G, WS_TEMPO_HI_B, 255);
+      } else if ((i & 1) == 0) {
+        wsSetLed(i, WS_TEMPO_MID_R, WS_TEMPO_MID_G, WS_TEMPO_MID_B, 255);
+      } else {
+        wsSetLed(i, WS_TEMPO_LO_R, WS_TEMPO_LO_G, WS_TEMPO_LO_B, 255);
+      }
     }
     wsApply();
     return;

@@ -35,6 +35,9 @@ static const EncoderPins ENC_OCTAVE = {18, 19};
 static const EncoderPins ENC_VOLUME = {21, 22};
 static const bool ENC_OCTAVE_REV = true;  // EC11-1: horário = +
 static const bool ENC_VOLUME_REV = false;
+// Mackie / CC relativo: amount 1 por detent é micro-passo na DAW.
+// 6 por clique; ao girar rápido sobe até 15 (nibble MCU).
+static const uint8_t ENC_DAW_GAIN = 6;
 
 // KY-023: silk do Pico = A0 (GP26), A1 (GP27), A2 (GP28). VRx=A0, VRy=A1.
 // Alimentar no 3V3 do Pico, nunca no 5 V (ADC do Pico queima).
@@ -50,7 +53,9 @@ static const int JOY_MAX_X = 4095;
 static const int JOY_MIN_Y = 0;
 static const int JOY_MAX_Y = 4095;
 static const int JOY_ADC_MAX = 4095;   // 1023 se a sonda disser 10-bit
-static const int JOY_DEADZONE = 16;
+// ~7% de 12-bit: o KY-023 em repouso oscila o ADC e o pitchbend 14-bit
+// inundava o MIDI Learn da DAW. 16 era residual (10-bit / ruído).
+static const int JOY_DEADZONE = 280;
 static const int JOY_CIRCLE_R = 0;     // raio do anel (Lab assistente)
 static const uint8_t CC_MODULATION = 1;
 static const uint8_t CC_SUSTAIN = 64;
@@ -78,6 +83,7 @@ static const uint8_t I2S_BCK_PIN = 10;
 static const uint8_t I2S_LRCK_PIN = 11;
 static const uint8_t I2S_DOUT_PIN = 12;
 static const uint8_t I2S_DIN_PIN = 13; // Pico DIN ← ADC futuro (PCM1808 etc.). Livre por agora.
+static const uint32_t AUDIO_SR = 32000;
 
 static const uint8_t LED_PIN = 25;
 static const uint16_t SCAN_SETTLE_US = 20;
